@@ -1,2 +1,18 @@
-# winterrain_trpg
-Turn-based text role playing game Prompt (for GPT)
+# Overview
+ChatGPT 5.1 thinking 환경에서 작동하는 턴제 텍스트 롤플레잉 게임 프롬프트입니다.
+커스텀GPT 혹은 프로젝트에서 사용할 수 있습니다.
+
+last version: **1.4.3 (251120)**
+
+## 파일 구성
+* Core.md: 커스텀GPT 혹은 프로젝트의 메인 지침으로 입력
+* Setup.md: 첨부 파일, 설정 모듈 (세계관 및 플레이어 캐릭터**PC** 생성)
+* StatusView.md: 첨부 파일, 상태창 모듈
+* Ending.md: 첨부 파일, 엔딩 모듈
+
+## 사용법
+`시작`을 입력하여 새로운 세션을 시작합니다.
+세계 설정 후 `프롤로그 시작`을 통해 이야기가 시작됩니다.
+선택지 번호를 입력하거나, 당신의 문장을 입력하여 PC의 행동을 지시합니다.
+
+세계에서 PC의 장기 목표 달성을 위해 힘내 주세요!
