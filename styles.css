@@ -398,21 +398,20 @@ textarea {
 
 .status-guide {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px;
-  background: #f8faf7;
   color: var(--muted);
   font-size: 0.9rem;
 }
 
-.status-guide p {
+.status-note {
   margin: 0;
+  border-left: 4px solid var(--teal);
+  padding: 10px 12px;
+  background: rgba(31, 111, 104, 0.08);
 }
 
-.status-guide strong {
+.status-note strong {
   color: var(--ink);
 }
 

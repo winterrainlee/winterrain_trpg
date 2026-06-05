@@ -372,16 +372,16 @@ function renderDraft(draft, revision) {
         <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
         ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
       </div>
+      <p class="system-note">판정 기준: 1D20 + 보정치 ≥ DC 10~22. 장면 산문에서는 수치 대신 묘사로 표현합니다.</p>
       <div class="status-table">
         <div class="table-head"><span>상태</span><span>값</span><span>현재 의미</span></div>
         ${draft.status.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
       </div>
       <div class="status-guide">
-        <p><strong>건강 HP</strong>는 몸이 얼마나 버틸 수 있는지입니다. 낮아질수록 부상, 실신, 행동 제한이 가까워집니다.</p>
-        <p><strong>피로</strong>는 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
-        <p><strong>사기</strong>는 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
+        <p class="status-note"><strong>건강 HP</strong>는 몸이 얼마나 버틸 수 있는지입니다. 낮아질수록 부상, 실신, 행동 제한이 가까워집니다.</p>
+        <p class="status-note"><strong>피로</strong>는 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
+        <p class="status-note"><strong>사기</strong>는 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
       </div>
-      <p class="system-note">판정 기준: 1D20 + 보정치 ≥ DC 10~22. 장면 산문에서는 수치 대신 묘사로 표현합니다.</p>
       ${revision ? `<p class="revision-note">${revision}</p>` : ""}
     `;
   }
