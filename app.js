@@ -716,6 +716,8 @@ function compileWorldJson() {
   const prologue = getDraftById("prologue");
   const now = new Date().toISOString();
 
+  const initialKnownFacts = [goalsNpc.goals[1][1], prologue.text];
+
   return {
     schemaVersion: 1,
     savedAt: now,
@@ -767,7 +769,7 @@ function compileWorldJson() {
     })),
     prologueSeed: prologue.text,
     session: {
-      knownFacts: [state.world.promise, state.player.shortGoal, "프롤로그 seed가 준비되었다"],
+      knownFacts: initialKnownFacts,
       recentChange: "세션 준비 중",
       log: [],
     },
@@ -785,7 +787,7 @@ function renderState() {
 
 function beginSession() {
   const savedWorld = state.savedWorld?.world;
-  state.knownFacts = savedWorld?.session.knownFacts || [state.world.promise, state.player.shortGoal, "프롤로그 seed가 준비되었다"];
+  state.knownFacts = savedWorld?.session.knownFacts || [state.player.shortGoal, state.prologueSeed];
   state.recentChange = "프롤로그가 시작되었다";
   state.log = [];
 
