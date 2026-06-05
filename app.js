@@ -21,7 +21,7 @@ const pcProfiles = [
       ["CHA 매력", "11", "+0"],
     ],
     status: [
-      ["건강 HP", "70", "부상 없음"],
+      ["건강", "70", "부상 없음"],
       ["피로", "10", "긴장했지만 움직일 수 있음"],
       ["사기", "60", "불안 속에서도 진실을 알고 싶어 함"],
     ],
@@ -67,7 +67,7 @@ const pcProfiles = [
       ["CHA 매력", "10", "+0"],
     ],
     status: [
-      ["건강 HP", "76", "잔병치레 없이 버틸 수 있음"],
+      ["건강", "76", "잔병치레 없이 버틸 수 있음"],
       ["피로", "16", "밤새 병실을 돌본 여파가 있음"],
       ["사기", "55", "진실보다 피해를 줄이는 쪽으로 기울어 있음"],
     ],
@@ -113,7 +113,7 @@ const pcProfiles = [
       ["CHA 매력", "14", "+2"],
     ],
     status: [
-      ["건강 HP", "72", "가벼운 상처는 익숙함"],
+      ["건강", "72", "가벼운 상처는 익숙함"],
       ["피로", "8", "아직 몸이 가볍고 반응이 빠름"],
       ["사기", "64", "위험을 장난처럼 밀고 나갈 기세"],
     ],
@@ -159,7 +159,7 @@ const pcProfiles = [
       ["CHA 매력", "10", "+0"],
     ],
     status: [
-      ["건강 HP", "68", "무리한 이동에는 약함"],
+      ["건강", "68", "무리한 이동에는 약함"],
       ["피로", "14", "긴장하면 집중이 길어지는 대신 몸이 굳음"],
       ["사기", "58", "기록을 지켜야 한다는 책임감이 큼"],
     ],
@@ -205,7 +205,7 @@ const pcProfiles = [
       ["CHA 매력", "14", "+2"],
     ],
     status: [
-      ["건강 HP", "66", "큰 부상은 없지만 체력은 낮음"],
+      ["건강", "66", "큰 부상은 없지만 체력은 낮음"],
       ["피로", "12", "머리는 맑지만 몸은 쉽게 지침"],
       ["사기", "62", "의심이 오히려 앞으로 나아가게 함"],
     ],
@@ -340,27 +340,112 @@ function buildCharacterDraft(profile) {
     kind: "character",
     background: profile.background,
     fields: profile.fields,
+    goals: profile.goals,
+    npcs: profile.npcs,
     abilities: generated.abilities,
     abilityBalance: generated.balance,
     status: profile.status,
   };
 }
 
-function buildGoalsNpcDraft(profile) {
-  return {
-    kind: "goalsNpc",
-    goals: profile.goals,
-    npcs: profile.npcs,
-  };
-}
-
 function buildPrologueDraft(profile) {
   return {
     kind: "prologue",
+    shortTermGoal: profile.goals[1][1],
     ...profile.prologueMeta,
     summary: profile.prologue,
   };
 }
+
+const defaultSessionRules = {
+  source: ["prompt/Core.md", "prompt/Setup.md", "prompt/StatusView.md"],
+  checks: {
+    formula: "1D20 + ability.mod >= DC",
+    dcRange: { min: 10, max: 22 },
+    abilitySource: "player.abilities[*].mod",
+    difficultyMode: "easy",
+    easyMode: {
+      partialSuccessBias: true,
+      preserveCoreClues: true,
+      note: "쉬운 난이도에서는 실패해도 핵심 단서가 완전히 사라지지 않고, 비용/시간/상태 부담으로 전환한다.",
+    },
+    resolutionOrder: ["criticalFailure", "criticalSuccess", "success", "partialSuccess", "failure"],
+    resultBandsByDifficulty: {
+      쉬움: [
+        { key: "criticalSuccess", condition: "natural20 or total >= dc + 5", label: "대성공", effect: "목표 진행 또는 단서 품질을 크게 올린다." },
+        { key: "success", condition: "total >= dc", label: "성공", effect: "의도한 행동이 성립하고 장면이 전진한다." },
+        { key: "partialSuccess", condition: "dc - 4 <= total < dc", label: "부분 성공", effect: "핵심 정보는 얻되 피로, 시간, 관계, 위험 중 하나의 비용이 생긴다." },
+        { key: "failure", condition: "dc - 8 <= total <= dc - 5", label: "실패", effect: "행동은 빗나가지만 세계의 반응과 다음 실마리는 남긴다." },
+        { key: "criticalFailure", condition: "natural1 or total <= dc - 9", label: "대실패", effect: "상태 또는 관계에 뚜렷한 불이익을 주되, 추리의 필수 단서는 파괴하지 않는다." },
+      ],
+      보통: [
+        { key: "criticalSuccess", condition: "natural20 or total >= dc + 5", label: "대성공", effect: "목표 진행, 단서 품질, NPC 반응 중 하나를 크게 개선한다." },
+        { key: "success", condition: "total >= dc", label: "성공", effect: "의도한 행동이 성립하고 장면이 전진한다." },
+        { key: "partialSuccess", condition: "dc - 2 <= total < dc", label: "부분 성공", effect: "정보나 진전은 얻지만 분명한 비용이 생긴다." },
+        { key: "failure", condition: "dc - 7 <= total <= dc - 3", label: "실패", effect: "행동은 실패하고 피로, 사기, 관계, 시간 중 하나에 불이익이 생긴다." },
+        { key: "criticalFailure", condition: "natural1 or total <= dc - 8", label: "대실패", effect: "상태 또는 관계가 크게 악화되고 장면 압력이 상승한다." },
+      ],
+      어려움: [
+        { key: "criticalSuccess", condition: "natural20 and total >= dc or total >= dc + 7", label: "대성공", effect: "위험한 상황을 뚫고 결정적 진전을 얻는다." },
+        { key: "success", condition: "total >= dc", label: "성공", effect: "의도한 행동은 성립하지만 장면 압력은 유지될 수 있다." },
+        { key: "partialSuccess", condition: "total == dc - 1", label: "부분 성공", effect: "최소한의 진전만 얻고 뚜렷한 비용이 따른다." },
+        { key: "failure", condition: "dc - 6 <= total <= dc - 2", label: "실패", effect: "행동은 실패하고 다음 장면의 위험 또는 비용이 커진다." },
+        { key: "criticalFailure", condition: "natural1 or total <= dc - 7", label: "대실패", effect: "상태, 관계, 위치, 시간 중 하나가 크게 악화된다." },
+      ],
+    },
+    dcGuidelines: [
+      { dc: 10, label: "쉬움", examples: "명백한 흔적 확인, 우호 NPC에게 기본 질문" },
+      { dc: 13, label: "보통", examples: "압박 속 조사, 애매한 말투의 거짓 감지" },
+      { dc: 16, label: "어려움", examples: "감춰진 단서 연결, 적대 NPC 설득" },
+      { dc: 19, label: "매우 어려움", examples: "위험한 잠입, 결정적 모순 포착" },
+      { dc: 22, label: "극한", examples: "준비 없는 돌파, 강한 권위자 앞 정면 폭로" },
+    ],
+  },
+  status: {
+    hp: {
+      label: "건강",
+      range: [0, 100],
+      default: 70,
+      deathAt: 0,
+      rule: "0이 되면 자동 사망하고 Ending 모듈로 이동한다.",
+    },
+    fatigue: {
+      label: "피로",
+      range: [0, 20],
+      startingRange: [8, 12],
+      bands: [
+        { range: [0, 5], modifier: 1, appliesTo: "allChecks", note: "휴식이 충분해 전 판정 +1" },
+        { range: [6, 14], modifier: 0, appliesTo: "allChecks", note: "보정 없음" },
+        { range: [15, 18], modifier: -1, appliesTo: "allChecks", note: "피로 누적으로 전 판정 -1" },
+        { range: [19, 20], modifier: -1, appliesTo: "allChecks", turnEndHpLoss: 5, note: "전 판정 -1, 턴 종료 시 건강 -5" },
+      ],
+      recovery: { rest: -3, camp: -6, medicine: -4, food: -1 },
+    },
+    morale: {
+      label: "사기",
+      range: [0, 100],
+      default: 60,
+      startingRange: [50, 70],
+      bands: [
+        { range: [80, 100], modifier: 1, appliesTo: "allChecks", note: "기세가 올라 전 판정 +1" },
+        { range: [21, 79], modifier: 0, appliesTo: "allChecks", note: "보정 없음" },
+        { range: [0, 20], modifier: -1, appliesTo: "allChecks", note: "위축되어 전 판정 -1" },
+      ],
+      gain: { success: 5, goal: 10, npcPositive: 5, rest: 3, inspiration: 10 },
+      loss: { failure: -5, npcNegative: -15, badEvent: -10, fear: -20 },
+    },
+  },
+  goals: {
+    shortGoalCompleteWhen: "player.goals.progress.shortPercent == 100",
+    onShortGoalComplete: ["fatigue = min(fatigue, 10)", "completedShortGoals에 현재 단기 목표 기록", "새 단기 목표 생성", "shortPercent = 0"],
+    mainGoalCompleteWhen: "player.goals.progress.mainComplete == true",
+  },
+  narrationConstraints: {
+    hideNumbersInFiction: true,
+    allowedNumericSurfaces: ["rollBlock", "statusSummary", "statusView"],
+    turnOneSkipsRollBlock: true,
+  },
+};
 
 const setupSteps = [
   {
@@ -395,20 +480,8 @@ const setupSteps = [
     },
   },
   {
-    id: "promise",
-    mark: "③",
-    label: "장르 약속",
-    kicker: "Promise Card",
-    placeholder: "보장받고 싶은 재미나 피하고 싶은 전개를 적어주세요.",
-    draft: {
-      kind: "bullets",
-      title: "추리·수사",
-      bullets: ["범인은 시작 전에 존재한다", "단서는 공정하게 배치된다", "우연이나 초자연으로 해결하지 않는다", "플레이어의 추론을 빼앗지 않는다", "작은 성취는 세션에 남는다"],
-    },
-  },
-  {
     id: "pc",
-    mark: "④",
+    mark: "③",
     label: "PC 후보",
     kicker: "Player Character",
     placeholder: "후보를 더 평범하게, 더 정치적으로, 더 약하게 등 요청할 수 있습니다.",
@@ -420,42 +493,114 @@ const setupSteps = [
   },
   {
     id: "character",
-    mark: "⑤",
+    mark: "④",
     label: "캐릭터 상세",
     kicker: "Character Detail",
-    placeholder: "PC 배경, 말투, 능력치, 초기 상태를 더 구체적으로 조정할 수 있습니다.",
+    placeholder: "PC 배경, 말투, 능력치, 초기 상태, NPC 관계를 더 구체적으로 조정할 수 있습니다.",
     draft: buildCharacterDraft(pcProfiles[0]),
   },
   {
-    id: "goals-npc",
-    mark: "⑥",
-    label: "목표와 NPC",
-    kicker: "Goals / NPCs",
-    placeholder: "목표의 방향, NPC 관계, 태도, 말투, 비밀스러운 압력을 조정할 수 있습니다.",
-    draft: buildGoalsNpcDraft(pcProfiles[0]),
+    id: "promise",
+    mark: "⑤",
+    label: "세션 규칙",
+    kicker: "Session Rules",
+    placeholder: "장기 목표, 장르 약속, 난이도, 게임 오버 조건을 조정할 수 있습니다.",
+    draft: {
+      kind: "promise",
+      longTermGoal: pcProfiles[0].goals[0][1],
+      title: "추리·수사",
+      bullets: ["범인은 시작 전에 존재한다", "단서는 공정하게 배치된다", "우연이나 초자연으로 해결하지 않는다", "플레이어의 추론을 빼앗지 않는다", "작은 성취는 세션에 남는다"],
+      difficulty: [
+        ["플레이 난이도", "쉬움"],
+        ["판정 기준", "DC 10~22를 사용하되, 쉬운 난이도에서는 부분 성공과 단서 보존을 넉넉히 적용한다"],
+        ["톤과 난이도", "세계는 어둡더라도 플레이는 자주 작은 성취를 얻을 수 있다"],
+      ],
+      gameOver: [
+        ["자동 사망", "건강이 0이 되면 PC는 자동 사망하며 세션 종료 조건이 된다"],
+        ["목표 달성", "장기 목표가 달성되면 세션 엔딩으로 이동한다"],
+        ["중도 종료", "플레이어가 종료를 원하면 애프터 세션으로 이동한다"],
+      ],
+    },
   },
   {
     id: "prologue",
-    mark: "⑦",
+    mark: "⑥",
     label: "프롤로그",
     kicker: "Prologue Seed",
-    placeholder: "첫 장면의 시간, 장소, 상황 압력을 조정할 수 있습니다.",
+    placeholder: "첫 장면의 시간, 장소, 상황 압력, 단기 목표를 조정할 수 있습니다.",
     draft: buildPrologueDraft(pcProfiles[0]),
   },
 ];
 
+const initialPrologueDraft = setupSteps.find((step) => step.id === "prologue").draft;
+
 const setupState = {
   current: 0,
   selectedCandidateIndex: 0,
-  steps: setupSteps.map((step, index) => ({
+  steps: buildInitialSetupState(),
+};
+
+function buildInitialSetupState() {
+  return setupSteps.map((step, index) => ({
     id: step.id,
     draft: step.draft,
     status: index === 0 ? "drafted" : "locked",
     revision: "",
     saved: false,
     confirmed: false,
-  })),
-};
+  }));
+}
+
+function buildWorldDraftFromSeed(seed) {
+  const text = seed.trim();
+  const hasMystery = /추리|수사|사건|범인|단서/.test(text);
+  const hasPolitical = /정치|권력|의회|협상|파벌|배신/.test(text);
+  const hasThriller = /스릴러|위협|음모|배신|추적/.test(text);
+  const hasMedieval = /중세|수도원|기사|영주|교단/.test(text);
+  const hasNearFuture = /근미래|미래|사이버|우주|해저|도시/.test(text);
+  const hasUnderwater = /해저|심해|수중/.test(text);
+  const hasScarcity = /자원 부족|부족|고갈|식량|산소|전력/.test(text);
+  const hasDark = /어둡|암울|불안|폐쇄|비극/.test(text);
+  const wantsEasy = /쉬움|쉽|작은 승리|가볍|친절/.test(text);
+  const wantsHard = /어려움|가혹|하드|위험|높은 난이도/.test(text);
+  const place = hasUnderwater ? "근미래 해저 도시" : hasMedieval ? "현실 유럽 중세 수도원 변주" : "사용자 seed 기반의 원형 세계";
+  const genreParts = [];
+  if (hasMedieval) genreParts.push("중세");
+  if (hasNearFuture && !hasUnderwater) genreParts.push("근미래");
+  if (hasUnderwater) genreParts.push("해저 도시");
+  if (hasPolitical) genreParts.push("정치");
+  if (hasMystery) genreParts.push("추리·수사");
+  if (hasThriller) genreParts.push("스릴러");
+  const genre = genreParts.length ? genreParts.join(" ") : "사용자 정의 모험";
+  const tone = hasDark || hasThriller ? "불안과 압력이 강하지만 작은 성취가 남는 분위기" : "긴장과 회복이 함께 있는 분위기";
+  const difficulty = wantsHard ? "어려움" : wantsEasy ? "쉬움" : "보통";
+  const coreConflict = hasMystery
+    ? "닫힌 공동체 안에서 사라진 기록, 숨겨진 동기, 의심스러운 죽음이 얽힌 사건"
+    : hasPolitical || hasScarcity
+      ? "부족한 자원, 파벌 간 이해관계, 배신 가능성이 플레이어의 선택을 압박하는 갈등"
+    : "아직 말로 정리되지 않은 욕망과 위기가 플레이어의 첫 선택을 압박한다";
+
+  return {
+    frame: {
+      kind: "fields",
+      fields: [
+        ["장르", genre],
+        ["시대/기술", hasNearFuture ? "근미래" : hasMedieval ? "중세" : "seed에서 구체화 필요"],
+        ["참조 세계", place],
+        ["분위기", tone],
+        ["핵심 갈등", coreConflict],
+      ],
+    },
+    context: {
+      kind: "paragraph",
+      text:
+        `${text || "아직 seed가 비어 있다."} 이 seed를 바탕으로 세계는 첫 장면 전부터 압력을 품고 있다. ` +
+        `${hasMystery ? "사건의 진실은 플레이 전에 잠겨야 하며, 단서는 플레이어가 공정하게 발견할 수 있어야 한다. " : "AI 마스터는 사용자의 다음 요청을 통해 장르 약속을 더 좁혀야 한다. "}` +
+        `${tone} 세계 설정은 플레이를 제한하기보다 기대를 만들고, 이후 단계의 PC 후보와 프롤로그는 이 골격을 기준으로 제안된다.`,
+    },
+    difficulty,
+  };
+}
 
 const state = {
   player: {
@@ -472,12 +617,12 @@ const state = {
     promise: "추리·수사: 범인 있음, 공정 단서, 플레이어 추론 존중",
   },
   npcs: ["아벨 원장: 침묵하는 권위자", "마르타: 약초원 관리인", "토마스: 불안한 문지기"],
-  prologueSeed: setupSteps[6].draft.summary,
+  prologueSeed: initialPrologueDraft.summary,
   prologueMeta: {
-    sceneTitle: setupSteps[6].draft.sceneTitle,
-    date: setupSteps[6].draft.date,
-    time: setupSteps[6].draft.time,
-    place: setupSteps[6].draft.place,
+    sceneTitle: initialPrologueDraft.sceneTitle,
+    date: initialPrologueDraft.date,
+    time: initialPrologueDraft.time,
+    place: initialPrologueDraft.place,
   },
   knownFacts: ["아직 첫 장면이 시작되지 않았다"],
   recentChange: "세션 준비 중",
@@ -513,6 +658,29 @@ function renderDraft(draft, revision) {
     return `<h4>${draft.title}</h4><ul class="draft-bullets">${draft.bullets.map((item) => `<li>${item}</li>`).join("")}</ul>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
+  if (draft.kind === "promise") {
+    return `
+      <section class="draft-section">
+        <h4>장기 목표</h4>
+        <p class="draft-context">${draft.longTermGoal}</p>
+      </section>
+      <section class="draft-section">
+        <h4>장르 약속</h4>
+        <h5>${draft.title}</h5>
+        <ul class="draft-bullets">${draft.bullets.map((item) => `<li>${item}</li>`).join("")}</ul>
+      </section>
+      <section class="draft-section">
+        <h4>난이도</h4>
+        <dl class="draft-list">${draft.difficulty.map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join("")}</dl>
+      </section>
+      <section class="draft-section">
+        <h4>게임 오버 조건</h4>
+        <dl class="draft-list">${draft.gameOver.map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join("")}</dl>
+      </section>
+      ${revision ? `<p class="revision-note">${revision}</p>` : ""}
+    `;
+  }
+
   if (draft.kind === "candidates") {
     return `<div class="candidate-list">${draft.candidates
       .map((candidate, index) => `<button type="button" data-candidate-index="${index}" class="${index === draft.selectedIndex ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
@@ -521,52 +689,64 @@ function renderDraft(draft, revision) {
 
   if (draft.kind === "character") {
     return `
-      <p class="draft-context">${draft.background}</p>
-      <dl class="draft-list character-fields">${draft.fields
-        .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
-        .join("")}</dl>
-      <div class="ability-table">
-        <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
-        ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
-      </div>
-      <p class="balance-note">보정치 균형 검사 통과: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
-      <p class="system-note">판정 기준: 1D20 + 보정치 ≥ DC 10~22. 장면 산문에서는 수치 대신 묘사로 표현합니다.</p>
-      <div class="status-table">
-        <div class="table-head"><span>상태</span><span>값</span><span>현재 의미</span></div>
-        ${draft.status.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
-      </div>
-      <div class="status-guide">
-        <p class="status-note"><strong>건강 HP</strong>는 몸이 얼마나 버틸 수 있는지입니다. 낮아질수록 부상, 실신, 행동 제한이 가까워집니다.</p>
-        <p class="status-note"><strong>피로</strong>는 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
-        <p class="status-note"><strong>사기</strong>는 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
-      </div>
-      ${revision ? `<p class="revision-note">${revision}</p>` : ""}
-    `;
-  }
-
-  if (draft.kind === "goalsNpc") {
-    return `
-      <dl class="draft-list">${draft.goals
-        .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
-        .join("")}</dl>
-      <div class="npc-table with-speech">
-        <div class="table-head"><span>이름</span><span>역할</span><span>관계·태그</span><span>말투</span><span>관계치</span></div>
-        ${draft.npcs
-          .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
-        .join("")}</div>
+      <section class="draft-section">
+        <h4>간단 소개</h4>
+        <p class="draft-context">${draft.background}</p>
+      </section>
+      <section class="draft-section">
+        <h4>특성</h4>
+        <dl class="draft-list character-fields">${draft.fields
+          .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
+          .join("")}</dl>
+      </section>
+      <section class="draft-section">
+        <h4>능력치</h4>
+        <div class="ability-table">
+          <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
+          ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
+        </div>
+        <p class="balance-note">보정치 균형 검사 통과: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
+        <p class="system-note">매턴 판정 시 1D20 주사위 값에 보정치를 더해 DC 10~22와 비교합니다. 난이도에 따라 같은 수치라도 성공, 부분 성공, 실패의 결과 폭이 달라집니다.</p>
+      </section>
+      <section class="draft-section">
+        <h4>초기 상태</h4>
+        <div class="status-table">
+          <div class="table-head"><span>상태</span><span>수치</span><span>현재 의미</span></div>
+          ${draft.status.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
+        </div>
+        <div class="status-guide">
+          <p class="status-note"><strong>건강</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다.</p>
+          <p class="status-note"><strong>피로</strong>는 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
+          <p class="status-note"><strong>사기</strong>는 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
+        </div>
+      </section>
+      <section class="draft-section">
+        <h4>NPC</h4>
+        <div class="npc-table with-speech">
+          <div class="table-head"><span>이름</span><span>역할</span><span>관계·태그</span><span>말투</span><span>관계치</span></div>
+          ${draft.npcs
+            .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
+          .join("")}</div>
+      </section>
       ${revision ? `<p class="revision-note">${revision}</p>` : ""}
     `;
   }
 
   if (draft.kind === "prologue") {
     return `
-      <dl class="draft-list">
+      <section class="draft-section">
+      <dl class="draft-list prologue-fields">
+        <div><dt>단기 목표</dt><dd>${draft.shortTermGoal}</dd></div>
         <div><dt>장면 제목</dt><dd>${draft.sceneTitle}</dd></div>
         <div><dt>날짜</dt><dd>${draft.date}</dd></div>
         <div><dt>시각</dt><dd>${draft.time}</dd></div>
         <div><dt>장소</dt><dd>${draft.place}</dd></div>
       </dl>
+      </section>
+      <section class="draft-section">
+      <h4>전개</h4>
       <p class="draft-context prologue-summary">${draft.summary}</p>
+      </section>
       ${revision ? `<p class="revision-note">${revision}</p>` : ""}
     `;
   }
@@ -614,15 +794,12 @@ function renderSetup() {
   document.querySelector("#revisionRequest").value = "";
 
   document.querySelectorAll("[data-candidate-index]").forEach((button) => {
-    button.addEventListener("click", () => selectCandidate(Number(button.dataset.candidateIndex)));
+    button.addEventListener("click", () => previewCandidate(Number(button.dataset.candidateIndex)));
   });
 
   const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
   const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
-  document.querySelector("#reselectPc").hidden = !(setupState.steps[pcStepIndex].confirmed && setupState.current >= characterStepIndex);
-  document.querySelector("#prevStep").disabled = setupState.current === 0;
-  document.querySelector("#nextStep").textContent = setupState.current === setupSteps.length - 1 ? "프롤로그 준비" : "다음 단계로";
-  document.querySelector("#nextStep").disabled = !currentState.confirmed;
+  document.querySelector("#reselectPc").hidden = !(setupState.steps[pcStepIndex].confirmed && setupState.current === characterStepIndex);
   document.querySelector("#startSession").disabled = !setupState.steps.every((step) => step.confirmed);
 }
 
@@ -633,17 +810,38 @@ function saveCurrentStep() {
   renderSetup();
 }
 
+function applyWorldSeed() {
+  const seed = document.querySelector("#worldSeed").value;
+  const draft = buildWorldDraftFromSeed(seed);
+  const frameStepIndex = setupSteps.findIndex((step) => step.id === "frame");
+  const contextStepIndex = setupSteps.findIndex((step) => step.id === "context");
+  const promiseStepIndex = setupSteps.findIndex((step) => step.id === "promise");
+
+  setupSteps[frameStepIndex].draft = draft.frame;
+  setupSteps[contextStepIndex].draft = draft.context;
+  setupSteps[promiseStepIndex].draft.difficulty = [
+    ["플레이 난이도", draft.difficulty],
+    ["판정 기준", `DC 10~22를 사용하되, ${draft.difficulty} 난이도에 맞는 대성공/성공/부분 성공/실패/대실패 기준을 적용한다`],
+    ["톤과 난이도", draft.difficulty === "어려움" ? "세계의 압력과 실패 비용이 선명하지만, 핵심 단서는 공정하게 남긴다" : "세계가 어둡더라도 플레이는 작은 성취와 다음 실마리를 자주 얻을 수 있다"],
+  ];
+
+  setupState.current = frameStepIndex;
+  setupState.steps = buildInitialSetupState();
+  state.savedWorld = null;
+  renderSetup();
+}
+
 function applyCandidate(index) {
   const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
   const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
-  const goalsNpcStepIndex = setupSteps.findIndex((step) => step.id === "goals-npc");
+  const promiseStepIndex = setupSteps.findIndex((step) => step.id === "promise");
   const prologueStepIndex = setupSteps.findIndex((step) => step.id === "prologue");
   const selected = pcProfiles[index];
 
   setupState.selectedCandidateIndex = index;
   setupState.steps[pcStepIndex].draft.selectedIndex = index;
   setupState.steps[characterStepIndex].draft = buildCharacterDraft(selected);
-  setupState.steps[goalsNpcStepIndex].draft = buildGoalsNpcDraft(selected);
+  setupState.steps[promiseStepIndex].draft.longTermGoal = selected.goals[0][1];
   setupState.steps[prologueStepIndex].draft = buildPrologueDraft(selected);
 
   state.player.role = selected.role;
@@ -667,9 +865,10 @@ function applyCandidate(index) {
   renderState();
 }
 
-function selectCandidate(index) {
-  applyCandidate(index);
-  setupState.current = setupSteps.findIndex((step) => step.id === "character");
+function previewCandidate(index) {
+  const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
+  setupState.selectedCandidateIndex = index;
+  setupState.steps[pcStepIndex].draft.selectedIndex = index;
   renderSetup();
 }
 
@@ -687,15 +886,56 @@ function reselectCandidate() {
   renderSetup();
 }
 
+function resetSetup() {
+  if (!window.confirm("세계 골격부터 다시 시작합니다. 현재 초안과 저장 전 설정은 사라집니다.")) return;
+
+  const firstProfile = pcProfiles[0];
+  const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
+  const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
+  const promiseStepIndex = setupSteps.findIndex((step) => step.id === "promise");
+  const prologueStepIndex = setupSteps.findIndex((step) => step.id === "prologue");
+
+  setupSteps[pcStepIndex].draft.selectedIndex = 0;
+  setupSteps[characterStepIndex].draft = buildCharacterDraft(firstProfile);
+  setupSteps[promiseStepIndex].draft.longTermGoal = firstProfile.goals[0][1];
+  setupSteps[prologueStepIndex].draft = buildPrologueDraft(firstProfile);
+
+  setupState.current = 0;
+  setupState.selectedCandidateIndex = 0;
+  setupState.steps = buildInitialSetupState();
+  state.player.role = firstProfile.role;
+  state.player.goal = firstProfile.goals[0][1];
+  state.player.shortGoal = firstProfile.goals[1][1];
+  state.player.hp = firstProfile.playerState.hp;
+  state.player.fatigue = firstProfile.playerState.fatigue;
+  state.player.morale = firstProfile.playerState.morale;
+  state.npcs = firstProfile.npcs.map(([name, role, relation]) => `${name}: ${role}, ${relation}`);
+  state.prologueSeed = firstProfile.prologue;
+  state.prologueMeta = { ...firstProfile.prologueMeta };
+  state.knownFacts = ["아직 첫 장면이 시작되지 않았다"];
+  state.recentChange = "세션 준비 중";
+  state.log = [];
+  state.savedWorld = null;
+
+  renderState();
+  renderSetup();
+}
+
 function confirmCurrentStep() {
   if (setupSteps[setupState.current].id === "pc") {
-    selectCandidate(setupState.selectedCandidateIndex);
+    applyCandidate(setupState.selectedCandidateIndex);
+    setupState.current = setupSteps.findIndex((step) => step.id === "character");
+    renderSetup();
     return;
   }
 
   const current = setupState.steps[setupState.current];
   current.confirmed = true;
   current.status = "confirmed";
+  if (setupState.current < setupSteps.length - 1) {
+    setupState.current += 1;
+    if (setupState.steps[setupState.current].status === "locked") setupState.steps[setupState.current].status = "drafted";
+  }
   renderSetup();
 }
 
@@ -703,7 +943,7 @@ function reviseCurrentStep() {
   const input = document.querySelector("#revisionRequest");
   const request = input.value.trim();
   const current = setupState.steps[setupState.current];
-  current.revision = request ? `수정 요청 반영: ${request}` : "수정 요청 반영: 현재 초안을 조금 더 정돈했습니다.";
+  current.revision = request ? `요청 반영: ${request}` : "요청 반영: 현재 초안을 조금 더 정돈했습니다.";
   current.status = "drafted";
   current.confirmed = false;
   for (let index = setupState.current + 1; index < setupState.steps.length; index += 1) {
@@ -716,15 +956,6 @@ function reviseCurrentStep() {
   renderSetup();
 }
 
-function moveStep(delta) {
-  const next = Math.max(0, Math.min(setupSteps.length - 1, setupState.current + delta));
-  if (delta > 0 && setupState.current === setupSteps.length - 1) return;
-  if (delta > 0 && !setupState.steps[setupState.current].confirmed) return;
-  setupState.current = next;
-  if (setupState.steps[next].status === "locked") setupState.steps[next].status = "drafted";
-  renderSetup();
-}
-
 function getDraftById(id) {
   const index = setupSteps.findIndex((step) => step.id === id);
   return setupState.steps[index].draft;
@@ -732,6 +963,20 @@ function getDraftById(id) {
 
 function fieldValue(fields, label) {
   return fields.find(([term]) => term === label)?.[1] || "";
+}
+
+function initialGoalProgress(progressText) {
+  const numbers = [...String(progressText).matchAll(/(\d+)%/g)].map((match) => Number(match[1]));
+  return {
+    shortPercent: numbers[0] || 0,
+    completedShort: [],
+    globalPercent: numbers[1] || 0,
+    mainComplete: false,
+  };
+}
+
+function activeDifficultyRules(difficulty) {
+  return defaultSessionRules.checks.resultBandsByDifficulty[difficulty] || defaultSessionRules.checks.resultBandsByDifficulty["보통"];
 }
 
 function todayKey() {
@@ -767,18 +1012,19 @@ function compileWorldJson() {
   const worldFrame = getDraftById("frame");
   const promise = getDraftById("promise");
   const character = getDraftById("character");
-  const goalsNpc = getDraftById("goals-npc");
   const prologue = getDraftById("prologue");
   const now = new Date().toISOString();
+  const difficulty = Object.fromEntries(promise.difficulty)["플레이 난이도"];
 
   const prologueStart = {
+    shortTermGoal: prologue.shortTermGoal,
     sceneTitle: prologue.sceneTitle,
     date: prologue.date,
     time: prologue.time,
     place: prologue.place,
     summary: prologue.summary,
   };
-  const initialKnownFacts = [goalsNpc.goals[1][1], prologueStart.summary];
+  const initialKnownFacts = [prologue.shortTermGoal, prologueStart.summary];
 
   return {
     schemaVersion: 1,
@@ -796,8 +1042,19 @@ function compileWorldJson() {
       coreConflict: fieldValue(worldFrame.fields, "핵심 갈등"),
       context: getDraftById("context").text,
       promiseCard: {
+        longTermGoal: promise.longTermGoal,
         title: promise.title,
         promises: promise.bullets,
+        difficulty: Object.fromEntries(promise.difficulty),
+        gameOver: Object.fromEntries(promise.gameOver),
+      },
+    },
+    rules: {
+      ...defaultSessionRules,
+      checks: {
+        ...defaultSessionRules.checks,
+        difficultyMode: difficulty,
+        activeResultBands: activeDifficultyRules(difficulty),
       },
     },
     player: {
@@ -817,12 +1074,12 @@ function compileWorldJson() {
         morale: state.player.morale,
       },
       goals: {
-        longTerm: goalsNpc.goals[0][1],
-        shortTerm: goalsNpc.goals[1][1],
-        progress: goalsNpc.goals[2][1],
+        longTerm: promise.longTermGoal,
+        shortTerm: prologue.shortTermGoal,
+        progress: initialGoalProgress(fieldValue(character.goals, "진행 표시")),
       },
     },
-    npcs: goalsNpc.npcs.map(([name, role, relationTags, speech, relationshipScore]) => ({
+    npcs: character.npcs.map(([name, role, relationTags, speech, relationshipScore]) => ({
       name,
       role,
       relationTags,
@@ -984,10 +1241,10 @@ function renderAfter() {
 
 tabs.forEach((tab) => tab.addEventListener("click", () => showTab(tab.dataset.tab)));
 
-document.querySelector("#prevStep").addEventListener("click", () => moveStep(-1));
-document.querySelector("#nextStep").addEventListener("click", () => moveStep(1));
+document.querySelector("#applyWorldSeed").addEventListener("click", applyWorldSeed);
 document.querySelector("#saveStep").addEventListener("click", saveCurrentStep);
 document.querySelector("#reselectPc").addEventListener("click", reselectCandidate);
+document.querySelector("#resetSetup").addEventListener("click", resetSetup);
 document.querySelector("#reviseStep").addEventListener("click", reviseCurrentStep);
 document.querySelector("#confirmStep").addEventListener("click", confirmCurrentStep);
 document.querySelector("#startSession").addEventListener("click", startSession);

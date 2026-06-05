@@ -142,6 +142,58 @@ Rules:
     },
     "context": ""
   },
+  "rules": {
+    "source": ["prompt/Core.md", "prompt/Setup.md", "prompt/StatusView.md"],
+    "checks": {
+      "formula": "1D20 + ability.mod >= DC",
+      "dcRange": {"min": 10, "max": 22},
+      "difficultyMode": "easy",
+      "easyMode": {
+        "partialSuccessBias": true,
+        "preserveCoreClues": true
+      },
+      "resolutionOrder": ["criticalFailure", "criticalSuccess", "success", "partialSuccess", "failure"],
+      "activeResultBands": [],
+      "resultBandsByDifficulty": {
+        "쉬움": [
+          {"key": "criticalSuccess", "condition": "natural20 or total >= dc + 5"},
+          {"key": "success", "condition": "total >= dc"},
+          {"key": "partialSuccess", "condition": "dc - 4 <= total < dc"},
+          {"key": "failure", "condition": "dc - 8 <= total <= dc - 5"},
+          {"key": "criticalFailure", "condition": "natural1 or total <= dc - 9"}
+        ],
+        "보통": [
+          {"key": "criticalSuccess", "condition": "natural20 or total >= dc + 5"},
+          {"key": "success", "condition": "total >= dc"},
+          {"key": "partialSuccess", "condition": "dc - 2 <= total < dc"},
+          {"key": "failure", "condition": "dc - 7 <= total <= dc - 3"},
+          {"key": "criticalFailure", "condition": "natural1 or total <= dc - 8"}
+        ],
+        "어려움": [
+          {"key": "criticalSuccess", "condition": "natural20 and total >= dc or total >= dc + 7"},
+          {"key": "success", "condition": "total >= dc"},
+          {"key": "partialSuccess", "condition": "total == dc - 1"},
+          {"key": "failure", "condition": "dc - 6 <= total <= dc - 2"},
+          {"key": "criticalFailure", "condition": "natural1 or total <= dc - 7"}
+        ]
+      },
+      "dcGuidelines": []
+    },
+    "status": {
+      "hp": {"range": [0, 100], "default": 70, "deathAt": 0},
+      "fatigue": {"range": [0, 20], "startingRange": [8, 12], "bands": [], "recovery": {}},
+      "morale": {"range": [0, 100], "default": 60, "startingRange": [50, 70], "bands": [], "gain": {}, "loss": {}}
+    },
+    "goals": {
+      "shortGoalCompleteWhen": "player.goals.progress.shortPercent == 100",
+      "mainGoalCompleteWhen": "player.goals.progress.mainComplete == true"
+    },
+    "narrationConstraints": {
+      "hideNumbersInFiction": true,
+      "allowedNumericSurfaces": ["rollBlock", "statusSummary", "statusView"],
+      "turnOneSkipsRollBlock": true
+    }
+  },
   "player": {
     "name": "",
     "background": "",
@@ -191,19 +243,19 @@ Current shell layout:
 ```text
 left rail:
   world seed
+  [세계 seed 적용]
   ① 세계 골격
   ② 세계 맥락
-  ③ 장르 약속
-  ④ PC 후보
-  ⑤ 캐릭터 상세
-  ⑥ 목표와 NPC
-  ⑦ 프롤로그
+  ③ PC 후보
+  ④ 캐릭터 상세
+  ⑤ 세션 규칙
+  ⑥ 프롤로그
+  [설정 초기화]
 
 right stage:
-  [이전 단계] [임시 저장] [다음 단계로]
   current step draft
-  revision request input
-  [수정 반영] [공식 설정으로 확정]
+  request input + [수정 반영]
+  right-aligned [임시 저장] [설정 확정]
 ```
 
 ### Setup Steps
@@ -212,11 +264,10 @@ right stage:
 | --- | --- | --- |
 | `① 세계 골격` | seed를 장르, 시대, 참조 세계, 톤, 핵심 갈등으로 정리 | `worldFrame` draft |
 | `② 세계 맥락` | 정치/문화/권력/현재 긴장 상태를 1~2단락으로 구체화 | `worldContext` draft |
-| `③ 장르 약속` | 이번 세션에서 보장할 재미와 금지할 해결 방식을 확정 | `promiseCard` draft |
-| `④ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
-| `⑤ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, HP/피로/사기를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status` |
-| `⑥ 목표와 NPC` | 장기/단기 목표와 2~3명의 핵심 NPC, 관계, 태도, 말투 생성 | `goals`, `npcs` draft |
-| `⑦ 프롤로그` | 첫 장면의 제목, 날짜, 시각, 장소, 상황 압력을 간략히 준비 | `prologue` |
+| `③ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
+| `④ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, 건강/피로/사기, 핵심 NPC를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status`, `npcs` |
+| `⑤ 세션 규칙` | 장기 목표, 장르 약속, 난이도, 게임 오버 조건을 프롤로그 직전 확정 | `player.goals.longTerm`, `promiseCard`, `difficulty`, `gameOver` |
+| `⑥ 프롤로그` | 단기 목표와 첫 장면의 제목, 날짜, 시각, 장소, 상황 압력을 간략히 준비 | `player.goals.shortTerm`, `prologue` |
 
 ### Setup Wizard Flow
 
@@ -230,12 +281,12 @@ flowchart TD
   F --> D
   E -->|"임시 저장"| G["Save draft<br/>status = saved"]
   G --> D
-  E -->|"공식 설정으로 확정"| H["Commit step confirmed"]
-  E -->|"PC 후보 선택"| P["Commit PC candidate<br/>open 캐릭터 상세"]
+  E -->|"설정 확정"| H["Commit step confirmed"]
+  E -->|"PC 후보 선택"| P["Mark selected candidate<br/>stay on PC 후보"]
   P --> B
   H --> I{"All steps confirmed?"}
-  I -->|No| J["Enable 다음 단계로"]
-  J --> D
+  I -->|No| J["Auto-open next step"]
+  J --> B
   I -->|Yes| K["Enable 프롤로그 시작"]
   K --> L["SessionCompiler creates SessionState"]
 ```
@@ -243,13 +294,16 @@ flowchart TD
 ### Setup Rules
 
 - Setup is allowed to be conversational and revisable.
+- `세계 seed 적용` converts the user's seed into the first world frame/context draft and marks setup from `① 세계 골격` as unconfirmed again.
 - A revision request updates only the current step draft.
 - `임시 저장` preserves the draft but does not make it canonical.
-- `공식 설정으로 확정` copies the draft into confirmed setup state.
-- `다음 단계로` is navigation only and should be enabled only after the current step is confirmed.
-- In `④ PC 후보`, choosing a candidate confirms that step and immediately opens `⑤ 캐릭터 상세`.
-- `⑤ 캐릭터 상세` owns the player's deeper background, speech style, values, strengths/flaws, six abilities, modifiers, and HP/fatigue/morale.
-- `⑥ 목표와 NPC` owns goals and the initial relationship network together because goals become meaningful through people and pressure.
+- `설정 확정` copies the draft into confirmed setup state and automatically opens the next step.
+- In `③ PC 후보`, choosing a candidate only marks the selected card. `설정 확정` commits the candidate and opens `④ 캐릭터 상세`.
+- `PC 다시 선택` is visible only in `④ 캐릭터 상세`, where the user can still naturally reject the selected PC before session rules and prologue are locked.
+- `설정 초기화` is a global destructive action in the left rail. It returns setup to `① 세계 골격`, clears unconfirmed setup state, and requires confirmation.
+- `④ 캐릭터 상세` owns the player's deeper background, speech style, values, strengths/flaws, six abilities, modifiers, health/fatigue/morale, and the initial relationship network.
+- `⑤ 세션 규칙` locks the long-term goal, genre promises, play difficulty, and game-over conditions immediately before prologue.
+- `⑥ 프롤로그` owns the short-term goal together with the first scene seed.
 - A confirmed step becomes the source for later prompts.
 - The app should expose progress clearly through circled-number navigation and per-step status.
 - `프롤로그 시작` should remain disabled until all required setup steps are confirmed.

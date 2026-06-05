@@ -36,18 +36,14 @@
                 <span>세계 seed</span>
                 <textarea id="worldSeed">중세 수도원 추리. 어둡지만 플레이 난이도는 쉽고, 작은 승리는 남았으면 좋겠다.</textarea>
               </label>
+              <button id="applyWorldSeed" class="primary-action setup-seed-action" type="button">세계 seed 적용</button>
               <ol id="setupSteps" class="setup-steps" aria-label="Setup checkpoints">
                 <li></li>
               </ol>
+              <button id="resetSetup" class="danger-action setup-reset" type="button">설정 초기화</button>
             </aside>
 
             <section class="setup-stage" aria-live="polite">
-              <div class="setup-nav">
-                <button id="prevStep" class="secondary-action" type="button">이전 단계</button>
-                <button id="saveStep" class="secondary-action" type="button">임시 저장</button>
-                <button id="nextStep" class="primary-action" type="button">다음 단계로</button>
-              </div>
-
               <article class="step-card">
                 <div class="step-card-head">
                   <div>
@@ -59,15 +55,20 @@
 
                 <div id="stepDraft" class="step-draft"></div>
 
-                <label class="revision-box">
-                  <span>수정 요청</span>
-                  <textarea id="revisionRequest" placeholder="예: 수도원을 더 폐쇄적으로. 대신 플레이 난이도는 더 쉽게."></textarea>
-                </label>
+                <div class="revision-row">
+                  <label class="revision-box">
+                    <span>요청 입력</span>
+                    <textarea id="revisionRequest" placeholder="예: 수도원을 더 폐쇄적으로. 대신 플레이 난이도는 더 쉽게."></textarea>
+                  </label>
+                  <div class="revision-actions">
+                    <button id="reselectPc" class="secondary-action" type="button" hidden>PC 다시 선택</button>
+                    <button id="reviseStep" class="secondary-action" type="button">수정 반영</button>
+                  </div>
+                </div>
 
                 <div class="step-actions">
-                  <button id="reselectPc" class="secondary-action" type="button" hidden>PC 다시 선택</button>
-                  <button id="reviseStep" class="secondary-action" type="button">수정 반영</button>
-                  <button id="confirmStep" class="primary-action" type="button">공식 설정으로 확정</button>
+                  <button id="saveStep" class="secondary-action" type="button">임시 저장</button>
+                  <button id="confirmStep" class="primary-action" type="button">설정 확정</button>
                 </div>
               </article>
             </section>
