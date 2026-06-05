@@ -1,7 +1,10 @@
 const pcProfiles = [
   {
     summary: "엘리안 - 젊은 필사 보조원 / 관찰력과 끈기 / 권위 앞에서 위축됨",
-    role: "엘리안, 젊은 필사 보조원",
+    name: "엘리안",
+    gender: "남성",
+    age: "19세",
+    role: "젊은 필사 보조원",
     background:
       "엘리안은 수도원 필사실에서 장부 정리와 필사 보조를 맡아 왔다. 그는 종소리, 잉크 냄새, 책상 배치처럼 남들이 지나치는 변화를 오래 기억하지만, 높은 직위의 수도사가 말하면 쉽게 물러선다.",
     fields: [
@@ -47,7 +50,10 @@ const pcProfiles = [
   },
   {
     summary: "마르타 - 약초원 관리인 / 실용성과 기억력 / 비밀을 혼자 짊어짐",
-    role: "마르타, 약초원 관리인",
+    name: "마르타",
+    gender: "여성",
+    age: "32세",
+    role: "약초원 관리인",
     background:
       "마르타는 수도원의 약초원과 병실을 오가며 사람들의 통증과 거짓말을 함께 보아 왔다. 누가 언제 다쳤고 어떤 냄새가 옷에 남는지 잘 기억하지만, 자신이 숨겨 온 작은 거래가 드러날까 봐 쉽게 마음을 열지 않는다.",
     fields: [
@@ -93,7 +99,10 @@ const pcProfiles = [
   },
   {
     summary: "요한 - 외부 심부름꾼 / 발 빠름과 붙임성 / 규칙을 가볍게 봄",
-    role: "요한, 외부 심부름꾼",
+    name: "요한",
+    gender: "남성",
+    age: "24세",
+    role: "외부 심부름꾼",
     background:
       "요한은 수도원 안팎의 심부름을 맡으며 문지기, 시장 상인, 하급 수도사와 두루 말을 텄다. 닫힌 문을 돌아가는 길을 잘 찾지만, 규칙을 가볍게 넘긴 전력이 있어 사건이 커지면 가장 먼저 의심받기 쉽다.",
     fields: [
@@ -139,7 +148,10 @@ const pcProfiles = [
   },
   {
     summary: "베네딕트 - 문서 보관인 / 기록 지식과 신중함 / 행동이 늦음",
-    role: "베네딕트, 문서 보관인",
+    name: "베네딕트",
+    gender: "남성",
+    age: "46세",
+    role: "문서 보관인",
     background:
       "베네딕트는 오래된 장부와 봉인 문서의 분류 규칙을 누구보다 잘 안다. 그는 기록의 빈칸과 서체 변화를 읽어내지만, 모든 가능성을 확인하려다 결정적인 순간에 몸이 늦게 움직인다.",
     fields: [
@@ -185,7 +197,10 @@ const pcProfiles = [
   },
   {
     summary: "리나 - 견습 서기 / 언변과 계산력 / 의심이 많음",
-    role: "리나, 견습 서기",
+    name: "리나",
+    gender: "여성",
+    age: "21세",
+    role: "견습 서기",
     background:
       "리나는 숫자와 말의 빈틈을 빨리 잡아내는 견습 서기다. 후원금 계산과 식량 장부를 베껴 쓰며 수도원의 현실적인 균열을 보았지만, 쉽게 믿지 않는 성격 때문에 도움을 받을 순간에도 먼저 상대를 시험한다.",
     fields: [
@@ -338,6 +353,10 @@ function buildCharacterDraft(profile) {
   const generated = generateAbilities(profile);
   return {
     kind: "character",
+    name: profile.name,
+    gender: profile.gender,
+    age: profile.age,
+    role: profile.role,
     background: profile.background,
     fields: profile.fields,
     goals: profile.goals,
@@ -604,7 +623,8 @@ function buildWorldDraftFromSeed(seed) {
 
 const state = {
   player: {
-    role: "엘리안, 젊은 필사 보조원",
+    name: "엘리안",
+    role: "젊은 필사 보조원",
     goal: "사라진 장부와 의문사의 진실을 밝힌다",
     shortGoal: "봉인된 필사실 주변의 첫 단서를 확인한다",
     hp: 70,
@@ -691,6 +711,12 @@ function renderDraft(draft, revision) {
     return `
       <section class="draft-section">
         <h4>간단 소개</h4>
+        <dl class="draft-list identity-list">
+          <div><dt>이름</dt><dd>${draft.name}</dd></div>
+          <div><dt>성별</dt><dd>${draft.gender}</dd></div>
+          <div><dt>나이</dt><dd>${draft.age}</dd></div>
+          <div><dt>역할</dt><dd>${draft.role}</dd></div>
+        </dl>
         <p class="draft-context">${draft.background}</p>
       </section>
       <section class="draft-section">
@@ -734,7 +760,9 @@ function renderDraft(draft, revision) {
 
   if (draft.kind === "prologue") {
     return `
+      ${renderPrologueReview(draft)}
       <section class="draft-section">
+      <h4>프롤로그</h4>
       <dl class="draft-list prologue-fields">
         <div><dt>단기 목표</dt><dd>${draft.shortTermGoal}</dd></div>
         <div><dt>장면 제목</dt><dd>${draft.sceneTitle}</dd></div>
@@ -758,6 +786,47 @@ function renderDraft(draft, revision) {
   }
 
   return `<p class="draft-context">${draft.text}</p>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+}
+
+function compactNpcs(npcs) {
+  return npcs.map(([name, role, relationTags]) => `${name}(${role}, ${relationTags})`).join(" / ");
+}
+
+function renderPrologueReview(draft) {
+  const frame = getDraftById("frame");
+  const character = getDraftById("character");
+  const promise = getDraftById("promise");
+  const difficulty = Object.fromEntries(promise.difficulty);
+  const gameOver = Object.fromEntries(promise.gameOver);
+
+  return `
+      <section class="draft-section review-section">
+        <h4>설정 요약</h4>
+        <dl class="draft-list review-list">
+          <div><dt>장르</dt><dd>${fieldValue(frame.fields, "장르")}</dd></div>
+          <div><dt>시대/배경</dt><dd>${fieldValue(frame.fields, "시대/기술")} / ${fieldValue(frame.fields, "참조 세계")}</dd></div>
+          <div><dt>분위기</dt><dd>${fieldValue(frame.fields, "분위기")}</dd></div>
+          <div><dt>핵심 갈등</dt><dd>${fieldValue(frame.fields, "핵심 갈등")}</dd></div>
+          <div><dt>장기 목표</dt><dd>${promise.longTermGoal}</dd></div>
+          <div><dt>단기 목표</dt><dd>${draft.shortTermGoal}</dd></div>
+          <div><dt>난이도</dt><dd>${difficulty["플레이 난이도"]}</dd></div>
+          <div><dt>게임 오버</dt><dd>${gameOver["자동 사망"]} / ${gameOver["목표 달성"]}</dd></div>
+        </dl>
+      </section>
+      <section class="draft-section review-section">
+        <h4>캐릭터 요약</h4>
+        <dl class="draft-list review-list">
+          <div><dt>이름</dt><dd>${character.name}</dd></div>
+          <div><dt>성별/나이</dt><dd>${character.gender} / ${character.age}</dd></div>
+          <div><dt>역할</dt><dd>${character.role}</dd></div>
+          <div><dt>말투</dt><dd>${fieldValue(character.fields, "말투")}</dd></div>
+          <div><dt>가치관</dt><dd>${fieldValue(character.fields, "가치관")}</dd></div>
+          <div><dt>강점/결함</dt><dd>${fieldValue(character.fields, "강점")} / ${fieldValue(character.fields, "결함")}</dd></div>
+          <div><dt>초기 상태</dt><dd>${character.status.map(([label, value]) => `${label} ${value}`).join(" / ")}</dd></div>
+          <div><dt>핵심 NPC</dt><dd>${compactNpcs(character.npcs)}</dd></div>
+        </dl>
+      </section>
+  `;
 }
 
 function renderSetup() {
@@ -845,6 +914,7 @@ function applyCandidate(index) {
   setupState.steps[prologueStepIndex].draft = buildPrologueDraft(selected);
 
   state.player.role = selected.role;
+  state.player.name = selected.name;
   state.player.goal = selected.goals[0][1];
   state.player.shortGoal = selected.goals[1][1];
   state.player.hp = selected.playerState.hp;
@@ -904,6 +974,7 @@ function resetSetup() {
   setupState.selectedCandidateIndex = 0;
   setupState.steps = buildInitialSetupState();
   state.player.role = firstProfile.role;
+  state.player.name = firstProfile.name;
   state.player.goal = firstProfile.goals[0][1];
   state.player.shortGoal = firstProfile.goals[1][1];
   state.player.hp = firstProfile.playerState.hp;
@@ -996,7 +1067,7 @@ function safeNamePart(value) {
 }
 
 function characterName() {
-  return state.player.role.split(",")[0].trim() || "PC";
+  return state.player.name || "PC";
 }
 
 function worldSaveTitle() {
@@ -1006,6 +1077,10 @@ function worldSaveTitle() {
 
 function worldFileName() {
   return `${safeNamePart(worldSaveTitle())}.json`;
+}
+
+function saveId(title, savedAt) {
+  return `${safeNamePart(title)}-${savedAt.slice(0, 10)}`;
 }
 
 function compileWorldJson() {
@@ -1024,12 +1099,40 @@ function compileWorldJson() {
     place: prologue.place,
     summary: prologue.summary,
   };
-  const initialKnownFacts = [prologue.shortTermGoal, prologueStart.summary];
+  const initialKnownFacts = [prologueStart.summary];
+  const title = worldSaveTitle();
+  const id = saveId(title, now);
+  const initialStatus = {
+    hp: state.player.hp,
+    fatigue: state.player.fatigue,
+    morale: state.player.morale,
+  };
+  const runtime = {
+    phase: "setup_ready",
+    turn: 1,
+    currentDate: prologueStart.date,
+    currentTime: prologueStart.time,
+    currentPlace: prologueStart.place,
+    currentSceneTitle: prologueStart.sceneTitle,
+    lastPlayedAt: null,
+  };
 
   return {
     schemaVersion: 1,
     savedAt: now,
-    title: worldSaveTitle(),
+    title,
+    saveMeta: {
+      id,
+      createdAt: now,
+      updatedAt: now,
+      displayTitle: title,
+      phase: runtime.phase,
+      turn: runtime.turn,
+      playerName: character.name,
+      genre: fieldValue(worldFrame.fields, "장르"),
+      lastSceneTitle: prologueStart.sceneTitle,
+      lastPlayedAt: null,
+    },
     source: {
       worldSeed: document.querySelector("#worldSeed").value,
       confirmedStepIds: setupState.steps.filter((step) => step.confirmed).map((step) => step.id),
@@ -1058,7 +1161,10 @@ function compileWorldJson() {
       },
     },
     player: {
-      role: state.player.role,
+      name: character.name,
+      gender: character.gender,
+      age: character.age,
+      role: character.role,
       background: character.background,
       speech: fieldValue(character.fields, "말투"),
       values: fieldValue(character.fields, "가치관"),
@@ -1068,10 +1174,9 @@ function compileWorldJson() {
         character.abilities.map(([label, score, mod]) => [label.split(" ")[0], { label, score: Number(score), mod: Number(mod) }]),
       ),
       abilityBalance: character.abilityBalance,
+      initialStatus,
       status: {
-        hp: state.player.hp,
-        fatigue: state.player.fatigue,
-        morale: state.player.morale,
+        ...initialStatus,
       },
       goals: {
         longTerm: promise.longTermGoal,
@@ -1085,9 +1190,27 @@ function compileWorldJson() {
       relationTags,
       speech,
       relationshipScore: Number(relationshipScore),
+      initialRelationshipScore: Number(relationshipScore),
+      currentStatus: "세션 시작 전",
+      lastSeen: "",
+      flags: [],
     })),
+    masterOnly: {
+      truthLocked: false,
+      truth: {
+        culprit: "",
+        motive: "",
+        method: "",
+        timeline: [],
+        lockedFacts: [],
+      },
+      clues: [],
+      redHerrings: [],
+      notes: "추리·수사 장르에서는 플레이 시작 전 범인, 동기, 방법, 핵심 단서 배치를 잠그는 것을 권장한다.",
+    },
     prologueSeed: prologueStart.summary,
     prologue: prologueStart,
+    runtime,
     session: {
       knownFacts: initialKnownFacts,
       recentChange: "세션 준비 중",
@@ -1107,13 +1230,20 @@ function renderState() {
 
 function beginSession() {
   const savedWorld = state.savedWorld?.world;
-  state.knownFacts = savedWorld?.session.knownFacts || [state.player.shortGoal, state.prologueSeed];
+  state.knownFacts = savedWorld?.session.knownFacts || [state.prologueSeed];
   const prologue = savedWorld?.prologue || { ...state.prologueMeta, summary: state.prologueSeed };
+  const runtime = savedWorld?.runtime || {
+    turn: 1,
+    currentDate: prologue.date,
+    currentTime: prologue.time,
+    currentPlace: prologue.place,
+    currentSceneTitle: prologue.sceneTitle,
+  };
   state.recentChange = "프롤로그가 시작되었다";
   state.log = [];
 
   document.querySelector("#sceneText").textContent =
-    `[턴 1] ${prologue.sceneTitle}. ${prologue.date}, ${prologue.time}, ${prologue.place}. ` +
+    `[턴 ${runtime.turn}] ${runtime.currentSceneTitle}. ${runtime.currentDate}, ${runtime.currentTime}, ${runtime.currentPlace}. ` +
     `${prologue.summary} 이제 플레이어는 자유롭게 행동을 선언할 수 있다.`;
   document.querySelector("#rollStrip").textContent = "d20 대기";
 

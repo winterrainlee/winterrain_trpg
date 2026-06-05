@@ -129,6 +129,18 @@ Rules:
 
 ```json
 {
+  "saveMeta": {
+    "id": "",
+    "createdAt": "",
+    "updatedAt": "",
+    "displayTitle": "",
+    "phase": "setup_ready",
+    "turn": 1,
+    "playerName": "",
+    "genre": "",
+    "lastSceneTitle": "",
+    "lastPlayedAt": null
+  },
   "world": {
     "genre": "",
     "techLevel": "",
@@ -196,11 +208,14 @@ Rules:
   },
   "player": {
     "name": "",
+    "gender": "",
+    "age": "",
     "background": "",
     "values": [],
     "traits": {"strengths": [], "flaws": []},
     "abilities": {"STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0},
     "mods": {"STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0},
+    "initialStatus": {"hp": 70, "fatigue": 10, "morale": 60},
     "status": {"hp": 70, "fatigue": 10, "morale": 60},
     "goals": {
       "main": "",
@@ -210,13 +225,46 @@ Rules:
     },
     "speech": ""
   },
-  "npcs": {},
+  "npcs": [
+    {
+      "name": "",
+      "role": "",
+      "relationTags": "",
+      "speech": "",
+      "initialRelationshipScore": 0,
+      "relationshipScore": 0,
+      "currentStatus": "",
+      "lastSeen": "",
+      "flags": []
+    }
+  ],
+  "masterOnly": {
+    "truthLocked": false,
+    "truth": {
+      "culprit": "",
+      "motive": "",
+      "method": "",
+      "timeline": [],
+      "lockedFacts": []
+    },
+    "clues": [],
+    "redHerrings": []
+  },
   "prologue": {
     "sceneTitle": "",
     "date": "",
     "time": "",
     "place": "",
     "summary": ""
+  },
+  "runtime": {
+    "phase": "setup_ready",
+    "turn": 1,
+    "currentDate": "",
+    "currentTime": "",
+    "currentPlace": "",
+    "currentSceneTitle": "",
+    "lastPlayedAt": null
   },
   "timeline": [],
   "summary": {
@@ -252,8 +300,10 @@ left rail:
   ⑥ 프롤로그
   [설정 초기화]
 
-right stage:
+center stage:
   current step draft
+
+right control panel:
   request input + [수정 반영]
   right-aligned [임시 저장] [설정 확정]
 ```
@@ -267,7 +317,7 @@ right stage:
 | `③ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
 | `④ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, 건강/피로/사기, 핵심 NPC를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status`, `npcs` |
 | `⑤ 세션 규칙` | 장기 목표, 장르 약속, 난이도, 게임 오버 조건을 프롤로그 직전 확정 | `player.goals.longTerm`, `promiseCard`, `difficulty`, `gameOver` |
-| `⑥ 프롤로그` | 단기 목표와 첫 장면의 제목, 날짜, 시각, 장소, 상황 압력을 간략히 준비 | `player.goals.shortTerm`, `prologue` |
+| `⑥ 프롤로그` | 이전 단계의 설정 요약을 최종 확인하고, 단기 목표와 첫 장면의 제목, 날짜, 시각, 장소, 상황 압력을 준비 | `setupReview`, `player.goals.shortTerm`, `prologue` |
 
 ### Setup Wizard Flow
 
@@ -303,7 +353,7 @@ flowchart TD
 - `설정 초기화` is a global destructive action in the left rail. It returns setup to `① 세계 골격`, clears unconfirmed setup state, and requires confirmation.
 - `④ 캐릭터 상세` owns the player's deeper background, speech style, values, strengths/flaws, six abilities, modifiers, health/fatigue/morale, and the initial relationship network.
 - `⑤ 세션 규칙` locks the long-term goal, genre promises, play difficulty, and game-over conditions immediately before prologue.
-- `⑥ 프롤로그` owns the short-term goal together with the first scene seed.
+- `⑥ 프롤로그` acts as the final pre-play review. It shows a compact setup summary, character summary, NPC summary, and the first scene seed before JSON save/start.
 - A confirmed step becomes the source for later prompts.
 - The app should expose progress clearly through circled-number navigation and per-step status.
 - `프롤로그 시작` should remain disabled until all required setup steps are confirmed.

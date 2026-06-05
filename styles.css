@@ -217,12 +217,13 @@ textarea {
 
 .setup-workbench {
   display: grid;
-  grid-template-columns: minmax(260px, 0.44fr) minmax(0, 1.56fr);
+  grid-template-columns: minmax(230px, 0.42fr) minmax(0, 1.22fr) minmax(220px, 0.44fr);
   gap: 16px;
   align-items: start;
 }
 
 .setup-rail,
+.setup-control-panel,
 .step-card {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -295,6 +296,13 @@ textarea {
   gap: 12px;
 }
 
+.setup-control-panel {
+  position: sticky;
+  top: 88px;
+  display: grid;
+  gap: 12px;
+}
+
 .setup-nav {
   display: flex;
   justify-content: flex-end;
@@ -357,6 +365,15 @@ textarea {
 .draft-list div {
   border-top: 1px solid var(--line);
   padding-top: 10px;
+}
+
+.review-section {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+}
+
+.review-list div:last-child {
+  grid-column: 1 / -1;
 }
 
 .draft-bullets {
@@ -469,15 +486,7 @@ textarea {
   color: #6d531e;
 }
 
-.revision-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  margin: 14px 0;
-}
-
 .revision-box {
-  flex: 1;
   margin: 0;
 }
 
@@ -487,18 +496,16 @@ textarea {
 
 .revision-actions,
 .step-actions {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: 8px;
 }
 
 .revision-actions {
-  flex: 0 0 auto;
-  padding-bottom: 1px;
+  align-items: stretch;
 }
 
 .step-actions {
-  justify-content: flex-end;
+  margin-top: 4px;
 }
 
 .revision-note {
@@ -696,7 +703,6 @@ dd {
   .setup-workbench,
   .setup-nav,
   .step-card-head,
-  .revision-row,
   .revision-actions,
   .step-actions,
   .draft-list,
@@ -709,10 +715,13 @@ dd {
 
   .setup-nav,
   .step-card-head,
-  .revision-row,
   .revision-actions,
   .step-actions {
     display: grid;
+  }
+
+  .setup-control-panel {
+    position: static;
   }
 
   .revision-actions,
