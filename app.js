@@ -10,6 +10,8 @@ const pcProfiles = [
       ["강점", "관찰력, 끈기"],
       ["결함", "권위 앞에서 위축됨"],
     ],
+    strongAbilities: ["INT", "WIS"],
+    flawAbilities: ["CHA"],
     abilities: [
       ["STR 힘", "9", "-1"],
       ["DEX 민첩", "12", "+1"],
@@ -48,6 +50,8 @@ const pcProfiles = [
       ["강점", "실용성, 냄새와 증상 기억"],
       ["결함", "비밀을 혼자 짊어짐"],
     ],
+    strongAbilities: ["CON", "WIS"],
+    flawAbilities: ["CHA"],
     abilities: [
       ["STR 힘", "10", "+0"],
       ["DEX 민첩", "11", "+0"],
@@ -86,6 +90,8 @@ const pcProfiles = [
       ["강점", "기동력, 붙임성"],
       ["결함", "규칙을 가볍게 봄"],
     ],
+    strongAbilities: ["DEX", "CHA"],
+    flawAbilities: ["WIS"],
     abilities: [
       ["STR 힘", "11", "+0"],
       ["DEX 민첩", "15", "+2"],
@@ -124,6 +130,8 @@ const pcProfiles = [
       ["강점", "기록 지식, 신중함"],
       ["결함", "행동이 늦음"],
     ],
+    strongAbilities: ["INT", "WIS"],
+    flawAbilities: ["STR", "DEX"],
     abilities: [
       ["STR 힘", "8", "-1"],
       ["DEX 민첩", "9", "-1"],
@@ -162,6 +170,8 @@ const pcProfiles = [
       ["강점", "언변, 계산력"],
       ["결함", "의심이 많음"],
     ],
+    strongAbilities: ["INT", "CHA"],
+    flawAbilities: ["STR", "CON"],
     abilities: [
       ["STR 힘", "8", "-1"],
       ["DEX 민첩", "13", "+1"],
@@ -191,12 +201,117 @@ const pcProfiles = [
   },
 ];
 
+const abilityDefinitions = [
+  ["STR", "STR 힘"],
+  ["DEX", "DEX 민첩"],
+  ["CON", "CON 체력"],
+  ["INT", "INT 지능"],
+  ["WIS", "WIS 통찰"],
+  ["CHA", "CHA 매력"],
+];
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function modLabel(mod) {
+  return mod > 0 ? `+${mod}` : String(mod);
+}
+
+function scoreForMod(mod) {
+  if (mod > 0) return randomInt(10 + mod * 2, 11 + mod * 2);
+  if (mod < 0) return randomInt(10 + mod * 2, 11 + mod * 2);
+  return randomInt(10, 11);
+}
+
+function sumPositiveMods(mods) {
+  return Object.values(mods).reduce((sum, mod) => sum + Math.max(mod, 0), 0);
+}
+
+function sumNegativeMods(mods) {
+  return Object.values(mods).reduce((sum, mod) => sum + Math.min(mod, 0), 0);
+}
+
+function abilitiesByAdjustmentPriority(profile, direction) {
+  const protectedAbilities = new Set(direction === "positive" ? profile.strongAbilities : profile.flawAbilities);
+  return [
+    ...abilityDefinitions.map(([id]) => id).filter((id) => !protectedAbilities.has(id)),
+    ...abilityDefinitions.map(([id]) => id).filter((id) => protectedAbilities.has(id)),
+  ];
+}
+
+function buildRandomMods(profile) {
+  const strongAbilities = new Set(profile.strongAbilities);
+  const flawAbilities = new Set(profile.flawAbilities);
+  const mods = {};
+
+  abilityDefinitions.forEach(([id]) => {
+    if (strongAbilities.has(id)) {
+      mods[id] = randomInt(0, 2);
+    } else if (flawAbilities.has(id)) {
+      mods[id] = randomInt(-2, 0);
+    } else {
+      mods[id] = randomInt(-1, 1);
+    }
+  });
+
+  if (!Object.values(mods).some((mod) => mod > 0)) {
+    mods[profile.strongAbilities[0]] = 1;
+  }
+
+  if (!Object.values(mods).some((mod) => mod < 0)) {
+    mods[profile.flawAbilities[0]] = -1;
+  }
+
+  while (sumPositiveMods(mods) > 4) {
+    const target = abilitiesByAdjustmentPriority(profile, "positive").find((id) => mods[id] > 0);
+    if (!target) break;
+    mods[target] -= 1;
+  }
+
+  while (sumNegativeMods(mods) < -4) {
+    const target = abilitiesByAdjustmentPriority(profile, "negative").find((id) => mods[id] < 0);
+    if (!target) break;
+    mods[target] += 1;
+  }
+
+  return mods;
+}
+
+function validateAbilityBalance(abilities) {
+  const mods = abilities.map(([, , mod]) => Number(mod));
+  const positiveSum = mods.reduce((sum, mod) => sum + Math.max(mod, 0), 0);
+  const negativeSum = mods.reduce((sum, mod) => sum + Math.min(mod, 0), 0);
+
+  return {
+    hasPositive: mods.some((mod) => mod > 0),
+    hasNegative: mods.some((mod) => mod < 0),
+    positiveSum,
+    negativeSum,
+    valid: mods.some((mod) => mod > 0) && mods.some((mod) => mod < 0) && positiveSum <= 4 && negativeSum >= -4,
+  };
+}
+
+function generateAbilities(profile) {
+  const mods = buildRandomMods(profile);
+  const abilities = abilityDefinitions.map(([id, label]) => [label, String(scoreForMod(mods[id])), modLabel(mods[id])]);
+  const balance = validateAbilityBalance(abilities);
+
+  if (!balance.valid) {
+    throw new Error("Ability balance rule failed");
+  }
+
+  return { abilities, balance };
+}
+
 function buildCharacterDraft(profile) {
+  const generated = generateAbilities(profile);
   return {
     kind: "character",
     background: profile.background,
     fields: profile.fields,
-    abilities: profile.abilities,
+    abilities: generated.abilities,
+    abilityBalance: generated.balance,
     status: profile.status,
   };
 }
@@ -372,6 +487,7 @@ function renderDraft(draft, revision) {
         <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
         ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
       </div>
+      <p class="balance-note">보정치 균형 검사 통과: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
       <p class="system-note">판정 기준: 1D20 + 보정치 ≥ DC 10~22. 장면 산문에서는 수치 대신 묘사로 표현합니다.</p>
       <div class="status-table">
         <div class="table-head"><span>상태</span><span>값</span><span>현재 의미</span></div>

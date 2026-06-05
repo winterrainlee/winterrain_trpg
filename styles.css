@@ -396,6 +396,13 @@ textarea {
   font-weight: 850;
 }
 
+.balance-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
 .status-guide {
   display: grid;
   gap: 8px;
