@@ -1,3 +1,214 @@
+const pcProfiles = [
+  {
+    summary: "엘리안 - 젊은 필사 보조원 / 관찰력과 끈기 / 권위 앞에서 위축됨",
+    role: "엘리안, 젊은 필사 보조원",
+    background:
+      "엘리안은 수도원 필사실에서 장부 정리와 필사 보조를 맡아 왔다. 그는 종소리, 잉크 냄새, 책상 배치처럼 남들이 지나치는 변화를 오래 기억하지만, 높은 직위의 수도사가 말하면 쉽게 물러선다.",
+    fields: [
+      ["말투", "조심스러운 해요체. 확신이 생기면 짧고 단단하게 말한다."],
+      ["가치관", "진실은 공동체를 다치게 하더라도 기록되어야 한다."],
+      ["강점", "관찰력, 끈기"],
+      ["결함", "권위 앞에서 위축됨"],
+    ],
+    abilities: [
+      ["STR 힘", "9", "-1"],
+      ["DEX 민첩", "12", "+1"],
+      ["CON 체력", "10", "+0"],
+      ["INT 지능", "14", "+2"],
+      ["WIS 통찰", "15", "+2"],
+      ["CHA 매력", "11", "+0"],
+    ],
+    status: [
+      ["건강 HP", "70", "부상 없음"],
+      ["피로", "10", "긴장했지만 움직일 수 있음"],
+      ["사기", "60", "불안 속에서도 진실을 알고 싶어 함"],
+    ],
+    playerState: { hp: 70, fatigue: 10, morale: 60 },
+    goals: [
+      ["장기 목표", "사라진 장부와 의문사의 진실을 밝힌다"],
+      ["단기 목표", "봉인된 필사실 주변의 첫 단서를 확인한다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["아벨 원장", "수도원장", "권위자 / 침묵", "낮고 느린 명령형", "0"],
+      ["마르타", "약초원 관리인", "협력 가능 / 경계", "실용적인 반말 섞인 해요체", "12"],
+      ["토마스", "문지기", "불안 / 목격자", "말끝을 흐리는 짧은 문장", "-8"],
+    ],
+    prologue:
+      "저녁 종이 울린 뒤, 엘리안은 봉인된 필사실 앞에서 평소와 다른 잉크 얼룩과 사라진 장부 자리를 동시에 발견한다. 첫 선택은 현장, 종소리를 들은 사람들, 또는 기록 보관실 중 하나로 향한다.",
+  },
+  {
+    summary: "마르타 - 약초원 관리인 / 실용성과 기억력 / 비밀을 혼자 짊어짐",
+    role: "마르타, 약초원 관리인",
+    background:
+      "마르타는 수도원의 약초원과 병실을 오가며 사람들의 통증과 거짓말을 함께 보아 왔다. 누가 언제 다쳤고 어떤 냄새가 옷에 남는지 잘 기억하지만, 자신이 숨겨 온 작은 거래가 드러날까 봐 쉽게 마음을 열지 않는다.",
+    fields: [
+      ["말투", "담백한 해요체. 급하면 짧은 반말이 섞이고, 감정보다 처방을 먼저 말한다."],
+      ["가치관", "살아 있는 사람을 먼저 구해야 진실도 의미가 있다."],
+      ["강점", "실용성, 냄새와 증상 기억"],
+      ["결함", "비밀을 혼자 짊어짐"],
+    ],
+    abilities: [
+      ["STR 힘", "10", "+0"],
+      ["DEX 민첩", "11", "+0"],
+      ["CON 체력", "13", "+1"],
+      ["INT 지능", "12", "+1"],
+      ["WIS 통찰", "15", "+2"],
+      ["CHA 매력", "10", "+0"],
+    ],
+    status: [
+      ["건강 HP", "76", "잔병치레 없이 버틸 수 있음"],
+      ["피로", "16", "밤새 병실을 돌본 여파가 있음"],
+      ["사기", "55", "진실보다 피해를 줄이는 쪽으로 기울어 있음"],
+    ],
+    playerState: { hp: 76, fatigue: 16, morale: 55 },
+    goals: [
+      ["장기 목표", "장부와 죽음이 약초원 기록과 어떻게 연결되는지 밝힌다"],
+      ["단기 목표", "최근 처방 기록과 사라진 약재 목록을 대조한다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["아벨 원장", "수도원장", "은혜를 준 권위자 / 부담", "조용히 빚을 상기시키는 말투", "-4"],
+      ["엘리안", "필사 보조원", "기록 협력자 / 보호 욕구", "조심스러운 해요체", "10"],
+      ["루카", "병실 수도사", "같은 비밀을 아는 사람 / 압박", "상냥하지만 캐묻는 말투", "-12"],
+    ],
+    prologue:
+      "저녁 종 뒤, 마르타는 병실에서 맡은 낯선 쓴 냄새가 봉인된 필사실 복도에도 남아 있음을 알아차린다. 첫 선택은 약재 창고, 병실 기록, 또는 필사실 앞의 발자국으로 향한다.",
+  },
+  {
+    summary: "요한 - 외부 심부름꾼 / 발 빠름과 붙임성 / 규칙을 가볍게 봄",
+    role: "요한, 외부 심부름꾼",
+    background:
+      "요한은 수도원 안팎의 심부름을 맡으며 문지기, 시장 상인, 하급 수도사와 두루 말을 텄다. 닫힌 문을 돌아가는 길을 잘 찾지만, 규칙을 가볍게 넘긴 전력이 있어 사건이 커지면 가장 먼저 의심받기 쉽다.",
+    fields: [
+      ["말투", "가벼운 반말 섞인 해요체. 농담으로 긴장을 누그러뜨리려 한다."],
+      ["가치관", "닫힌 문보다 사람 입에서 진실이 먼저 샌다."],
+      ["강점", "기동력, 붙임성"],
+      ["결함", "규칙을 가볍게 봄"],
+    ],
+    abilities: [
+      ["STR 힘", "11", "+0"],
+      ["DEX 민첩", "15", "+2"],
+      ["CON 체력", "12", "+1"],
+      ["INT 지능", "10", "+0"],
+      ["WIS 통찰", "11", "+0"],
+      ["CHA 매력", "14", "+2"],
+    ],
+    status: [
+      ["건강 HP", "72", "가벼운 상처는 익숙함"],
+      ["피로", "8", "아직 몸이 가볍고 반응이 빠름"],
+      ["사기", "64", "위험을 장난처럼 밀고 나갈 기세"],
+    ],
+    playerState: { hp: 72, fatigue: 8, morale: 64 },
+    goals: [
+      ["장기 목표", "누가 수도원 안팎의 길을 이용해 장부를 빼냈는지 밝힌다"],
+      ["단기 목표", "문지기와 심부름 동선을 맞춰 빈 시간을 찾는다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["토마스", "문지기", "말이 통하는 어른 / 목격자", "걱정 많은 짧은 문장", "8"],
+      ["아벨 원장", "수도원장", "감시자 / 불신", "차갑고 단정한 존댓말", "-15"],
+      ["니코", "시장 연락책", "가벼운 빚 / 바깥 소문", "빠르고 장난스러운 말투", "6"],
+    ],
+    prologue:
+      "요한은 저녁 종 직후, 원래 닫혀 있어야 할 뒷문 빗장이 안쪽에서만 급히 걸린 흔적을 본다. 첫 선택은 뒷문 길, 문지기의 기억, 또는 시장에서 들어온 마지막 꾸러미로 향한다.",
+  },
+  {
+    summary: "베네딕트 - 문서 보관인 / 기록 지식과 신중함 / 행동이 늦음",
+    role: "베네딕트, 문서 보관인",
+    background:
+      "베네딕트는 오래된 장부와 봉인 문서의 분류 규칙을 누구보다 잘 안다. 그는 기록의 빈칸과 서체 변화를 읽어내지만, 모든 가능성을 확인하려다 결정적인 순간에 몸이 늦게 움직인다.",
+    fields: [
+      ["말투", "정중한 하십시오체. 생각이 길어질수록 문장이 조심스럽게 늘어난다."],
+      ["가치관", "기록은 사람보다 오래 남으므로 함부로 고쳐서는 안 된다."],
+      ["강점", "기록 지식, 신중함"],
+      ["결함", "행동이 늦음"],
+    ],
+    abilities: [
+      ["STR 힘", "8", "-1"],
+      ["DEX 민첩", "9", "-1"],
+      ["CON 체력", "11", "+0"],
+      ["INT 지능", "16", "+3"],
+      ["WIS 통찰", "14", "+2"],
+      ["CHA 매력", "10", "+0"],
+    ],
+    status: [
+      ["건강 HP", "68", "무리한 이동에는 약함"],
+      ["피로", "14", "긴장하면 집중이 길어지는 대신 몸이 굳음"],
+      ["사기", "58", "기록을 지켜야 한다는 책임감이 큼"],
+    ],
+    playerState: { hp: 68, fatigue: 14, morale: 58 },
+    goals: [
+      ["장기 목표", "조작된 기록과 진짜 장부의 계보를 복원한다"],
+      ["단기 목표", "봉인 문서 목록에서 빠진 색인 번호를 확인한다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["아벨 원장", "수도원장", "상관 / 문서 봉인권자", "느리고 단호한 명령형", "2"],
+      ["엘리안", "필사 보조원", "제자 같은 동료 / 신뢰", "조심스러운 해요체", "14"],
+      ["세라", "외부 감찰관", "기록을 요구하는 압력 / 경계", "건조한 공식 어투", "-10"],
+    ],
+    prologue:
+      "베네딕트는 봉인 장부 목록에서 존재해서는 안 되는 여백 번호 하나를 발견한다. 첫 선택은 색인함, 원장의 봉인 기록, 또는 마지막으로 장부를 열람한 사람의 서명으로 향한다.",
+  },
+  {
+    summary: "리나 - 견습 서기 / 언변과 계산력 / 의심이 많음",
+    role: "리나, 견습 서기",
+    background:
+      "리나는 숫자와 말의 빈틈을 빨리 잡아내는 견습 서기다. 후원금 계산과 식량 장부를 베껴 쓰며 수도원의 현실적인 균열을 보았지만, 쉽게 믿지 않는 성격 때문에 도움을 받을 순간에도 먼저 상대를 시험한다.",
+    fields: [
+      ["말투", "또렷한 해요체. 질문이 많고, 중요한 말 앞에서는 잠깐 멈춘다."],
+      ["가치관", "숫자는 거짓말을 못 하지만 사람은 숫자를 숨길 수 있다."],
+      ["강점", "언변, 계산력"],
+      ["결함", "의심이 많음"],
+    ],
+    abilities: [
+      ["STR 힘", "8", "-1"],
+      ["DEX 민첩", "13", "+1"],
+      ["CON 체력", "10", "+0"],
+      ["INT 지능", "15", "+2"],
+      ["WIS 통찰", "12", "+1"],
+      ["CHA 매력", "14", "+2"],
+    ],
+    status: [
+      ["건강 HP", "66", "큰 부상은 없지만 체력은 낮음"],
+      ["피로", "12", "머리는 맑지만 몸은 쉽게 지침"],
+      ["사기", "62", "의심이 오히려 앞으로 나아가게 함"],
+    ],
+    playerState: { hp: 66, fatigue: 12, morale: 62 },
+    goals: [
+      ["장기 목표", "후원금 장부와 사라진 필사실 장부의 숫자 불일치를 밝힌다"],
+      ["단기 목표", "최근 지출 내역과 식량 배급표를 비교한다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["마르타", "약초원 관리인", "숫자가 맞지 않는 거래처 / 의심", "실용적인 해요체", "-2"],
+      ["베네딕트", "문서 보관인", "검산을 맡긴 선배 / 신뢰", "정중한 하십시오체", "9"],
+      ["오스카", "외부 후원 대리인", "돈의 흐름 / 위험", "매끄러운 존댓말", "-14"],
+    ],
+    prologue:
+      "리나는 저녁 종 직후, 후원금 장부의 합계가 사라진 필사실 장부의 마지막 기록과 정확히 같은 금액만큼 어긋난다는 사실을 본다. 첫 선택은 계산표, 약초원 거래 기록, 또는 외부 후원 대리인의 편지로 향한다.",
+  },
+];
+
+function buildCharacterDraft(profile) {
+  return {
+    kind: "character",
+    background: profile.background,
+    fields: profile.fields,
+    abilities: profile.abilities,
+    status: profile.status,
+  };
+}
+
+function buildGoalsNpcDraft(profile) {
+  return {
+    kind: "goalsNpc",
+    goals: profile.goals,
+    npcs: profile.npcs,
+  };
+}
+
 const setupSteps = [
   {
     id: "frame",
@@ -50,13 +261,8 @@ const setupSteps = [
     placeholder: "후보를 더 평범하게, 더 정치적으로, 더 약하게 등 요청할 수 있습니다.",
     draft: {
       kind: "candidates",
-      candidates: [
-        "엘리안 - 젊은 필사 보조원 / 관찰력과 끈기 / 권위 앞에서 위축됨",
-        "마르타 - 약초원 관리인 / 실용성과 기억력 / 비밀을 혼자 짊어짐",
-        "요한 - 외부 심부름꾼 / 발 빠름과 붙임성 / 규칙을 가볍게 봄",
-        "베네딕트 - 문서 보관인 / 기록 지식과 신중함 / 행동이 늦음",
-        "리나 - 견습 서기 / 언변과 계산력 / 의심이 많음",
-      ],
+      selectedIndex: 0,
+      candidates: pcProfiles.map((profile) => profile.summary),
     },
   },
   {
@@ -65,30 +271,7 @@ const setupSteps = [
     label: "캐릭터 상세",
     kicker: "Character Detail",
     placeholder: "PC 배경, 말투, 능력치, 초기 상태를 더 구체적으로 조정할 수 있습니다.",
-    draft: {
-      kind: "character",
-      background:
-        "엘리안은 수도원 필사실에서 장부 정리와 필사 보조를 맡아 왔다. 그는 종소리, 잉크 냄새, 책상 배치처럼 남들이 지나치는 변화를 오래 기억하지만, 높은 직위의 수도사가 말하면 쉽게 물러선다.",
-      fields: [
-        ["말투", "조심스러운 해요체. 확신이 생기면 짧고 단단하게 말한다."],
-        ["가치관", "진실은 공동체를 다치게 하더라도 기록되어야 한다."],
-        ["강점", "관찰력, 끈기"],
-        ["결함", "권위 앞에서 위축됨"],
-      ],
-      abilities: [
-        ["STR 힘", "9", "-1"],
-        ["DEX 민첩", "12", "+1"],
-        ["CON 체력", "10", "+0"],
-        ["INT 지능", "14", "+2"],
-        ["WIS 통찰", "15", "+2"],
-        ["CHA 매력", "11", "+0"],
-      ],
-      status: [
-        ["건강 HP", "70", "부상 없음"],
-        ["피로", "10", "긴장했지만 움직일 수 있음"],
-        ["사기", "60", "불안 속에서도 진실을 알고 싶어 함"],
-      ],
-    },
+    draft: buildCharacterDraft(pcProfiles[0]),
   },
   {
     id: "goals-npc",
@@ -96,19 +279,7 @@ const setupSteps = [
     label: "목표와 NPC",
     kicker: "Goals / NPCs",
     placeholder: "목표의 방향, NPC 관계, 태도, 말투, 비밀스러운 압력을 조정할 수 있습니다.",
-    draft: {
-      kind: "goalsNpc",
-      goals: [
-        ["장기 목표", "사라진 장부와 의문사의 진실을 밝힌다"],
-        ["단기 목표", "봉인된 필사실 주변의 첫 단서를 확인한다"],
-        ["진행 표시", "단기 0% / 전체 0%"],
-      ],
-      npcs: [
-        ["아벨 원장", "수도원장", "권위자 / 침묵", "낮고 느린 명령형", "0"],
-        ["마르타", "약초원 관리인", "협력 가능 / 경계", "실용적인 반말 섞인 해요체", "12"],
-        ["토마스", "문지기", "불안 / 목격자", "말끝을 흐리는 짧은 문장", "-8"],
-      ],
-    },
+    draft: buildGoalsNpcDraft(pcProfiles[0]),
   },
   {
     id: "prologue",
@@ -118,15 +289,14 @@ const setupSteps = [
     placeholder: "첫 장면의 장소, 사건 강도, 시작 선택지를 조정할 수 있습니다.",
     draft: {
       kind: "paragraph",
-      text:
-        "저녁 종이 울린 뒤, 봉인된 필사실 앞에 있어야 할 작은 장부가 사라진다. " +
-        "문은 잠겨 있고, 사람들은 서로 다른 시간을 기억한다. 첫 선택은 현장, 사람들의 반응, 또는 기록 보관실 중 하나로 향한다.",
+      text: pcProfiles[0].prologue,
     },
   },
 ];
 
 const setupState = {
   current: 0,
+  selectedCandidateIndex: 0,
   steps: setupSteps.map((step, index) => ({
     id: step.id,
     draft: step.draft,
@@ -188,7 +358,7 @@ function renderDraft(draft, revision) {
 
   if (draft.kind === "candidates") {
     return `<div class="candidate-list">${draft.candidates
-      .map((candidate, index) => `<button type="button" data-candidate-index="${index}" class="${index === 0 ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
+      .map((candidate, index) => `<button type="button" data-candidate-index="${index}" class="${index === draft.selectedIndex ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
       .join("")}</div>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
@@ -285,13 +455,34 @@ function saveCurrentStep() {
 function selectCandidate(index) {
   const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
   const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
-  const selected = setupState.steps[pcStepIndex].draft.candidates[index];
+  const goalsNpcStepIndex = setupSteps.findIndex((step) => step.id === "goals-npc");
+  const prologueStepIndex = setupSteps.findIndex((step) => step.id === "prologue");
+  const selected = pcProfiles[index];
 
-  state.player.role = selected.split(" / ")[0].replace(" - ", ", ");
+  setupState.selectedCandidateIndex = index;
+  setupState.steps[pcStepIndex].draft.selectedIndex = index;
+  setupState.steps[characterStepIndex].draft = buildCharacterDraft(selected);
+  setupState.steps[goalsNpcStepIndex].draft = buildGoalsNpcDraft(selected);
+  setupState.steps[prologueStepIndex].draft = { kind: "paragraph", text: selected.prologue };
+
+  state.player.role = selected.role;
+  state.player.goal = selected.goals[0][1];
+  state.player.shortGoal = selected.goals[1][1];
+  state.player.hp = selected.playerState.hp;
+  state.player.fatigue = selected.playerState.fatigue;
+  state.player.morale = selected.playerState.morale;
+  state.npcs = selected.npcs.map(([name, role, relation]) => `${name}: ${role}, ${relation}`);
+  state.prologueSeed = selected.prologue;
   setupState.steps[pcStepIndex].confirmed = true;
   setupState.steps[pcStepIndex].status = "confirmed";
+  for (let stepIndex = characterStepIndex; stepIndex < setupState.steps.length; stepIndex += 1) {
+    setupState.steps[stepIndex].status = stepIndex === characterStepIndex ? "drafted" : "locked";
+    setupState.steps[stepIndex].confirmed = false;
+    setupState.steps[stepIndex].saved = false;
+    setupState.steps[stepIndex].revision = "";
+  }
   setupState.current = characterStepIndex;
-  if (setupState.steps[characterStepIndex].status === "locked") setupState.steps[characterStepIndex].status = "drafted";
+  renderState();
   renderSetup();
 }
 
