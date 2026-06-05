@@ -644,18 +644,29 @@ const state = {
     time: initialPrologueDraft.time,
     place: initialPrologueDraft.place,
   },
-  knownFacts: ["아직 첫 장면이 시작되지 않았다"],
+  knownFacts: [],
   recentChange: "세션 준비 중",
   log: [],
   savedWorld: null,
+  runtime: null,
+  afterUnlocked: false,
 };
 
 const tabs = document.querySelectorAll(".tab");
 const views = document.querySelectorAll(".view");
 
 function showTab(id) {
+  if (id === "after" && !state.afterUnlocked) return;
   tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === id));
   views.forEach((view) => view.classList.toggle("is-active", view.id === id));
+}
+
+function renderTabLocks() {
+  const afterTab = document.querySelector('[data-tab="after"]');
+  const endSessionButton = document.querySelector("#endSession");
+  afterTab.disabled = !state.afterUnlocked;
+  afterTab.setAttribute("aria-disabled", String(!state.afterUnlocked));
+  endSessionButton.disabled = !state.runtime;
 }
 
 function statusLabel(status) {
@@ -983,12 +994,15 @@ function resetSetup() {
   state.npcs = firstProfile.npcs.map(([name, role, relation]) => `${name}: ${role}, ${relation}`);
   state.prologueSeed = firstProfile.prologue;
   state.prologueMeta = { ...firstProfile.prologueMeta };
-  state.knownFacts = ["아직 첫 장면이 시작되지 않았다"];
+  state.knownFacts = [];
   state.recentChange = "세션 준비 중";
   state.log = [];
   state.savedWorld = null;
+  state.runtime = null;
+  state.afterUnlocked = false;
 
   renderState();
+  renderTabLocks();
   renderSetup();
 }
 
@@ -1224,13 +1238,70 @@ function renderState() {
   document.querySelector("#fatigue").textContent = state.player.fatigue;
   document.querySelector("#morale").textContent = state.player.morale;
   document.querySelector("#statusGoal").textContent = state.player.goal;
-  document.querySelector("#knownFacts").textContent = state.knownFacts.join(" / ");
+  document.querySelector("#knownFacts").textContent = renderKnownFacts(state.knownFacts);
   document.querySelector("#recentChange").textContent = state.recentChange;
+}
+
+function compactKnownFacts(facts) {
+  return (facts || [])
+    .map((fact) => String(fact).trim())
+    .filter(Boolean)
+    .slice(-5);
+}
+
+function renderKnownFacts(facts) {
+  const recentFacts = compactKnownFacts(facts);
+  return recentFacts.length ? recentFacts.join(" / ") : "PC가 확인한 정보 없음";
+}
+
+function factFromAction(action, resultLabel, index) {
+  const factsByResult = {
+    성공: [
+      "바닥 먼지가 한쪽으로 쓸려 있다",
+      "문 손잡이에 최근 사용 흔적이 남아 있다",
+      "누군가 서둘러 자리를 비운 흔적이 보인다",
+      "익숙하지 않은 냄새가 통로 끝에 남아 있다",
+      "말하지 않은 긴장이 주변 사람들 사이에 흐른다",
+    ],
+    "부분 성공": [
+      "희미한 소리가 벽 너머에서 끊겼다",
+      "쓸 만한 단서가 있지만 아직 방향은 불분명하다",
+      "주변 반응이 평소보다 조심스럽다",
+      "확신하기 어려운 어긋남이 하나 보인다",
+      "추가 확인이 필요한 실마리가 남았다",
+    ],
+    실패: [
+      "정면 접근은 지금 눈에 띄기 쉽다",
+      "상대가 경계심을 품기 시작했다",
+      "이 방법만으로는 단서에 닿기 어렵다",
+      "시간을 더 쓰면 위험이 커질 수 있다",
+      "지금 위치에서는 확인할 수 없는 정보가 있다",
+    ],
+  };
+  const pool = factsByResult[resultLabel] || factsByResult.실패;
+  return pool[index % pool.length];
+}
+
+function renderPlayHeader(savedWorld, runtime) {
+  const saveMeta = savedWorld?.saveMeta || {};
+  const player = savedWorld?.player || {};
+  const loadedTitle = saveMeta.displayTitle || savedWorld?.title || state.world.genre;
+  const playerName = player.name || state.player.name || "PC";
+  const sceneTitle = runtime.currentSceneTitle || "장면 대기";
+  const turn = runtime.turn || 1;
+
+  document.querySelector("#play-title").textContent = sceneTitle;
+  document.querySelector("#playSceneMeta").textContent = `${loadedTitle} · ${playerName} · 턴 ${turn}`;
+  document.querySelector("#sceneTimePlace").innerHTML = `
+    <span>📅 ${runtime.currentDate || "-"}</span>
+    <span>🕰️ ${runtime.currentTime || "-"}</span>
+    <span>🏛️ ${runtime.currentPlace || "-"}</span>
+  `;
 }
 
 function beginSession() {
   const savedWorld = state.savedWorld?.world;
-  state.knownFacts = savedWorld?.session.knownFacts || [state.prologueSeed];
+  state.knownFacts = compactKnownFacts(savedWorld?.session.knownFacts || [state.prologueSeed]);
   const prologue = savedWorld?.prologue || { ...state.prologueMeta, summary: state.prologueSeed };
   const runtime = savedWorld?.runtime || {
     turn: 1,
@@ -1239,17 +1310,48 @@ function beginSession() {
     currentPlace: prologue.place,
     currentSceneTitle: prologue.sceneTitle,
   };
-  state.recentChange = "프롤로그가 시작되었다";
-  state.log = [];
+  state.runtime = { ...runtime };
+  state.recentChange = savedWorld?.session?.recentChange || "프롤로그가 시작되었다";
+  state.log = savedWorld?.session?.log || [];
+  state.afterUnlocked = false;
 
-  document.querySelector("#sceneText").textContent =
-    `[턴 ${runtime.turn}] ${runtime.currentSceneTitle}. ${runtime.currentDate}, ${runtime.currentTime}, ${runtime.currentPlace}. ` +
-    `${prologue.summary} 이제 플레이어는 자유롭게 행동을 선언할 수 있다.`;
+  renderPlayHeader(savedWorld, state.runtime);
+  document.querySelector("#sceneText").textContent = `${prologue.summary} 이제 플레이어는 자유롭게 행동을 선언할 수 있다.`;
   document.querySelector("#rollStrip").textContent = "d20 대기";
 
   renderState();
+  renderTabLocks();
   renderAfter();
   showTab("play");
+}
+
+function loadWorldIntoSession(result) {
+  const world = result.world;
+  const player = world.player || {};
+  const status = player.status || {};
+  const goals = player.goals || {};
+
+  state.savedWorld = { fileName: result.fileName, path: result.path, world };
+  state.player.name = player.name || state.player.name;
+  state.player.role = player.role || state.player.role;
+  state.player.goal = goals.longTerm || state.player.goal;
+  state.player.shortGoal = goals.shortTerm || state.player.shortGoal;
+  state.player.hp = status.hp ?? state.player.hp;
+  state.player.fatigue = status.fatigue ?? state.player.fatigue;
+  state.player.morale = status.morale ?? state.player.morale;
+  state.npcs = (world.npcs || []).map((npc) => `${npc.name}: ${npc.role}, ${npc.relationTags || npc.currentStatus || ""}`);
+  state.knownFacts = compactKnownFacts(world.session?.knownFacts);
+  state.recentChange = world.session?.recentChange || "세계를 로드했다";
+  state.log = world.session?.log || [];
+  state.prologueSeed = world.prologueSeed || world.prologue?.summary || state.prologueSeed;
+  state.prologueMeta = {
+    sceneTitle: world.prologue?.sceneTitle || world.runtime?.currentSceneTitle || "장면 대기",
+    date: world.prologue?.date || world.runtime?.currentDate || "-",
+    time: world.prologue?.time || world.runtime?.currentTime || "-",
+    place: world.prologue?.place || world.runtime?.currentPlace || "-",
+  };
+
+  beginSession();
 }
 
 function openWorldSaveDialog() {
@@ -1303,6 +1405,85 @@ function startSession() {
   beginSession();
 }
 
+function savePlaySession() {
+  if (!state.savedWorld) {
+    openWorldSaveDialog();
+    return;
+  }
+
+  state.recentChange = "현재 세션 상태를 저장 대상으로 표시했다";
+  renderState();
+}
+
+function endSession() {
+  if (!state.runtime) return;
+
+  state.afterUnlocked = true;
+  state.recentChange = "이번 세션이 종료되었다";
+  renderState();
+  renderTabLocks();
+  renderAfter();
+  showTab("after");
+}
+
+function closeWorldLoadDialog() {
+  document.querySelector("#worldLoadDialog").hidden = true;
+}
+
+async function loadWorldFile(fileName) {
+  const status = document.querySelector("#worldLoadStatus");
+  status.textContent = "불러오는 중...";
+
+  try {
+    const response = await fetch(`/api/worlds/${encodeURIComponent(fileName)}`);
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.error || "로드 실패");
+
+    closeWorldLoadDialog();
+    loadWorldIntoSession(result);
+  } catch (error) {
+    status.textContent = `세계를 불러올 수 없습니다. (${error.message})`;
+  }
+}
+
+async function openWorldLoad() {
+  const dialog = document.querySelector("#worldLoadDialog");
+  const list = document.querySelector("#worldLoadList");
+  const status = document.querySelector("#worldLoadStatus");
+
+  dialog.hidden = false;
+  list.innerHTML = "";
+  status.textContent = "저장된 세계를 찾는 중...";
+
+  try {
+    const response = await fetch("/api/worlds");
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.error || "목록 조회 실패");
+
+    if (!result.worlds.length) {
+      status.textContent = "data/worlds 아래에 저장된 JSON이 없습니다.";
+      return;
+    }
+
+    status.textContent = `${result.worlds.length}개의 저장된 세계`;
+    list.innerHTML = result.worlds
+      .map((world) => `
+        <button class="world-load-item" type="button" data-world-file="${world.fileName}">
+          <strong>${world.title}</strong>
+          <span>${world.playerName || "PC"} · ${world.genre || "장르 미정"} · 턴 ${world.turn || 1} · ${world.lastSceneTitle || "장면 대기"}</span>
+          <span>${world.fileName}</span>
+        </button>
+      `)
+      .join("");
+
+    document.querySelectorAll("[data-world-file]").forEach((button) => {
+      button.addEventListener("click", () => loadWorldFile(button.dataset.worldFile));
+    });
+  } catch (error) {
+    status.textContent = `저장 목록을 불러올 수 없습니다. 로컬에서는 node server.js로 실행해 주세요. (${error.message})`;
+  }
+}
+
 function resolveAction(action) {
   const roll = Math.floor(Math.random() * 20) + 1;
   const success = roll >= 8;
@@ -1317,13 +1498,20 @@ function resolveAction(action) {
     : partial
       ? "원하는 것을 전부 얻지는 못했지만, 작은 단서와 새로운 압력이 남는다."
       : "길은 막히지 않았지만 비용이 생긴다. 피로가 늘고 상황은 조금 더 까다로워진다.";
+  const nextTurn = (state.runtime?.turn || 1) + 1;
+  const nextSceneTitle = success ? "작은 단서가 이어지는 순간" : partial ? "압력이 남은 실마리" : "비용이 생긴 다음 장면";
 
   state.recentChange = `${action}: ${resultLabel}`;
-  state.knownFacts.push(`${action} 판정 결과 ${resultLabel}`);
-  state.knownFacts = state.knownFacts.slice(-4);
+  state.knownFacts = compactKnownFacts([...state.knownFacts, factFromAction(action, resultLabel, state.log.length)]);
   state.log.push({ action, roll, resultLabel });
+  state.runtime = {
+    ...(state.runtime || {}),
+    turn: nextTurn,
+    currentSceneTitle: nextSceneTitle,
+  };
 
   document.querySelector("#rollStrip").textContent = `d20 ${roll} / ${resultLabel}`;
+  renderPlayHeader(state.savedWorld?.world, state.runtime);
   document.querySelector("#sceneText").textContent =
     `${action}. 주사위는 ${roll}을 가리켰다. ${resultText} ` +
     `이제 다음 상황은 방금 생긴 비용과 작은 성취를 함께 안고 이어진다.`;
@@ -1336,7 +1524,7 @@ function answerStatusQuestion(question) {
   const normalized = question.trim();
   if (!normalized) return "현재 상태, 목표, 알려진 정보, 최근 변화에 대해 물어볼 수 있습니다.";
   if (normalized.includes("목표")) return `장기 목표는 "${state.player.goal}", 현재 단기 목표는 "${state.player.shortGoal}"입니다.`;
-  if (normalized.includes("정보") || normalized.includes("단서")) return `현재 알고 있는 정보는 ${state.knownFacts.join(", ")}입니다.`;
+  if (normalized.includes("정보") || normalized.includes("단서")) return `현재 알고 있는 정보는 ${renderKnownFacts(state.knownFacts)}입니다.`;
   if (normalized.includes("상태") || normalized.includes("피로") || normalized.includes("사기") || normalized.includes("HP")) {
     return `HP ${state.player.hp}, 피로 ${state.player.fatigue}, 사기 ${state.player.morale}입니다.`;
   }
@@ -1378,8 +1566,12 @@ document.querySelector("#resetSetup").addEventListener("click", resetSetup);
 document.querySelector("#reviseStep").addEventListener("click", reviseCurrentStep);
 document.querySelector("#confirmStep").addEventListener("click", confirmCurrentStep);
 document.querySelector("#startSession").addEventListener("click", startSession);
+document.querySelector("#savePlay").addEventListener("click", savePlaySession);
+document.querySelector("#worldLoad").addEventListener("click", openWorldLoad);
+document.querySelector("#endSession").addEventListener("click", endSession);
 document.querySelector("#cancelWorldSave").addEventListener("click", closeWorldSaveDialog);
 document.querySelector("#confirmWorldSave").addEventListener("click", confirmWorldSave);
+document.querySelector("#cancelWorldLoad").addEventListener("click", closeWorldLoadDialog);
 document.querySelector("#refreshAfter").addEventListener("click", renderAfter);
 
 document.querySelectorAll(".choices button").forEach((button) => {
@@ -1404,3 +1596,4 @@ document.querySelector("#statusForm").addEventListener("submit", (event) => {
 
 renderSetup();
 renderState();
+renderTabLocks();

@@ -266,6 +266,11 @@ Rules:
     "currentSceneTitle": "",
     "lastPlayedAt": null
   },
+  "session": {
+    "knownFacts": [],
+    "recentChange": "세션 준비 중",
+    "log": []
+  },
   "timeline": [],
   "summary": {
     "daysPassed": 0,
@@ -281,6 +286,9 @@ Compatibility note:
 - Internal names can be readable webapp names.
 - When needed, adapters can compile to old `wf/ps/np/tl/su` prompt shapes.
 - The old GPTs prompt schema is reference material, not the runtime storage format.
+- `session.knownFacts` is not a log of every event. It stores only concise facts the PC has actually noticed, and the status view should render only the latest five.
+- `session.recentChange` is separate from known facts. It summarizes the latest action/result or save/load/session event.
+- `runtime.currentDate`, `runtime.currentTime`, `runtime.currentPlace`, and `runtime.currentSceneTitle` are required for 2부 loading and turn header rendering.
 
 ## 1부 세계 생성 UX
 
@@ -374,8 +382,11 @@ The webapp should show the main play panel and status panel together.
 
 ```text
 main play panel:
+  loaded world / PC / turn header
+  scene title
+  save / world load / session end actions
+  date-time-place block
   narrative
-  current time/location
   roll result
   choices
   free action input
@@ -383,22 +394,36 @@ main play panel:
 status panel:
   HP / fatigue / morale
   current goal
-  known facts
-  recent change
+  latest five PC-known facts
+  recent change as separate event summary
   allowed status Q&A
 ```
+
+2부 can start in either of two ways:
+
+1. Continue directly from 1부 after saving the compiled setup JSON.
+2. Load a previously saved world JSON from `data/worlds/`.
+
+The current local server exposes:
+
+| Route | Role |
+| --- | --- |
+| `POST /api/worlds` | Save compiled world/session JSON under `data/worlds/`, preserving unique filenames. |
+| `GET /api/worlds` | Return loadable world summaries: title, PC, genre, phase, turn, and last scene. |
+| `GET /api/worlds/{fileName}` | Load a selected world JSON into 2부. |
 
 ### Turn Pipeline
 
 ```mermaid
 flowchart TD
-  A["Player chooses option<br/>or declares free action"] --> B["Command Router"]
+  A0["Load saved world JSON<br/>or start from confirmed setup"] --> A["Player chooses option<br/>or declares free action"]
+  A --> B["Command Router"]
   B -->|status question| SQ["StatusAssistant route"]
   SQ --> SF["Allowed state slice filter"]
   SF --> SA["E4B status answer"]
   SA --> SR["Render in status panel"]
 
-  B -->|END| ER["EndingRenderer"]
+  B -->|END or session end button| ER["End session<br/>unlock 3부"]
   ER --> AS["AfterSession"]
 
   B -->|normal action| C["RuleEngine<br/>infer check, DC, roll"]
@@ -420,6 +445,9 @@ Rules:
 - `MasterProse` returns visible text, choices, and short summary.
 - World/NPC change candidates are suggestions only and must be validated.
 - The app writes canonical state and timeline.
+- The play header displays current loaded world, PC name, turn number, scene title, date, time, and place from canonical state.
+- `세계 로드` must replace the current play state from JSON rather than asking the model to reconstruct it.
+- `세션 종료` unlocks 3부 and moves the player to after-session review. Starting or loading a session locks 3부 again.
 
 ## Status Panel
 
@@ -434,7 +462,7 @@ Role:
 Allowed:
 
 - summarize canonical state
-- explain known information
+- explain only PC-known information
 - answer questions about HP, fatigue, morale, goals, known clues, NPC relationships, and recent logs
 - restate available options without choosing for the player
 
@@ -455,9 +483,18 @@ Routing:
 | Status Q&A | `StatusAssistant` | E4B is sufficient |
 | State changes | `StateApplier` | app only |
 
+Current status rendering contract:
+
+- `knownFacts`: latest five concise facts the PC has actually noticed.
+- `recentChange`: latest visible action/result, save/load marker, or session-end marker.
+- Do not store short-term goals, prologue readiness, roll math, or general system events as known facts.
+- If no PC-known facts exist, render an empty-state message instead of inventing information.
+
 ## 3부 애프터 세션
 
 After session is part of play. It is where the player sees what the session meant and what can continue.
+
+3부 must remain disabled until 2부 is explicitly ended. The tab is locked during setup, during a loaded/active session, and after restarting or loading another session. It unlocks only when the session reaches an ending trigger or the player presses `세션 종료`.
 
 After session should summarize:
 
@@ -471,7 +508,10 @@ After session should summarize:
 
 ```mermaid
 flowchart TD
-  A["Session log"] --> B["Deterministic summary builder"]
+  A0["2부 active"] --> A1{"Ending trigger<br/>or 세션 종료"}
+  A1 -->|No| A0
+  A1 -->|Yes| A["Session log"]
+  A --> B["Deterministic summary builder"]
   B --> C["PromiseCard review"]
   B --> D["World/NPC changes"]
   B --> E["Open threads"]
@@ -759,24 +799,31 @@ Primary navigation:
 
 - `1부 세계`: setup wizard shell
 - `2부 플레이`: main play panel + status panel
-- `3부 애프터`: session summary, promise-card review, next seed, export/replay
+- `3부 애프터`: disabled until 2부 ends; then session summary, promise-card review, next seed, export/replay
 
 1부 current shell:
 
 - left rail with seed and circled-number steps
-- right top navigation: previous, save, next
-- step draft card
-- revision request box
-- revise and confirm actions
+- center stage step draft card
+- right control panel with request input, revise action, and right-aligned save/confirm actions
 - prologue start disabled until setup is confirmed
 
 2부 current shell:
 
+- scene title header with loaded world, PC name, and turn number
+- save, world load, and session end buttons
+- separate date/time/place block
 - narrative area
 - roll result strip
 - choice buttons
 - free action input
 - status panel with deterministic state and allowed Q&A
+- known facts and recent change are rendered as separate state surfaces
+
+3부 current shell:
+
+- disabled until explicit session end
+- summary cards for important choices, promise-card review, and next seed
 
 Avoid exposing raw JSON in normal play. Add export under advanced menu later.
 
@@ -808,6 +855,8 @@ Phase 1:
 - Build static setup wizard shell with dummy data.
 - Add SetupState shape and step navigation behavior.
 - Build deterministic status view and simple turn log.
+- Add local JSON save/load shell for `data/worlds/`.
+- Lock after-session until 2부 ends.
 
 Phase 2:
 

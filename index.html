@@ -10,13 +10,13 @@
     <div class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Winterrain TRPG</p>
-          <h1>세션 만들기</h1>
+          <p class="eyebrow">당신이 만드는 세계의 이야기</p>
+          <h1>겨울비 RPG</h1>
         </div>
         <nav class="tabs" aria-label="Session parts">
           <button class="tab is-active" type="button" data-tab="world">1부 세계</button>
           <button class="tab" type="button" data-tab="play">2부 플레이</button>
-          <button class="tab" type="button" data-tab="after">3부 애프터</button>
+          <button class="tab" type="button" data-tab="after" disabled aria-disabled="true">3부 애프터</button>
         </nav>
       </header>
 
@@ -82,9 +82,21 @@
               <div class="section-head">
                 <div>
                   <p class="eyebrow">Session Play</p>
-                  <h2 id="play-title">상황 제시와 판정</h2>
+                  <h2 id="play-title">장면 대기</h2>
+                  <p id="playSceneMeta" class="play-scene-meta">세계와 캐릭터를 불러오면 표시됩니다.</p>
                 </div>
-                <div id="rollStrip" class="roll-strip">d20 대기</div>
+                <div class="play-actions">
+                  <button id="savePlay" class="secondary-action" type="button">저장</button>
+                  <button id="worldLoad" class="secondary-action" type="button">세계 로드</button>
+                  <button id="endSession" class="secondary-action" type="button">세션 종료</button>
+                  <div id="rollStrip" class="roll-strip">d20 대기</div>
+                </div>
+              </div>
+
+              <div id="sceneTimePlace" class="scene-time-place">
+                <span>📅 -</span>
+                <span>🕰️ -</span>
+                <span>🏛️ -</span>
               </div>
 
               <div id="sceneText" class="scene-text">
@@ -178,6 +190,18 @@
           <div class="modal-actions">
             <button id="cancelWorldSave" class="secondary-action" type="button">아니오</button>
             <button id="confirmWorldSave" class="primary-action" type="button">예</button>
+          </div>
+        </section>
+      </div>
+
+      <div id="worldLoadDialog" class="modal-backdrop" hidden>
+        <section class="modal world-load-modal" role="dialog" aria-modal="true" aria-labelledby="worldLoadTitle">
+          <p class="eyebrow">World Load</p>
+          <h2 id="worldLoadTitle">세계 로드</h2>
+          <p id="worldLoadStatus" class="modal-status"></p>
+          <div id="worldLoadList" class="world-load-list"></div>
+          <div class="modal-actions">
+            <button id="cancelWorldLoad" class="secondary-action" type="button">닫기</button>
           </div>
         </section>
       </div>

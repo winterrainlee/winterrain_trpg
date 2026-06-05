@@ -138,6 +138,12 @@ h3 {
   padding: 0 14px;
 }
 
+.tab:disabled,
+.secondary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .danger-action {
   border-color: rgba(157, 78, 47, 0.45);
   background: rgba(157, 78, 47, 0.08);
@@ -525,6 +531,21 @@ textarea {
   padding: 18px;
 }
 
+.play-scene-meta {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.play-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .roll-strip,
 .route-chip {
   min-height: 34px;
@@ -543,6 +564,19 @@ textarea {
 .route-chip {
   background: rgba(31, 111, 104, 0.12);
   color: var(--teal);
+}
+
+.scene-time-place {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-weight: 850;
 }
 
 .scene-text {
@@ -672,6 +706,10 @@ dd {
   padding: 18px;
 }
 
+.world-load-modal {
+  width: min(620px, 100%);
+}
+
 .modal-copy {
   margin-bottom: 12px;
   color: var(--ink);
@@ -693,6 +731,36 @@ dd {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.world-load-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(52vh, 420px);
+  overflow: auto;
+  margin-bottom: 14px;
+}
+
+.world-load-item {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 12px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.world-load-item strong {
+  font-size: 0.96rem;
+}
+
+.world-load-item span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 750;
 }
 
 @media (max-width: 860px) {

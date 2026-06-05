@@ -71,6 +71,66 @@ async function saveWorld(request, response) {
   }
 }
 
+function readWorldSummaries() {
+  if (!fs.existsSync(worldsDir)) return [];
+
+  return fs.readdirSync(worldsDir)
+    .filter((fileName) => fileName.endsWith(".json"))
+    .map((fileName) => {
+      const filePath = path.join(worldsDir, fileName);
+      const stat = fs.statSync(filePath);
+      try {
+        const world = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        return {
+          fileName,
+          path: path.relative(rootDir, filePath),
+          updatedAt: world.saveMeta?.updatedAt || stat.mtime.toISOString(),
+          title: world.saveMeta?.displayTitle || world.title || fileName,
+          playerName: world.saveMeta?.playerName || world.player?.name || "PC",
+          genre: world.saveMeta?.genre || world.world?.genre || "",
+          phase: world.saveMeta?.phase || world.runtime?.phase || "setup_ready",
+          turn: world.saveMeta?.turn || world.runtime?.turn || 1,
+          lastSceneTitle: world.saveMeta?.lastSceneTitle || world.runtime?.currentSceneTitle || "",
+        };
+      } catch (error) {
+        return {
+          fileName,
+          path: path.relative(rootDir, filePath),
+          updatedAt: stat.mtime.toISOString(),
+          title: fileName,
+          error: error.message,
+        };
+      }
+    })
+    .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+}
+
+function listWorlds(response) {
+  sendJson(response, 200, { ok: true, worlds: readWorldSummaries() });
+}
+
+function loadWorld(requestUrl, response) {
+  try {
+    const rawFileName = decodeURIComponent(requestUrl.pathname.replace("/api/worlds/", ""));
+    const fileName = safeFileName(rawFileName);
+    const targetPath = path.join(worldsDir, fileName);
+
+    if (!targetPath.startsWith(worldsDir) || !fs.existsSync(targetPath)) {
+      sendJson(response, 404, { ok: false, error: "World file not found" });
+      return;
+    }
+
+    sendJson(response, 200, {
+      ok: true,
+      fileName,
+      path: path.relative(rootDir, targetPath),
+      world: JSON.parse(fs.readFileSync(targetPath, "utf8")),
+    });
+  } catch (error) {
+    sendJson(response, 400, { ok: false, error: error.message });
+  }
+}
+
 function serveStatic(request, response) {
   const requestUrl = new URL(request.url, `http://${request.headers.host}`);
   const pathname = requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname;
@@ -101,6 +161,18 @@ const server = http.createServer((request, response) => {
   if (request.method === "POST" && request.url === "/api/worlds") {
     saveWorld(request, response);
     return;
+  }
+
+  if (request.method === "GET") {
+    const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+    if (requestUrl.pathname === "/api/worlds") {
+      listWorlds(response);
+      return;
+    }
+    if (requestUrl.pathname.startsWith("/api/worlds/")) {
+      loadWorld(requestUrl, response);
+      return;
+    }
   }
 
   if (request.method === "GET" || request.method === "HEAD") {
