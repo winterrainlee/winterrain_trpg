@@ -36,6 +36,12 @@ const pcProfiles = [
       ["마르타", "약초원 관리인", "협력 가능 / 경계", "실용적인 반말 섞인 해요체", "12"],
       ["토마스", "문지기", "불안 / 목격자", "말끝을 흐리는 짧은 문장", "-8"],
     ],
+    prologueMeta: {
+      sceneTitle: "봉인된 필사실 앞",
+      date: "성 마티아 축일",
+      time: "저녁 종 직후",
+      place: "수도원 동쪽 회랑, 봉인된 필사실 앞",
+    },
     prologue:
       "저녁 종이 울린 뒤, 엘리안은 봉인된 필사실 앞에 서 있다. 문은 잠겨 있지만 평소와 다른 잉크 얼룩이 바닥에 남아 있고, 있어야 할 작은 장부의 자리가 비어 있다.",
   },
@@ -76,6 +82,12 @@ const pcProfiles = [
       ["엘리안", "필사 보조원", "기록 협력자 / 보호 욕구", "조심스러운 해요체", "10"],
       ["루카", "병실 수도사", "같은 비밀을 아는 사람 / 압박", "상냥하지만 캐묻는 말투", "-12"],
     ],
+    prologueMeta: {
+      sceneTitle: "쓴 냄새가 남은 복도",
+      date: "성 마티아 축일",
+      time: "저녁 종이 그친 뒤",
+      place: "수도원 병실과 봉인된 필사실 사이의 복도",
+    },
     prologue:
       "저녁 종 뒤, 마르타는 병실에서 맡은 낯선 쓴 냄새가 봉인된 필사실 복도에도 남아 있음을 알아차린다. 복도는 이미 조용해졌지만, 냄새는 아직 사라지지 않았고 누군가 급히 지나간 흔적이 희미하다.",
   },
@@ -116,6 +128,12 @@ const pcProfiles = [
       ["아벨 원장", "수도원장", "감시자 / 불신", "차갑고 단정한 존댓말", "-15"],
       ["니코", "시장 연락책", "가벼운 빚 / 바깥 소문", "빠르고 장난스러운 말투", "6"],
     ],
+    prologueMeta: {
+      sceneTitle: "급히 잠긴 뒷문",
+      date: "성 마티아 축일",
+      time: "저녁 종 직후",
+      place: "수도원 북쪽 뒷문과 바깥 흙길",
+    },
     prologue:
       "요한은 저녁 종 직후, 원래 닫혀 있어야 할 수도원 뒷문 앞에 멈춰 선다. 빗장은 안쪽에서 급히 걸린 흔적이 있고, 바깥 흙길에는 아직 마르지 않은 발자국이 끊겨 있다.",
   },
@@ -156,6 +174,12 @@ const pcProfiles = [
       ["엘리안", "필사 보조원", "제자 같은 동료 / 신뢰", "조심스러운 해요체", "14"],
       ["세라", "외부 감찰관", "기록을 요구하는 압력 / 경계", "건조한 공식 어투", "-10"],
     ],
+    prologueMeta: {
+      sceneTitle: "비어 있는 색인 번호",
+      date: "성 마티아 축일",
+      time: "늦은 저녁",
+      place: "수도원 기록 보관실",
+    },
     prologue:
       "베네딕트는 늦은 저녁 기록 보관실에서 봉인 장부 목록을 펼쳐 두고 있다. 목록 한가운데에는 존재해서는 안 되는 여백 번호가 남아 있고, 마지막 열람 서명란은 누군가 일부러 흐린 듯 번져 있다.",
   },
@@ -196,6 +220,12 @@ const pcProfiles = [
       ["베네딕트", "문서 보관인", "검산을 맡긴 선배 / 신뢰", "정중한 하십시오체", "9"],
       ["오스카", "외부 후원 대리인", "돈의 흐름 / 위험", "매끄러운 존댓말", "-14"],
     ],
+    prologueMeta: {
+      sceneTitle: "맞지 않는 합계",
+      date: "성 마티아 축일",
+      time: "저녁 종 직후",
+      place: "수도원 작은 회계실",
+    },
     prologue:
       "리나는 저녁 종 직후, 작은 회계실 책상 위에 후원금 장부와 식량 배급표를 나란히 펼쳐 둔다. 합계는 사라진 필사실 장부의 마지막 기록과 정확히 같은 금액만큼 어긋나 있다.",
   },
@@ -324,6 +354,14 @@ function buildGoalsNpcDraft(profile) {
   };
 }
 
+function buildPrologueDraft(profile) {
+  return {
+    kind: "prologue",
+    ...profile.prologueMeta,
+    summary: profile.prologue,
+  };
+}
+
 const setupSteps = [
   {
     id: "frame",
@@ -402,10 +440,7 @@ const setupSteps = [
     label: "프롤로그",
     kicker: "Prologue Seed",
     placeholder: "첫 장면의 시간, 장소, 상황 압력을 조정할 수 있습니다.",
-    draft: {
-      kind: "paragraph",
-      text: pcProfiles[0].prologue,
-    },
+    draft: buildPrologueDraft(pcProfiles[0]),
   },
 ];
 
@@ -437,7 +472,13 @@ const state = {
     promise: "추리·수사: 범인 있음, 공정 단서, 플레이어 추론 존중",
   },
   npcs: ["아벨 원장: 침묵하는 권위자", "마르타: 약초원 관리인", "토마스: 불안한 문지기"],
-  prologueSeed: setupSteps[6].draft.text,
+  prologueSeed: setupSteps[6].draft.summary,
+  prologueMeta: {
+    sceneTitle: setupSteps[6].draft.sceneTitle,
+    date: setupSteps[6].draft.date,
+    time: setupSteps[6].draft.time,
+    place: setupSteps[6].draft.place,
+  },
   knownFacts: ["아직 첫 장면이 시작되지 않았다"],
   recentChange: "세션 준비 중",
   log: [],
@@ -517,6 +558,19 @@ function renderDraft(draft, revision) {
     `;
   }
 
+  if (draft.kind === "prologue") {
+    return `
+      <dl class="draft-list">
+        <div><dt>장면 제목</dt><dd>${draft.sceneTitle}</dd></div>
+        <div><dt>날짜</dt><dd>${draft.date}</dd></div>
+        <div><dt>시각</dt><dd>${draft.time}</dd></div>
+        <div><dt>장소</dt><dd>${draft.place}</dd></div>
+      </dl>
+      <p class="draft-context prologue-summary">${draft.summary}</p>
+      ${revision ? `<p class="revision-note">${revision}</p>` : ""}
+    `;
+  }
+
   if (draft.kind === "table") {
     return `<div class="npc-table">${draft.rows
       .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
@@ -590,7 +644,7 @@ function applyCandidate(index) {
   setupState.steps[pcStepIndex].draft.selectedIndex = index;
   setupState.steps[characterStepIndex].draft = buildCharacterDraft(selected);
   setupState.steps[goalsNpcStepIndex].draft = buildGoalsNpcDraft(selected);
-  setupState.steps[prologueStepIndex].draft = { kind: "paragraph", text: selected.prologue };
+  setupState.steps[prologueStepIndex].draft = buildPrologueDraft(selected);
 
   state.player.role = selected.role;
   state.player.goal = selected.goals[0][1];
@@ -600,6 +654,7 @@ function applyCandidate(index) {
   state.player.morale = selected.playerState.morale;
   state.npcs = selected.npcs.map(([name, role, relation]) => `${name}: ${role}, ${relation}`);
   state.prologueSeed = selected.prologue;
+  state.prologueMeta = { ...selected.prologueMeta };
   setupState.steps[pcStepIndex].confirmed = true;
   setupState.steps[pcStepIndex].status = "confirmed";
   for (let stepIndex = characterStepIndex; stepIndex < setupState.steps.length; stepIndex += 1) {
@@ -716,7 +771,14 @@ function compileWorldJson() {
   const prologue = getDraftById("prologue");
   const now = new Date().toISOString();
 
-  const initialKnownFacts = [goalsNpc.goals[1][1], prologue.text];
+  const prologueStart = {
+    sceneTitle: prologue.sceneTitle,
+    date: prologue.date,
+    time: prologue.time,
+    place: prologue.place,
+    summary: prologue.summary,
+  };
+  const initialKnownFacts = [goalsNpc.goals[1][1], prologueStart.summary];
 
   return {
     schemaVersion: 1,
@@ -767,7 +829,8 @@ function compileWorldJson() {
       speech,
       relationshipScore: Number(relationshipScore),
     })),
-    prologueSeed: prologue.text,
+    prologueSeed: prologueStart.summary,
+    prologue: prologueStart,
     session: {
       knownFacts: initialKnownFacts,
       recentChange: "세션 준비 중",
@@ -788,12 +851,13 @@ function renderState() {
 function beginSession() {
   const savedWorld = state.savedWorld?.world;
   state.knownFacts = savedWorld?.session.knownFacts || [state.player.shortGoal, state.prologueSeed];
+  const prologue = savedWorld?.prologue || { ...state.prologueMeta, summary: state.prologueSeed };
   state.recentChange = "프롤로그가 시작되었다";
   state.log = [];
 
   document.querySelector("#sceneText").textContent =
-    `${state.player.role}은 ${state.world.reference}의 첫 장면에 들어선다. ` +
-    `${state.prologueSeed} 이제 플레이어는 자유롭게 행동을 선언할 수 있다.`;
+    `[턴 1] ${prologue.sceneTitle}. ${prologue.date}, ${prologue.time}, ${prologue.place}. ` +
+    `${prologue.summary} 이제 플레이어는 자유롭게 행동을 선언할 수 있다.`;
   document.querySelector("#rollStrip").textContent = "d20 대기";
 
   renderState();

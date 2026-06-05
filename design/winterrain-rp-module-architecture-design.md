@@ -159,6 +159,13 @@ Rules:
     "speech": ""
   },
   "npcs": {},
+  "prologue": {
+    "sceneTitle": "",
+    "date": "",
+    "time": "",
+    "place": "",
+    "summary": ""
+  },
   "timeline": [],
   "summary": {
     "daysPassed": 0,
@@ -209,7 +216,7 @@ right stage:
 | `④ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
 | `⑤ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, HP/피로/사기를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status` |
 | `⑥ 목표와 NPC` | 장기/단기 목표와 2~3명의 핵심 NPC, 관계, 태도, 말투 생성 | `goals`, `npcs` draft |
-| `⑦ 프롤로그` | 첫 장면의 시간, 공간, 상황 압력을 간략히 준비 | `prologueSeed` |
+| `⑦ 프롤로그` | 첫 장면의 제목, 날짜, 시각, 장소, 상황 압력을 간략히 준비 | `prologue` |
 
 ### Setup Wizard Flow
 
