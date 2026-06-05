@@ -507,8 +507,10 @@ function renderDraft(draft, revision) {
       <dl class="draft-list">${draft.goals
         .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
         .join("")}</dl>
-      <div class="npc-table with-speech">${draft.npcs
-        .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
+      <div class="npc-table with-speech">
+        <div class="table-head"><span>이름</span><span>역할</span><span>관계·태그</span><span>말투</span><span>관계치</span></div>
+        ${draft.npcs
+          .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
         .join("")}</div>
       ${revision ? `<p class="revision-note">${revision}</p>` : ""}
     `;
