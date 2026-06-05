@@ -439,6 +439,9 @@ function renderSetup() {
     button.addEventListener("click", () => selectCandidate(Number(button.dataset.candidateIndex)));
   });
 
+  const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
+  const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
+  document.querySelector("#reselectPc").hidden = !(setupState.steps[pcStepIndex].confirmed && setupState.current >= characterStepIndex);
   document.querySelector("#prevStep").disabled = setupState.current === 0;
   document.querySelector("#nextStep").textContent = setupState.current === setupSteps.length - 1 ? "프롤로그 준비" : "다음 단계로";
   document.querySelector("#nextStep").disabled = !currentState.confirmed;
@@ -452,7 +455,7 @@ function saveCurrentStep() {
   renderSetup();
 }
 
-function selectCandidate(index) {
+function applyCandidate(index) {
   const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
   const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
   const goalsNpcStepIndex = setupSteps.findIndex((step) => step.id === "goals-npc");
@@ -483,12 +486,31 @@ function selectCandidate(index) {
   }
   setupState.current = characterStepIndex;
   renderState();
+}
+
+function selectCandidate(index) {
+  applyCandidate(index);
+  setupState.current = setupSteps.findIndex((step) => step.id === "character");
+  renderSetup();
+}
+
+function reselectCandidate() {
+  const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
+  const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
+  setupState.steps[pcStepIndex].confirmed = false;
+  setupState.steps[pcStepIndex].status = "drafted";
+  for (let stepIndex = characterStepIndex; stepIndex < setupState.steps.length; stepIndex += 1) {
+    setupState.steps[stepIndex].status = "locked";
+    setupState.steps[stepIndex].confirmed = false;
+    setupState.steps[stepIndex].saved = false;
+  }
+  setupState.current = pcStepIndex;
   renderSetup();
 }
 
 function confirmCurrentStep() {
   if (setupSteps[setupState.current].id === "pc") {
-    selectCandidate(0);
+    selectCandidate(setupState.selectedCandidateIndex);
     return;
   }
 
@@ -619,6 +641,7 @@ tabs.forEach((tab) => tab.addEventListener("click", () => showTab(tab.dataset.ta
 document.querySelector("#prevStep").addEventListener("click", () => moveStep(-1));
 document.querySelector("#nextStep").addEventListener("click", () => moveStep(1));
 document.querySelector("#saveStep").addEventListener("click", saveCurrentStep);
+document.querySelector("#reselectPc").addEventListener("click", reselectCandidate);
 document.querySelector("#reviseStep").addEventListener("click", reviseCurrentStep);
 document.querySelector("#confirmStep").addEventListener("click", confirmCurrentStep);
 document.querySelector("#startSession").addEventListener("click", startSession);
