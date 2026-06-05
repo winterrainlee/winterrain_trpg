@@ -286,7 +286,9 @@ This mirrors tabletop RPG practice: world creation and after-session reflection 
 
 World creation is the expectation-building phase.
 
-The user does not only choose a setting. The user confirms the small session rulebook:
+The webapp should preserve the shape of `prompt/Setup.md`: the user gives a seed, then the AI master turns it into a concrete world draft, promise card, PC candidates, speech style, goals, NPCs, abilities/status, and prologue seed through confirmation checkpoints.
+
+The user does not only fill a one-line form or choose a setting. The user and AI master co-create the small session rulebook:
 
 - genre: what kind of play this session promises
 - background: where that play becomes vivid
@@ -296,6 +298,19 @@ The user does not only choose a setting. The user confirms the small session rul
 - promise card: what the session should preserve or reward
 - protagonist, goal, and initial situation
 
+Recommended setup checkpoints:
+
+1. world seed input
+2. world frame and world context draft
+3. world revision or confirmation
+4. genre promise card and toggles
+5. five PC candidates
+6. PC speech style
+7. long-term and short-term goals
+8. two or three initial NPCs
+9. abilities, modifiers, and initial status
+10. prologue seed
+
 Core principle:
 
 ```text
@@ -303,6 +318,8 @@ Core principle:
 ```
 
 The app owns confirmation state. LLM drafts are candidates until the user accepts them.
+
+`prompt/Setup.md` remains a reference for this flow, but `prompt/` is GPTs-only material and is ignored by git. New webapp implementation should translate the setup contract into app modules rather than depending on that prompt file at runtime.
 
 ### 2부 세션 플레이
 

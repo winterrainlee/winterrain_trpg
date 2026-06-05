@@ -180,14 +180,120 @@ label.wide {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
-  min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: var(--ink);
   padding: 0 12px;
+}
+
+input,
+select {
+  min-height: 44px;
+}
+
+textarea {
+  min-height: 172px;
+  resize: vertical;
+  padding: 12px;
+}
+
+.setup-workbench {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.58fr) minmax(0, 1.42fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.seed-panel,
+.draft-panel article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8faf7;
+  padding: 16px;
+}
+
+.full-action {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.setup-steps {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-steps li {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.setup-steps li.is-current {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.draft-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.draft-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.draft-list div,
+.compact-copy,
+.candidate-list {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.draft-context {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
+.compact-copy {
+  margin-bottom: 12px;
+}
+
+.candidate-list {
+  display: grid;
+  gap: 8px;
+}
+
+.candidate-list button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 750;
+}
+
+.candidate-list button.is-selected {
+  border-color: var(--teal);
+  background: rgba(31, 111, 104, 0.1);
+  color: var(--teal);
 }
 
 .play-layout {
@@ -329,6 +435,8 @@ dd {
   .section-head,
   .play-layout,
   .setup-grid,
+  .setup-workbench,
+  .draft-list,
   .after-grid {
     grid-template-columns: 1fr;
   }

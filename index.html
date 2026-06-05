@@ -25,69 +25,58 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">World Creation</p>
-              <h2 id="world-title">장르와 세계를 함께 확정한다</h2>
+              <h2 id="world-title">AI 마스터와 세계를 구체화한다</h2>
             </div>
-            <button id="startSession" class="primary-action" type="button">세션 시작</button>
+            <button id="startSession" class="primary-action" type="button">프롤로그 시작</button>
           </div>
 
-          <form class="setup-grid">
-            <label>
-              <span>장르</span>
-              <select id="genre">
-                <option>추리</option>
-                <option>탐사</option>
-                <option>생활/모험</option>
-                <option>정치</option>
-                <option>전쟁</option>
-              </select>
-            </label>
-            <label>
-              <span>배경</span>
-              <input id="setting" value="중세 수도원" />
-            </label>
-            <label>
-              <span>세계 톤</span>
-              <select id="tone">
-                <option>bleak_noir</option>
-                <option>hopeful</option>
-                <option>realistic</option>
-                <option>tragic</option>
-              </select>
-            </label>
-            <label>
-              <span>난이도</span>
-              <select id="difficulty">
-                <option>easy</option>
-                <option>normal</option>
-                <option>hard</option>
-              </select>
-            </label>
-            <label>
-              <span>실패 비용</span>
-              <select id="failureCost">
-                <option>low</option>
-                <option>medium</option>
-                <option>high</option>
-              </select>
-            </label>
-            <label>
-              <span>약속 카드</span>
-              <select id="promise">
-                <option>fair clues, small wins</option>
-                <option>discovery is rewarded</option>
-                <option>recoverable setbacks</option>
-                <option>public narrative matters</option>
-              </select>
-            </label>
-            <label class="wide">
-              <span>주인공</span>
-              <input id="protagonist" value="젊은 필사 보조원" />
-            </label>
-            <label class="wide">
-              <span>초기 목표</span>
-              <input id="goal" value="봉인된 필사실에서 사라진 장부의 행방을 찾는다" />
-            </label>
-          </form>
+          <div class="setup-workbench">
+            <section class="seed-panel">
+              <label>
+                <span>세계 seed</span>
+                <textarea id="worldSeed">중세 수도원 추리. 어둡지만 플레이 난이도는 쉽고, 작은 승리는 남았으면 좋겠다.</textarea>
+              </label>
+              <button id="draftSetup" class="secondary-action full-action" type="button">AI 초안 만들기</button>
+              <ol class="setup-steps" aria-label="Setup checkpoints">
+                <li class="is-current">세계 골격</li>
+                <li>세계 맥락</li>
+                <li>장르 약속</li>
+                <li>PC 후보</li>
+                <li>목표와 NPC</li>
+                <li>프롤로그 seed</li>
+              </ol>
+            </section>
+
+            <section class="draft-panel" aria-live="polite">
+              <article>
+                <p class="eyebrow">World Draft</p>
+                <dl class="draft-list">
+                  <div><dt>장르</dt><dd id="draftGenre">초안 대기</dd></div>
+                  <div><dt>시대/기술</dt><dd id="draftTech">초안 대기</dd></div>
+                  <div><dt>참조 세계</dt><dd id="draftReference">초안 대기</dd></div>
+                  <div><dt>분위기</dt><dd id="draftTone">초안 대기</dd></div>
+                  <div><dt>핵심 갈등</dt><dd id="draftConflict">초안 대기</dd></div>
+                </dl>
+                <p id="draftContext" class="draft-context">seed를 바탕으로 세계 배경 요약이 만들어집니다.</p>
+              </article>
+
+              <article>
+                <p class="eyebrow">Promise / PC</p>
+                <div id="promiseDraft" class="compact-copy">장르 약속 카드가 아직 없습니다.</div>
+                <div id="pcDraft" class="candidate-list">PC 후보가 아직 없습니다.</div>
+              </article>
+
+              <article>
+                <p class="eyebrow">Opening</p>
+                <dl class="draft-list">
+                  <div><dt>장기 목표</dt><dd id="draftMainGoal">초안 대기</dd></div>
+                  <div><dt>단기 목표</dt><dd id="draftShortGoal">초안 대기</dd></div>
+                  <div><dt>초기 NPC</dt><dd id="draftNpcs">초안 대기</dd></div>
+                </dl>
+                <p id="prologueSeed" class="draft-context">프롤로그 seed가 아직 없습니다.</p>
+              </article>
+            </section>
+          </div>
         </section>
 
         <section id="play" class="view" aria-labelledby="play-title">
