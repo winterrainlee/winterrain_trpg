@@ -329,6 +329,10 @@ textarea {
   color: var(--muted);
 }
 
+.character-fields {
+  margin-top: 14px;
+}
+
 .candidate-list {
   display: grid;
   gap: 8px;
@@ -356,13 +360,48 @@ textarea {
   gap: 8px;
 }
 
-.npc-table div {
+.ability-table,
+.status-table {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.4fr 56px;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.npc-table div,
+.ability-table div,
+.status-table div {
+  display: grid;
   gap: 8px;
   align-items: center;
   border-top: 1px solid var(--line);
   padding-top: 8px;
+}
+
+.npc-table div {
+  grid-template-columns: 1fr 1fr 1.4fr 56px;
+}
+
+.npc-table.with-speech div {
+  grid-template-columns: 1fr 1fr 1.3fr 1.3fr 56px;
+}
+
+.ability-table div,
+.status-table div {
+  grid-template-columns: 1.2fr 0.5fr 1.8fr;
+}
+
+.table-head {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.system-note {
+  margin: 14px 0 0;
+  border-left: 4px solid var(--gold);
+  padding: 10px 12px;
+  background: rgba(180, 138, 53, 0.12);
+  color: #6d531e;
 }
 
 .revision-box {
@@ -525,6 +564,8 @@ dd {
   .step-actions,
   .draft-list,
   .npc-table div,
+  .ability-table div,
+  .status-table div,
   .after-grid {
     grid-template-columns: 1fr;
   }

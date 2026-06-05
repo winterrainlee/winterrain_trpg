@@ -60,53 +60,59 @@ const setupSteps = [
     },
   },
   {
-    id: "voice-goal",
+    id: "character",
     mark: "⑤",
-    label: "말투와 목표",
-    kicker: "Voice / Goals",
-    placeholder: "PC 말투, 장기 목표, 단기 목표의 방향을 조정할 수 있습니다.",
+    label: "캐릭터 상세",
+    kicker: "Character Detail",
+    placeholder: "PC 배경, 말투, 능력치, 초기 상태를 더 구체적으로 조정할 수 있습니다.",
     draft: {
-      kind: "fields",
+      kind: "character",
+      background:
+        "엘리안은 수도원 필사실에서 장부 정리와 필사 보조를 맡아 왔다. 그는 종소리, 잉크 냄새, 책상 배치처럼 남들이 지나치는 변화를 오래 기억하지만, 높은 직위의 수도사가 말하면 쉽게 물러선다.",
       fields: [
-        ["PC 말투", "해요체"],
-        ["장기 목표", "사라진 장부와 의문사의 진실을 밝힌다"],
-        ["단기 목표", "봉인된 필사실 주변의 첫 단서를 확인한다"],
-      ],
-    },
-  },
-  {
-    id: "npc",
-    mark: "⑥",
-    label: "주요 NPC",
-    kicker: "Initial NPCs",
-    placeholder: "NPC 관계, 태도, 말투, 비밀스러운 압력을 조정할 수 있습니다.",
-    draft: {
-      kind: "table",
-      rows: [
-        ["아벨 원장", "수도원장", "권위자 / 침묵", "0"],
-        ["마르타", "약초원 관리인", "협력 가능 / 경계", "12"],
-        ["토마스", "문지기", "불안 / 목격자", "-8"],
-      ],
-    },
-  },
-  {
-    id: "status",
-    mark: "⑦",
-    label: "능력치와 상태",
-    kicker: "Abilities / Status",
-    placeholder: "PC가 더 약하거나 강하게 시작하길 원하면 적어주세요.",
-    draft: {
-      kind: "fields",
-      fields: [
+        ["말투", "조심스러운 해요체. 확신이 생기면 짧고 단단하게 말한다."],
+        ["가치관", "진실은 공동체를 다치게 하더라도 기록되어야 한다."],
         ["강점", "관찰력, 끈기"],
         ["결함", "권위 앞에서 위축됨"],
-        ["초기 상태", "HP 70 / 피로 10 / 사기 60"],
+      ],
+      abilities: [
+        ["STR 힘", "9", "-1"],
+        ["DEX 민첩", "12", "+1"],
+        ["CON 체력", "10", "+0"],
+        ["INT 지능", "14", "+2"],
+        ["WIS 통찰", "15", "+2"],
+        ["CHA 매력", "11", "+0"],
+      ],
+      status: [
+        ["건강 HP", "70", "부상 없음"],
+        ["피로", "10", "긴장했지만 움직일 수 있음"],
+        ["사기", "60", "불안 속에서도 진실을 알고 싶어 함"],
+      ],
+    },
+  },
+  {
+    id: "goals-npc",
+    mark: "⑥",
+    label: "목표와 NPC",
+    kicker: "Goals / NPCs",
+    placeholder: "목표의 방향, NPC 관계, 태도, 말투, 비밀스러운 압력을 조정할 수 있습니다.",
+    draft: {
+      kind: "goalsNpc",
+      goals: [
+        ["장기 목표", "사라진 장부와 의문사의 진실을 밝힌다"],
+        ["단기 목표", "봉인된 필사실 주변의 첫 단서를 확인한다"],
+        ["진행 표시", "단기 0% / 전체 0%"],
+      ],
+      npcs: [
+        ["아벨 원장", "수도원장", "권위자 / 침묵", "낮고 느린 명령형", "0"],
+        ["마르타", "약초원 관리인", "협력 가능 / 경계", "실용적인 반말 섞인 해요체", "12"],
+        ["토마스", "문지기", "불안 / 목격자", "말끝을 흐리는 짧은 문장", "-8"],
       ],
     },
   },
   {
     id: "prologue",
-    mark: "⑧",
+    mark: "⑦",
     label: "프롤로그",
     kicker: "Prologue Seed",
     placeholder: "첫 장면의 장소, 사건 강도, 시작 선택지를 조정할 수 있습니다.",
@@ -146,7 +152,7 @@ const state = {
     promise: "추리·수사: 범인 있음, 공정 단서, 플레이어 추론 존중",
   },
   npcs: ["아벨 원장: 침묵하는 권위자", "마르타: 약초원 관리인", "토마스: 불안한 문지기"],
-  prologueSeed: setupSteps[7].draft.text,
+  prologueSeed: setupSteps[6].draft.text,
   knownFacts: ["아직 첫 장면이 시작되지 않았다"],
   recentChange: "세션 준비 중",
   log: [],
@@ -164,7 +170,7 @@ function statusLabel(status) {
   return {
     locked: "대기",
     drafted: "초안",
-    saved: "저장",
+    saved: "임시",
     confirmed: "확정",
   }[status];
 }
@@ -182,8 +188,39 @@ function renderDraft(draft, revision) {
 
   if (draft.kind === "candidates") {
     return `<div class="candidate-list">${draft.candidates
-      .map((candidate, index) => `<button type="button" class="${index === 0 ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
+      .map((candidate, index) => `<button type="button" data-candidate-index="${index}" class="${index === 0 ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
       .join("")}</div>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  }
+
+  if (draft.kind === "character") {
+    return `
+      <p class="draft-context">${draft.background}</p>
+      <dl class="draft-list character-fields">${draft.fields
+        .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
+        .join("")}</dl>
+      <div class="ability-table">
+        <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
+        ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
+      </div>
+      <div class="status-table">
+        <div class="table-head"><span>상태</span><span>값</span><span>현재 의미</span></div>
+        ${draft.status.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
+      </div>
+      <p class="system-note">판정 기준: 1D20 + 보정치 ≥ DC 10~22. 장면 산문에서는 수치 대신 묘사로 표현합니다.</p>
+      ${revision ? `<p class="revision-note">${revision}</p>` : ""}
+    `;
+  }
+
+  if (draft.kind === "goalsNpc") {
+    return `
+      <dl class="draft-list">${draft.goals
+        .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
+        .join("")}</dl>
+      <div class="npc-table with-speech">${draft.npcs
+        .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
+        .join("")}</div>
+      ${revision ? `<p class="revision-note">${revision}</p>` : ""}
+    `;
   }
 
   if (draft.kind === "table") {
@@ -228,8 +265,13 @@ function renderSetup() {
   document.querySelector("#revisionRequest").placeholder = currentStep.placeholder;
   document.querySelector("#revisionRequest").value = "";
 
+  document.querySelectorAll("[data-candidate-index]").forEach((button) => {
+    button.addEventListener("click", () => selectCandidate(Number(button.dataset.candidateIndex)));
+  });
+
   document.querySelector("#prevStep").disabled = setupState.current === 0;
-  document.querySelector("#nextStep").textContent = setupState.current === setupSteps.length - 1 ? "프롤로그 준비" : "다음 단계";
+  document.querySelector("#nextStep").textContent = setupState.current === setupSteps.length - 1 ? "프롤로그 준비" : "다음 단계로";
+  document.querySelector("#nextStep").disabled = !currentState.confirmed;
   document.querySelector("#startSession").disabled = !setupState.steps.every((step) => step.confirmed);
 }
 
@@ -240,14 +282,28 @@ function saveCurrentStep() {
   renderSetup();
 }
 
+function selectCandidate(index) {
+  const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
+  const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
+  const selected = setupState.steps[pcStepIndex].draft.candidates[index];
+
+  state.player.role = selected.split(" / ")[0].replace(" - ", ", ");
+  setupState.steps[pcStepIndex].confirmed = true;
+  setupState.steps[pcStepIndex].status = "confirmed";
+  setupState.current = characterStepIndex;
+  if (setupState.steps[characterStepIndex].status === "locked") setupState.steps[characterStepIndex].status = "drafted";
+  renderSetup();
+}
+
 function confirmCurrentStep() {
+  if (setupSteps[setupState.current].id === "pc") {
+    selectCandidate(0);
+    return;
+  }
+
   const current = setupState.steps[setupState.current];
   current.confirmed = true;
   current.status = "confirmed";
-  if (setupState.current < setupSteps.length - 1) {
-    setupState.current += 1;
-    if (setupState.steps[setupState.current].status === "locked") setupState.steps[setupState.current].status = "drafted";
-  }
   renderSetup();
 }
 
@@ -258,12 +314,20 @@ function reviseCurrentStep() {
   current.revision = request ? `수정 요청 반영: ${request}` : "수정 요청 반영: 현재 초안을 조금 더 정돈했습니다.";
   current.status = "drafted";
   current.confirmed = false;
+  for (let index = setupState.current + 1; index < setupState.steps.length; index += 1) {
+    if (setupState.steps[index].confirmed || setupState.steps[index].status === "saved") {
+      setupState.steps[index].status = "drafted";
+      setupState.steps[index].confirmed = false;
+      setupState.steps[index].revision = "앞 단계가 수정되어 재확인이 필요합니다.";
+    }
+  }
   renderSetup();
 }
 
 function moveStep(delta) {
   const next = Math.max(0, Math.min(setupSteps.length - 1, setupState.current + delta));
   if (delta > 0 && setupState.current === setupSteps.length - 1) return;
+  if (delta > 0 && !setupState.steps[setupState.current].confirmed) return;
   setupState.current = next;
   if (setupState.steps[next].status === "locked") setupState.steps[next].status = "drafted";
   renderSetup();

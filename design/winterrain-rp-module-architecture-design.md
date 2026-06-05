@@ -186,16 +186,15 @@ left rail:
   ② 세계 맥락
   ③ 장르 약속
   ④ PC 후보
-  ⑤ 말투와 목표
-  ⑥ 주요 NPC
-  ⑦ 능력치와 상태
-  ⑧ 프롤로그
+  ⑤ 캐릭터 상세
+  ⑥ 목표와 NPC
+  ⑦ 프롤로그
 
 right stage:
-  [이전 단계] [지금 저장] [다음 단계]
+  [이전 단계] [임시 저장] [다음 단계로]
   current step draft
   revision request input
-  [수정 반영] [이 초안 확정]
+  [수정 반영] [공식 설정으로 확정]
 ```
 
 ### Setup Steps
@@ -206,10 +205,9 @@ right stage:
 | `② 세계 맥락` | 정치/문화/권력/현재 긴장 상태를 1~2단락으로 구체화 | `worldContext` draft |
 | `③ 장르 약속` | 이번 세션에서 보장할 재미와 금지할 해결 방식을 확정 | `promiseCard` draft |
 | `④ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
-| `⑤ 말투와 목표` | PC 말투, 장기 목표, 단기 목표 확정 | `player.speech`, `goals` |
-| `⑥ 주요 NPC` | 2~3명의 핵심 NPC, 관계, 태도, 말투 생성 | `npcs` draft |
-| `⑦ 능력치와 상태` | 능력치, 보정치, HP/피로/사기 생성 | `player.abilities`, `status` |
-| `⑧ 프롤로그` | 첫 장면 seed와 시작 선택지를 준비 | `prologueSeed` |
+| `⑤ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, HP/피로/사기를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status` |
+| `⑥ 목표와 NPC` | 장기/단기 목표와 2~3명의 핵심 NPC, 관계, 태도, 말투 생성 | `goals`, `npcs` draft |
+| `⑦ 프롤로그` | 첫 장면 seed와 시작 선택지를 준비 | `prologueSeed` |
 
 ### Setup Wizard Flow
 
@@ -221,12 +219,14 @@ flowchart TD
   D --> E{"Player action"}
   E -->|"수정 요청"| F["Revise current draft"]
   F --> D
-  E -->|"지금 저장"| G["Save draft<br/>status = saved"]
+  E -->|"임시 저장"| G["Save draft<br/>status = saved"]
   G --> D
-  E -->|"이 초안 확정"| H["Commit step confirmed"]
+  E -->|"공식 설정으로 확정"| H["Commit step confirmed"]
+  E -->|"PC 후보 선택"| P["Commit PC candidate<br/>open 캐릭터 상세"]
+  P --> B
   H --> I{"All steps confirmed?"}
-  I -->|No| J["Move to next step"]
-  J --> B
+  I -->|No| J["Enable 다음 단계로"]
+  J --> D
   I -->|Yes| K["Enable 프롤로그 시작"]
   K --> L["SessionCompiler creates SessionState"]
 ```
@@ -235,6 +235,12 @@ flowchart TD
 
 - Setup is allowed to be conversational and revisable.
 - A revision request updates only the current step draft.
+- `임시 저장` preserves the draft but does not make it canonical.
+- `공식 설정으로 확정` copies the draft into confirmed setup state.
+- `다음 단계로` is navigation only and should be enabled only after the current step is confirmed.
+- In `④ PC 후보`, choosing a candidate confirms that step and immediately opens `⑤ 캐릭터 상세`.
+- `⑤ 캐릭터 상세` owns the player's deeper background, speech style, values, strengths/flaws, six abilities, modifiers, and HP/fatigue/morale.
+- `⑥ 목표와 NPC` owns goals and the initial relationship network together because goals become meaningful through people and pressure.
 - A confirmed step becomes the source for later prompts.
 - The app should expose progress clearly through circled-number navigation and per-step status.
 - `프롤로그 시작` should remain disabled until all required setup steps are confirmed.
