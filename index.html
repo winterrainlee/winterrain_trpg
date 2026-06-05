@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Winterrain TRPG</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Winterrain TRPG</p>
+          <h1>세션 만들기</h1>
+        </div>
+        <nav class="tabs" aria-label="Session parts">
+          <button class="tab is-active" type="button" data-tab="world">1부 세계</button>
+          <button class="tab" type="button" data-tab="play">2부 플레이</button>
+          <button class="tab" type="button" data-tab="after">3부 애프터</button>
+        </nav>
+      </header>
+
+      <main>
+        <section id="world" class="view is-active" aria-labelledby="world-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">World Creation</p>
+              <h2 id="world-title">장르와 세계를 함께 확정한다</h2>
+            </div>
+            <button id="startSession" class="primary-action" type="button">세션 시작</button>
+          </div>
+
+          <form class="setup-grid">
+            <label>
+              <span>장르</span>
+              <select id="genre">
+                <option>추리</option>
+                <option>탐사</option>
+                <option>생활/모험</option>
+                <option>정치</option>
+                <option>전쟁</option>
+              </select>
+            </label>
+            <label>
+              <span>배경</span>
+              <input id="setting" value="중세 수도원" />
+            </label>
+            <label>
+              <span>세계 톤</span>
+              <select id="tone">
+                <option>bleak_noir</option>
+                <option>hopeful</option>
+                <option>realistic</option>
+                <option>tragic</option>
+              </select>
+            </label>
+            <label>
+              <span>난이도</span>
+              <select id="difficulty">
+                <option>easy</option>
+                <option>normal</option>
+                <option>hard</option>
+              </select>
+            </label>
+            <label>
+              <span>실패 비용</span>
+              <select id="failureCost">
+                <option>low</option>
+                <option>medium</option>
+                <option>high</option>
+              </select>
+            </label>
+            <label>
+              <span>약속 카드</span>
+              <select id="promise">
+                <option>fair clues, small wins</option>
+                <option>discovery is rewarded</option>
+                <option>recoverable setbacks</option>
+                <option>public narrative matters</option>
+              </select>
+            </label>
+            <label class="wide">
+              <span>주인공</span>
+              <input id="protagonist" value="젊은 필사 보조원" />
+            </label>
+            <label class="wide">
+              <span>초기 목표</span>
+              <input id="goal" value="봉인된 필사실에서 사라진 장부의 행방을 찾는다" />
+            </label>
+          </form>
+        </section>
+
+        <section id="play" class="view" aria-labelledby="play-title">
+          <div class="play-layout">
+            <article class="play-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Session Play</p>
+                  <h2 id="play-title">상황 제시와 판정</h2>
+                </div>
+                <div id="rollStrip" class="roll-strip">d20 대기</div>
+              </div>
+
+              <div id="sceneText" class="scene-text">
+                1부에서 세션을 시작하면 첫 상황이 이곳에 나타납니다.
+              </div>
+
+              <div class="choices" aria-label="Choices">
+                <button type="button" data-action="조용히 주변을 살핀다">주변을 살핀다</button>
+                <button type="button" data-action="가까운 NPC에게 묻는다">NPC에게 묻는다</button>
+                <button type="button" data-action="위험을 감수하고 직접 확인한다">직접 확인한다</button>
+              </div>
+
+              <form id="actionForm" class="action-row">
+                <input id="freeAction" placeholder="직접 행동을 선언하세요" />
+                <button type="submit">판정</button>
+              </form>
+            </article>
+
+            <aside class="status-panel" aria-labelledby="status-title">
+              <div class="section-head compact">
+                <div>
+                  <p class="eyebrow">Status</p>
+                  <h2 id="status-title">상태창</h2>
+                </div>
+                <span class="route-chip">상태 보조</span>
+              </div>
+
+              <div class="meters">
+                <div><span>HP</span><strong id="hp">70</strong></div>
+                <div><span>피로</span><strong id="fatigue">10</strong></div>
+                <div><span>사기</span><strong id="morale">60</strong></div>
+              </div>
+
+              <dl class="state-list">
+                <div>
+                  <dt>현재 목표</dt>
+                  <dd id="statusGoal">아직 확정되지 않음</dd>
+                </div>
+                <div>
+                  <dt>알고 있는 정보</dt>
+                  <dd id="knownFacts">확정된 정보 없음</dd>
+                </div>
+                <div>
+                  <dt>최근 변화</dt>
+                  <dd id="recentChange">세션 대기 중</dd>
+                </div>
+              </dl>
+
+              <form id="statusForm" class="status-question">
+                <input id="statusQuestion" placeholder="현재 상태에 대해 물어보기" />
+                <button type="submit">질문</button>
+              </form>
+              <p id="statusAnswer" class="status-answer">
+                상태창은 이미 확정된 정보만 답합니다.
+              </p>
+            </aside>
+          </div>
+        </section>
+
+        <section id="after" class="view" aria-labelledby="after-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">After Session</p>
+              <h2 id="after-title">선택과 변화를 정리한다</h2>
+            </div>
+            <button id="refreshAfter" class="secondary-action" type="button">요약 갱신</button>
+          </div>
+          <div id="afterSummary" class="after-grid">
+            <section>
+              <h3>중요 선택</h3>
+              <p>아직 기록된 선택이 없습니다.</p>
+            </section>
+            <section>
+              <h3>약속 카드</h3>
+              <p>세션을 시작하면 약속 카드 검토가 표시됩니다.</p>
+            </section>
+            <section>
+              <h3>다음 씨앗</h3>
+              <p>플레이 로그가 쌓이면 다음 세션의 출발점이 생깁니다.</p>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
