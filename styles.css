@@ -579,6 +579,52 @@ dd {
   box-shadow: none;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(36, 38, 34, 0.38);
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.modal {
+  width: min(460px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.modal-copy {
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+.modal-status {
+  min-height: 22px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.modal-status.is-error {
+  color: var(--rust);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 860px) {
   .topbar,
   .section-head,
@@ -599,6 +645,10 @@ dd {
   .setup-nav,
   .step-card-head,
   .step-actions {
+    display: grid;
+  }
+
+  .modal-actions {
     display: grid;
   }
 

@@ -441,6 +441,7 @@ const state = {
   knownFacts: ["아직 첫 장면이 시작되지 않았다"],
   recentChange: "세션 준비 중",
   log: [],
+  savedWorld: null,
 };
 
 const tabs = document.querySelectorAll(".tab");
@@ -669,6 +670,110 @@ function moveStep(delta) {
   renderSetup();
 }
 
+function getDraftById(id) {
+  const index = setupSteps.findIndex((step) => step.id === id);
+  return setupState.steps[index].draft;
+}
+
+function fieldValue(fields, label) {
+  return fields.find(([term]) => term === label)?.[1] || "";
+}
+
+function todayKey() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function safeNamePart(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[^\p{L}\p{N}._ -]/gu, "_")
+    .replace(/\s+/g, "_");
+}
+
+function characterName() {
+  return state.player.role.split(",")[0].trim() || "PC";
+}
+
+function worldSaveTitle() {
+  const genre = fieldValue(getDraftById("frame").fields, "장르") || state.world.genre;
+  return `${characterName()}-${todayKey()}-${genre}`;
+}
+
+function worldFileName() {
+  return `${safeNamePart(worldSaveTitle())}.json`;
+}
+
+function compileWorldJson() {
+  const worldFrame = getDraftById("frame");
+  const promise = getDraftById("promise");
+  const character = getDraftById("character");
+  const goalsNpc = getDraftById("goals-npc");
+  const prologue = getDraftById("prologue");
+  const now = new Date().toISOString();
+
+  return {
+    schemaVersion: 1,
+    savedAt: now,
+    title: worldSaveTitle(),
+    source: {
+      worldSeed: document.querySelector("#worldSeed").value,
+      confirmedStepIds: setupState.steps.filter((step) => step.confirmed).map((step) => step.id),
+    },
+    world: {
+      genre: fieldValue(worldFrame.fields, "장르"),
+      era: fieldValue(worldFrame.fields, "시대/기술"),
+      referenceWorld: fieldValue(worldFrame.fields, "참조 세계"),
+      tone: fieldValue(worldFrame.fields, "분위기"),
+      coreConflict: fieldValue(worldFrame.fields, "핵심 갈등"),
+      context: getDraftById("context").text,
+      promiseCard: {
+        title: promise.title,
+        promises: promise.bullets,
+      },
+    },
+    player: {
+      role: state.player.role,
+      background: character.background,
+      speech: fieldValue(character.fields, "말투"),
+      values: fieldValue(character.fields, "가치관"),
+      strengths: fieldValue(character.fields, "강점"),
+      flaws: fieldValue(character.fields, "결함"),
+      abilities: Object.fromEntries(
+        character.abilities.map(([label, score, mod]) => [label.split(" ")[0], { label, score: Number(score), mod: Number(mod) }]),
+      ),
+      abilityBalance: character.abilityBalance,
+      status: {
+        hp: state.player.hp,
+        fatigue: state.player.fatigue,
+        morale: state.player.morale,
+      },
+      goals: {
+        longTerm: goalsNpc.goals[0][1],
+        shortTerm: goalsNpc.goals[1][1],
+        progress: goalsNpc.goals[2][1],
+      },
+    },
+    npcs: goalsNpc.npcs.map(([name, role, relationTags, speech, relationshipScore]) => ({
+      name,
+      role,
+      relationTags,
+      speech,
+      relationshipScore: Number(relationshipScore),
+    })),
+    prologueSeed: prologue.text,
+    session: {
+      knownFacts: [state.world.promise, state.player.shortGoal, "프롤로그 seed가 준비되었다"],
+      recentChange: "세션 준비 중",
+      log: [],
+    },
+  };
+}
+
 function renderState() {
   document.querySelector("#hp").textContent = state.player.hp;
   document.querySelector("#fatigue").textContent = state.player.fatigue;
@@ -678,8 +783,9 @@ function renderState() {
   document.querySelector("#recentChange").textContent = state.recentChange;
 }
 
-function startSession() {
-  state.knownFacts = [state.world.promise, state.player.shortGoal, "프롤로그 seed가 준비되었다"];
+function beginSession() {
+  const savedWorld = state.savedWorld?.world;
+  state.knownFacts = savedWorld?.session.knownFacts || [state.world.promise, state.player.shortGoal, "프롤로그 seed가 준비되었다"];
   state.recentChange = "프롤로그가 시작되었다";
   state.log = [];
 
@@ -691,6 +797,57 @@ function startSession() {
   renderState();
   renderAfter();
   showTab("play");
+}
+
+function openWorldSaveDialog() {
+  const dialog = document.querySelector("#worldSaveDialog");
+  document.querySelector("#worldSavePrompt").textContent = `${worldSaveTitle()}로 저장하시겠습니까?`;
+  document.querySelector("#worldSaveStatus").textContent = "";
+  document.querySelector("#worldSaveStatus").classList.remove("is-error");
+  dialog.hidden = false;
+}
+
+function closeWorldSaveDialog() {
+  document.querySelector("#worldSaveDialog").hidden = true;
+}
+
+async function confirmWorldSave() {
+  const button = document.querySelector("#confirmWorldSave");
+  const status = document.querySelector("#worldSaveStatus");
+  const world = compileWorldJson();
+
+  button.disabled = true;
+  status.classList.remove("is-error");
+  status.textContent = "저장 중...";
+
+  try {
+    const response = await fetch("/api/worlds", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ fileName: worldFileName(), world }),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.error || "저장 실패");
+
+    state.savedWorld = { ...result, world };
+    status.textContent = `${result.path}에 저장했습니다.`;
+    closeWorldSaveDialog();
+    beginSession();
+  } catch (error) {
+    status.classList.add("is-error");
+    status.textContent = `저장 서버에 연결할 수 없습니다. 로컬에서는 node server.js로 실행해 주세요. (${error.message})`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function startSession() {
+  if (!state.savedWorld) {
+    openWorldSaveDialog();
+    return;
+  }
+
+  beginSession();
 }
 
 function resolveAction(action) {
@@ -768,6 +925,8 @@ document.querySelector("#reselectPc").addEventListener("click", reselectCandidat
 document.querySelector("#reviseStep").addEventListener("click", reviseCurrentStep);
 document.querySelector("#confirmStep").addEventListener("click", confirmCurrentStep);
 document.querySelector("#startSession").addEventListener("click", startSession);
+document.querySelector("#cancelWorldSave").addEventListener("click", closeWorldSaveDialog);
+document.querySelector("#confirmWorldSave").addEventListener("click", confirmWorldSave);
 document.querySelector("#refreshAfter").addEventListener("click", renderAfter);
 
 document.querySelectorAll(".choices button").forEach((button) => {

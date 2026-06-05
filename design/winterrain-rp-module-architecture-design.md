@@ -119,6 +119,8 @@ Rules:
 - `draft` may be regenerated or revised freely.
 - `saved` preserves a work-in-progress draft but does not commit it to canonical setup.
 - `confirmed` is the only value used by `SessionCompiler`.
+- Before prologue starts, the user must approve saving the compiled setup as `[캐릭터명]-[날짜]-[장르].json`.
+- The saved JSON is the canonical base for play; LLM output can propose prose or effects but cannot mutate this file by claim.
 - The user can go backward to revise a confirmed step, but that should mark dependent later steps as potentially stale in a future implementation.
 
 ### SessionState

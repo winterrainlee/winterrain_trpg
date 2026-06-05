@@ -166,8 +166,21 @@
           </div>
         </section>
       </main>
+
+      <div id="worldSaveDialog" class="modal-backdrop" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="worldSaveTitle">
+          <p class="eyebrow">World Save</p>
+          <h2 id="worldSaveTitle">세계 설정 저장</h2>
+          <p id="worldSavePrompt" class="modal-copy"></p>
+          <p id="worldSaveStatus" class="modal-status"></p>
+          <div class="modal-actions">
+            <button id="cancelWorldSave" class="secondary-action" type="button">아니오</button>
+            <button id="confirmWorldSave" class="primary-action" type="button">예</button>
+          </div>
+        </section>
+      </div>
     </div>
 
-    <script src="app.js?v=20260605-3"></script>
+    <script src="app.js?v=20260605-4"></script>
   </body>
 </html>
