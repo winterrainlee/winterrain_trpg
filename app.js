@@ -654,6 +654,7 @@ const state = {
 
 const tabs = document.querySelectorAll(".tab");
 const views = document.querySelectorAll(".view");
+const mobileStatusToggle = document.querySelector("#toggleMobileStatus");
 
 function showTab(id) {
   if (id === "after" && !state.afterUnlocked) return;
@@ -1237,6 +1238,9 @@ function renderState() {
   document.querySelector("#hp").textContent = state.player.hp;
   document.querySelector("#fatigue").textContent = state.player.fatigue;
   document.querySelector("#morale").textContent = state.player.morale;
+  document.querySelector("#mobileHp").textContent = state.player.hp;
+  document.querySelector("#mobileFatigue").textContent = state.player.fatigue;
+  document.querySelector("#mobileMorale").textContent = state.player.morale;
   document.querySelector("#statusGoal").textContent = state.player.goal;
   document.querySelector("#knownFacts").textContent = renderKnownFacts(state.knownFacts);
   document.querySelector("#recentChange").textContent = state.recentChange;
@@ -1293,9 +1297,9 @@ function renderPlayHeader(savedWorld, runtime) {
   document.querySelector("#play-title").textContent = sceneTitle;
   document.querySelector("#playSceneMeta").textContent = `${loadedTitle} · ${playerName} · 턴 ${turn}`;
   document.querySelector("#sceneTimePlace").innerHTML = `
-    <span>📅 ${runtime.currentDate || "-"}</span>
-    <span>🕰️ ${runtime.currentTime || "-"}</span>
-    <span>🏛️ ${runtime.currentPlace || "-"}</span>
+    <span>날짜 ${runtime.currentDate || "-"}</span>
+    <span>시각 ${runtime.currentTime || "-"}</span>
+    <span>장소 ${runtime.currentPlace || "-"}</span>
   `;
 }
 
@@ -1323,6 +1327,13 @@ function beginSession() {
   renderTabLocks();
   renderAfter();
   showTab("play");
+}
+
+function setMobileStatusOpen(open) {
+  const statusPanel = document.querySelector(".status-panel");
+  statusPanel.classList.toggle("is-mobile-open", open);
+  mobileStatusToggle.setAttribute("aria-expanded", String(open));
+  mobileStatusToggle.textContent = open ? "닫기" : "상태";
 }
 
 function loadWorldIntoSession(result) {
@@ -1558,6 +1569,10 @@ function renderAfter() {
 }
 
 tabs.forEach((tab) => tab.addEventListener("click", () => showTab(tab.dataset.tab)));
+mobileStatusToggle.addEventListener("click", () => {
+  const statusPanel = document.querySelector(".status-panel");
+  setMobileStatusOpen(!statusPanel.classList.contains("is-mobile-open"));
+});
 
 document.querySelector("#applyWorldSeed").addEventListener("click", applyWorldSeed);
 document.querySelector("#saveStep").addEventListener("click", saveCurrentStep);

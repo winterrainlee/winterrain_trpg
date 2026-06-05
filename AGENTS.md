@@ -24,6 +24,13 @@ The core architecture is: deterministic app code owns state, rolls, validation, 
 - Remove only unused code created by your own change.
 - Define a short verification target for non-trivial work, then run the relevant check.
 
+## UI Targets
+
+- Support desktop as the primary broad workspace for setup review and play.
+- Support tablet layouts for iPad 11-inch class devices, including portrait and landscape breakpoints.
+- Support mobile layouts against iPhone 13 mini class devices.
+- For UI work, verify that desktop, iPad 11-inch, and iPhone 13 mini targets do not introduce horizontal overflow or hide primary play/setup actions.
+
 ## Project Invariants
 
 - Do not let model output mutate canonical game state directly.
