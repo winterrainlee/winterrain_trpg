@@ -311,6 +311,14 @@ Recommended setup checkpoints:
 9. abilities, modifiers, and initial status
 10. prologue seed
 
+Recommended setup layout:
+
+- left rail: circled-number step map, seed input, per-step status
+- right header: `이전 단계`, `지금 저장`, `다음 단계`
+- right body: current step draft, player revision request, `수정 반영`, `이 초안 확정`
+
+Each step should keep draft and confirmed state separate. A player revision request updates only the current step draft. The canonical setup state changes only when the user confirms that step.
+
 Core principle:
 
 ```text

@@ -1,29 +1,154 @@
-const state = {
-  setup: {
-    seed: "중세 수도원 추리. 어둡지만 플레이 난이도는 쉽고, 작은 승리는 남았으면 좋겠다.",
+const setupSteps = [
+  {
+    id: "frame",
+    mark: "①",
+    label: "세계 골격",
+    kicker: "World Frame",
+    placeholder: "장르, 시대, 참조 세계, 분위기, 핵심 갈등을 조정할 수 있습니다.",
+    draft: {
+      kind: "fields",
+      fields: [
+        ["장르", "중세 종교 추리"],
+        ["시대/기술", "중세"],
+        ["참조 세계", "현실 유럽 중세 수도원 변주"],
+        ["분위기", "어둡지만 작은 승리가 남는 분위기"],
+        ["핵심 갈등", "닫힌 공동체 안에서 사라진 장부와 의문스러운 죽음"],
+      ],
+    },
+  },
+  {
+    id: "context",
+    mark: "②",
+    label: "세계 맥락",
+    kicker: "World Context",
+    placeholder: "권력 구조, 금기, 사회 분위기, 현재 긴장을 수정할 수 있습니다.",
+    draft: {
+      kind: "paragraph",
+      text:
+        "수도원은 오래된 필사본과 약초 기록으로 명성을 얻었지만, 외부 영주와 교단의 후원 사이에서 조용히 균열이 생기고 있다. " +
+        "최근 봉인된 필사실의 장부가 사라졌고, 몇몇 수도사는 서로 다른 시간의 종소리를 기억한다. " +
+        "세계는 폐쇄적이지만 플레이어의 작은 발견과 신뢰 형성은 오래 남는다.",
+    },
+  },
+  {
+    id: "promise",
+    mark: "③",
+    label: "장르 약속",
+    kicker: "Promise Card",
+    placeholder: "보장받고 싶은 재미나 피하고 싶은 전개를 적어주세요.",
+    draft: {
+      kind: "bullets",
+      title: "추리·수사",
+      bullets: ["범인은 시작 전에 존재한다", "단서는 공정하게 배치된다", "우연이나 초자연으로 해결하지 않는다", "플레이어의 추론을 빼앗지 않는다", "작은 성취는 세션에 남는다"],
+    },
+  },
+  {
+    id: "pc",
+    mark: "④",
+    label: "PC 후보",
+    kicker: "Player Character",
+    placeholder: "후보를 더 평범하게, 더 정치적으로, 더 약하게 등 요청할 수 있습니다.",
+    draft: {
+      kind: "candidates",
+      candidates: [
+        "엘리안 - 젊은 필사 보조원 / 관찰력과 끈기 / 권위 앞에서 위축됨",
+        "마르타 - 약초원 관리인 / 실용성과 기억력 / 비밀을 혼자 짊어짐",
+        "요한 - 외부 심부름꾼 / 발 빠름과 붙임성 / 규칙을 가볍게 봄",
+        "베네딕트 - 문서 보관인 / 기록 지식과 신중함 / 행동이 늦음",
+        "리나 - 견습 서기 / 언변과 계산력 / 의심이 많음",
+      ],
+    },
+  },
+  {
+    id: "voice-goal",
+    mark: "⑤",
+    label: "말투와 목표",
+    kicker: "Voice / Goals",
+    placeholder: "PC 말투, 장기 목표, 단기 목표의 방향을 조정할 수 있습니다.",
+    draft: {
+      kind: "fields",
+      fields: [
+        ["PC 말투", "해요체"],
+        ["장기 목표", "사라진 장부와 의문사의 진실을 밝힌다"],
+        ["단기 목표", "봉인된 필사실 주변의 첫 단서를 확인한다"],
+      ],
+    },
+  },
+  {
+    id: "npc",
+    mark: "⑥",
+    label: "주요 NPC",
+    kicker: "Initial NPCs",
+    placeholder: "NPC 관계, 태도, 말투, 비밀스러운 압력을 조정할 수 있습니다.",
+    draft: {
+      kind: "table",
+      rows: [
+        ["아벨 원장", "수도원장", "권위자 / 침묵", "0"],
+        ["마르타", "약초원 관리인", "협력 가능 / 경계", "12"],
+        ["토마스", "문지기", "불안 / 목격자", "-8"],
+      ],
+    },
+  },
+  {
+    id: "status",
+    mark: "⑦",
+    label: "능력치와 상태",
+    kicker: "Abilities / Status",
+    placeholder: "PC가 더 약하거나 강하게 시작하길 원하면 적어주세요.",
+    draft: {
+      kind: "fields",
+      fields: [
+        ["강점", "관찰력, 끈기"],
+        ["결함", "권위 앞에서 위축됨"],
+        ["초기 상태", "HP 70 / 피로 10 / 사기 60"],
+      ],
+    },
+  },
+  {
+    id: "prologue",
+    mark: "⑧",
+    label: "프롤로그",
+    kicker: "Prologue Seed",
+    placeholder: "첫 장면의 장소, 사건 강도, 시작 선택지를 조정할 수 있습니다.",
+    draft: {
+      kind: "paragraph",
+      text:
+        "저녁 종이 울린 뒤, 봉인된 필사실 앞에 있어야 할 작은 장부가 사라진다. " +
+        "문은 잠겨 있고, 사람들은 서로 다른 시간을 기억한다. 첫 선택은 현장, 사람들의 반응, 또는 기록 보관실 중 하나로 향한다.",
+    },
+  },
+];
+
+const setupState = {
+  current: 0,
+  steps: setupSteps.map((step, index) => ({
+    id: step.id,
+    draft: step.draft,
+    status: index === 0 ? "drafted" : "locked",
+    revision: "",
+    saved: false,
     confirmed: false,
-  },
-  world: {
-    genre: "초안 대기",
-    tech: "초안 대기",
-    reference: "초안 대기",
-    tone: "초안 대기",
-    conflict: "초안 대기",
-    context: "",
-    promise: "장르 약속 카드가 아직 없습니다.",
-  },
+  })),
+};
+
+const state = {
   player: {
-    role: "아직 선택되지 않음",
-    goal: "아직 확정되지 않음",
-    shortGoal: "아직 확정되지 않음",
+    role: "엘리안, 젊은 필사 보조원",
+    goal: "사라진 장부와 의문사의 진실을 밝힌다",
+    shortGoal: "봉인된 필사실 주변의 첫 단서를 확인한다",
     hp: 70,
     fatigue: 10,
     morale: 60,
   },
-  npcs: [],
-  prologueSeed: "프롤로그 seed가 아직 없습니다.",
+  world: {
+    genre: "중세 종교 추리",
+    reference: "현실 유럽 중세 수도원 변주",
+    promise: "추리·수사: 범인 있음, 공정 단서, 플레이어 추론 존중",
+  },
+  npcs: ["아벨 원장: 침묵하는 권위자", "마르타: 약초원 관리인", "토마스: 불안한 문지기"],
+  prologueSeed: setupSteps[7].draft.text,
   knownFacts: ["아직 첫 장면이 시작되지 않았다"],
-  recentChange: "세션 대기 중",
+  recentChange: "세션 준비 중",
   log: [],
 };
 
@@ -35,109 +160,113 @@ function showTab(id) {
   views.forEach((view) => view.classList.toggle("is-active", view.id === id));
 }
 
-function inferDraft(seed) {
-  const isMystery = /추리|수사|탐정|미스터리/.test(seed);
-  const isPolitics = /정치|궁정|원로원|권력|협상/.test(seed);
-  const isWar = /전쟁|군단|전선|토탈워/.test(seed);
-  const isExploration = /탐사|유적|저택|던전|개척/.test(seed);
-  const hasMonastery = /수도원|필사|수사|고해/.test(seed);
-  const isDark = /어둡|암울|느와르|비극|쓸쓸/.test(seed);
-  const easy = /쉽|쉬운|작은 승리|희망/.test(seed);
-
-  const genre = isMystery
-    ? "중세 종교 추리"
-    : isPolitics
-      ? "정치극"
-      : isWar
-        ? "전쟁 지휘극"
-        : isExploration
-          ? "탐사"
-          : "생활/모험";
-  const setting = hasMonastery ? "중세 수도원" : "사용자 seed 기반 세계";
-
+function statusLabel(status) {
   return {
-    genre,
-    tech: hasMonastery ? "중세" : "seed 기반 시대",
-    reference: hasMonastery ? "현실 유럽 중세 수도원 변주" : "사용자 seed 변주",
-    tone: isDark ? (easy ? "어둡지만 작은 승리가 남는 분위기" : "차분하고 어두운 분위기") : "차분하고 회복 가능한 분위기",
-    conflict: isMystery
-      ? "닫힌 공동체 안에서 사라진 기록과 의문스러운 죽음의 진실"
-      : "작은 선택이 관계와 세계의 방향을 바꾸는 첫 사건",
-    context:
-      `${setting}은 겉으로는 질서가 유지되지만, 내부에는 오래된 침묵과 이해관계가 쌓여 있다. ` +
-      `최근 사라진 기록 하나가 사람들의 태도를 바꾸기 시작했고, 주인공은 그 틈에서 첫 단서를 붙잡는다. ` +
-      `세계는 압박을 주지만 플레이는 막히지 않으며, 실패는 길을 닫기보다 비용과 새로운 압력으로 남는다.`,
-    promise: isMystery
-      ? "추리·수사: 범인 있음, 공정 단서, 우연 해결 금지, 플레이어 추론 존중, 작은 성취 보존"
-      : "기본 약속: 회복 가능한 실패, 관계 변화, 작은 성취, 다음 행동 여지 보존",
-    candidates: [
-      "1) 엘리안 - 젊은 필사 보조원 / 진실 우선 / 관찰력, 끈기 / 권위 앞에서 위축됨",
-      "2) 마르타 - 약초원 관리인 / 생명 보호 / 실용성, 기억력 / 비밀을 혼자 짊어짐",
-      "3) 요한 - 수도원 외부 심부름꾼 / 자유 지향 / 발 빠름, 붙임성 / 규칙을 가볍게 봄",
-      "4) 베네딕트 - 늙은 문서 보관인 / 질서 중시 / 기록 지식, 신중함 / 행동이 늦음",
-      "5) 리나 - 귀족 가문의 견습 서기 / 명예 회복 / 언변, 계산력 / 의심이 많음",
-    ],
-    selectedCandidate: "엘리안, 젊은 필사 보조원",
-    mainGoal: isMystery ? "사라진 장부와 의문사의 진실을 밝힌다" : "첫 사건을 해결하고 자신의 자리를 만든다",
-    shortGoal: hasMonastery ? "봉인된 필사실 주변의 첫 단서를 확인한다" : "첫 장면의 이상 징후를 확인한다",
-    npcs: ["아벨 원장: 침묵하는 권위자", "마르타: 약초원 관리인", "토마스: 불안한 문지기"],
-    prologueSeed:
-      `${setting}의 저녁 종이 울린 뒤, 봉인된 방 앞에 있어야 할 작은 장부가 사라진다. ` +
-      `문은 잠겨 있고, 몇몇 사람은 서로 다른 시간을 기억한다. 첫 선택은 현장, 사람들의 반응, 또는 기록 보관실 중 하나로 향한다.`,
-  };
+    locked: "대기",
+    drafted: "초안",
+    saved: "저장",
+    confirmed: "확정",
+  }[status];
 }
 
-function renderSetupDraft(draft) {
-  document.querySelector("#draftGenre").textContent = draft.genre;
-  document.querySelector("#draftTech").textContent = draft.tech;
-  document.querySelector("#draftReference").textContent = draft.reference;
-  document.querySelector("#draftTone").textContent = draft.tone;
-  document.querySelector("#draftConflict").textContent = draft.conflict;
-  document.querySelector("#draftContext").textContent = draft.context;
-  document.querySelector("#promiseDraft").textContent = draft.promise;
-  document.querySelector("#draftMainGoal").textContent = draft.mainGoal;
-  document.querySelector("#draftShortGoal").textContent = draft.shortGoal;
-  document.querySelector("#draftNpcs").textContent = draft.npcs.join(" / ");
-  document.querySelector("#prologueSeed").textContent = draft.prologueSeed;
+function renderDraft(draft, revision) {
+  if (draft.kind === "fields") {
+    return `<dl class="draft-list">${draft.fields
+      .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
+      .join("")}</dl>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  }
 
-  document.querySelector("#pcDraft").innerHTML = draft.candidates
-    .map((candidate, index) => `<button type="button" class="${index === 0 ? "is-selected" : ""}" data-candidate="${candidate}">${candidate}</button>`)
+  if (draft.kind === "bullets") {
+    return `<h4>${draft.title}</h4><ul class="draft-bullets">${draft.bullets.map((item) => `<li>${item}</li>`).join("")}</ul>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  }
+
+  if (draft.kind === "candidates") {
+    return `<div class="candidate-list">${draft.candidates
+      .map((candidate, index) => `<button type="button" class="${index === 0 ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
+      .join("")}</div>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  }
+
+  if (draft.kind === "table") {
+    return `<div class="npc-table">${draft.rows
+      .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
+      .join("")}</div>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  }
+
+  return `<p class="draft-context">${draft.text}</p>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+}
+
+function renderSetup() {
+  const currentStep = setupSteps[setupState.current];
+  const currentState = setupState.steps[setupState.current];
+
+  document.querySelector("#setupSteps").innerHTML = setupSteps
+    .map((step, index) => {
+      const itemState = setupState.steps[index];
+      const classes = [
+        index === setupState.current ? "is-current" : "",
+        itemState.confirmed ? "is-confirmed" : "",
+        itemState.status === "locked" ? "is-locked" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return `<li class="${classes}"><button type="button" data-step="${index}"><span>${step.mark}</span>${step.label}<em>${statusLabel(itemState.confirmed ? "confirmed" : itemState.status)}</em></button></li>`;
+    })
     .join("");
 
-  document.querySelectorAll("#pcDraft button").forEach((button) => {
+  document.querySelectorAll("#setupSteps button").forEach((button) => {
     button.addEventListener("click", () => {
-      document.querySelectorAll("#pcDraft button").forEach((item) => item.classList.remove("is-selected"));
-      button.classList.add("is-selected");
-      state.player.role = button.dataset.candidate.split(" - ")[0].replace(/^\d+\)\s*/, "");
+      setupState.current = Number(button.dataset.step);
+      if (setupState.steps[setupState.current].status === "locked") setupState.steps[setupState.current].status = "drafted";
+      renderSetup();
     });
   });
+
+  document.querySelector("#stepKicker").textContent = `${currentStep.mark} ${currentStep.kicker}`;
+  document.querySelector("#stepTitle").textContent = currentStep.label;
+  document.querySelector("#stepStatus").textContent = statusLabel(currentState.confirmed ? "confirmed" : currentState.status);
+  document.querySelector("#stepDraft").innerHTML = renderDraft(currentState.draft, currentState.revision);
+  document.querySelector("#revisionRequest").placeholder = currentStep.placeholder;
+  document.querySelector("#revisionRequest").value = "";
+
+  document.querySelector("#prevStep").disabled = setupState.current === 0;
+  document.querySelector("#nextStep").textContent = setupState.current === setupSteps.length - 1 ? "프롤로그 준비" : "다음 단계";
+  document.querySelector("#startSession").disabled = !setupState.steps.every((step) => step.confirmed);
 }
 
-function draftSetup() {
-  const seed = document.querySelector("#worldSeed").value.trim() || state.setup.seed;
-  const draft = inferDraft(seed);
+function saveCurrentStep() {
+  const current = setupState.steps[setupState.current];
+  current.saved = true;
+  if (!current.confirmed) current.status = "saved";
+  renderSetup();
+}
 
-  state.setup.seed = seed;
-  state.setup.confirmed = true;
-  state.world = {
-    genre: draft.genre,
-    tech: draft.tech,
-    reference: draft.reference,
-    tone: draft.tone,
-    conflict: draft.conflict,
-    context: draft.context,
-    promise: draft.promise,
-  };
-  state.player.role = draft.selectedCandidate;
-  state.player.goal = draft.mainGoal;
-  state.player.shortGoal = draft.shortGoal;
-  state.npcs = draft.npcs;
-  state.prologueSeed = draft.prologueSeed;
-  state.recentChange = "세계 생성 초안이 확정 대기 중";
+function confirmCurrentStep() {
+  const current = setupState.steps[setupState.current];
+  current.confirmed = true;
+  current.status = "confirmed";
+  if (setupState.current < setupSteps.length - 1) {
+    setupState.current += 1;
+    if (setupState.steps[setupState.current].status === "locked") setupState.steps[setupState.current].status = "drafted";
+  }
+  renderSetup();
+}
 
-  renderSetupDraft(draft);
-  renderState();
-  renderAfter();
+function reviseCurrentStep() {
+  const input = document.querySelector("#revisionRequest");
+  const request = input.value.trim();
+  const current = setupState.steps[setupState.current];
+  current.revision = request ? `수정 요청 반영: ${request}` : "수정 요청 반영: 현재 초안을 조금 더 정돈했습니다.";
+  current.status = "drafted";
+  current.confirmed = false;
+  renderSetup();
+}
+
+function moveStep(delta) {
+  const next = Math.max(0, Math.min(setupSteps.length - 1, setupState.current + delta));
+  if (delta > 0 && setupState.current === setupSteps.length - 1) return;
+  setupState.current = next;
+  if (setupState.steps[next].status === "locked") setupState.steps[next].status = "drafted";
+  renderSetup();
 }
 
 function renderState() {
@@ -150,13 +279,7 @@ function renderState() {
 }
 
 function startSession() {
-  if (!state.setup.confirmed) draftSetup();
-
-  state.knownFacts = [
-    `${state.world.genre} 장르 약속이 확정되었다`,
-    state.world.conflict,
-    state.player.shortGoal,
-  ];
+  state.knownFacts = [state.world.promise, state.player.shortGoal, "프롤로그 seed가 준비되었다"];
   state.recentChange = "프롤로그가 시작되었다";
   state.log = [];
 
@@ -227,7 +350,6 @@ function renderAfter() {
     <section>
       <h3>약속 카드</h3>
       <p>${state.world.promise}</p>
-      <p>${state.world.tone}</p>
     </section>
     <section>
       <h3>다음 씨앗</h3>
@@ -239,7 +361,11 @@ function renderAfter() {
 
 tabs.forEach((tab) => tab.addEventListener("click", () => showTab(tab.dataset.tab)));
 
-document.querySelector("#draftSetup").addEventListener("click", draftSetup);
+document.querySelector("#prevStep").addEventListener("click", () => moveStep(-1));
+document.querySelector("#nextStep").addEventListener("click", () => moveStep(1));
+document.querySelector("#saveStep").addEventListener("click", saveCurrentStep);
+document.querySelector("#reviseStep").addEventListener("click", reviseCurrentStep);
+document.querySelector("#confirmStep").addEventListener("click", confirmCurrentStep);
 document.querySelector("#startSession").addEventListener("click", startSession);
 document.querySelector("#refreshAfter").addEventListener("click", renderAfter);
 
@@ -263,4 +389,5 @@ document.querySelector("#statusForm").addEventListener("submit", (event) => {
   input.value = "";
 });
 
+renderSetup();
 renderState();
