@@ -1,115 +1,115 @@
 const pcProfiles = [
   {
-    summary: "엘리안 - 젊은 필사 보조원 / 관찰력과 끈기 / 권위 앞에서 위축됨",
-    name: "엘리안",
-    gender: "남성",
-    age: "19세",
-    role: "젊은 필사 보조원",
-    background:
-      "엘리안은 수도원 필사실에서 장부 정리와 필사 보조를 맡아 왔다. 그는 종소리, 잉크 냄새, 책상 배치처럼 남들이 지나치는 변화를 오래 기억하지만, 높은 직위의 수도사가 말하면 쉽게 물러선다.",
-    fields: [
-      ["말투", "조심스러운 해요체. 확신이 생기면 짧고 단단하게 말한다."],
-      ["가치관", "진실은 공동체를 다치게 하더라도 기록되어야 한다."],
-      ["강점", "관찰력, 끈기"],
-      ["결함", "권위 앞에서 위축됨"],
-    ],
-    strongAbilities: ["INT", "WIS"],
-    flawAbilities: ["CHA"],
-    abilities: [
-      ["STR 힘", "9", "-1"],
-      ["DEX 민첩", "12", "+1"],
-      ["CON 체력", "10", "+0"],
-      ["INT 지능", "14", "+2"],
-      ["WIS 통찰", "15", "+2"],
-      ["CHA 매력", "11", "+0"],
-    ],
-    status: [
-      ["건강", "70", "부상 없음"],
-      ["피로", "10", "긴장했지만 움직일 수 있음"],
-      ["사기", "60", "불안 속에서도 진실을 알고 싶어 함"],
-    ],
-    playerState: { hp: 70, fatigue: 10, morale: 60 },
-    goals: [
-      ["장기 목표", "사라진 장부와 의문사의 진실을 밝힌다"],
-      ["단기 목표", "봉인된 필사실 주변의 첫 단서를 확인한다"],
-      ["진행 표시", "단기 0% / 전체 0%"],
-    ],
-    npcs: [
-      ["아벨 원장", "수도원장", "권위자 / 침묵", "낮고 느린 명령형", "0"],
-      ["마르타", "약초원 관리인", "협력 가능 / 경계", "실용적인 반말 섞인 해요체", "12"],
-      ["토마스", "문지기", "불안 / 목격자", "말끝을 흐리는 짧은 문장", "-8"],
-    ],
-    prologueMeta: {
-      sceneTitle: "봉인된 필사실 앞",
-      date: "성 마티아 축일",
-      time: "저녁 종 직후",
-      place: "수도원 동쪽 회랑, 봉인된 필사실 앞",
-    },
-    prologue:
-      "저녁 종이 울린 뒤, 엘리안은 봉인된 필사실 앞에 서 있다. 문은 잠겨 있지만 평소와 다른 잉크 얼룩이 바닥에 남아 있고, 있어야 할 작은 장부의 자리가 비어 있다.",
-  },
-  {
-    summary: "마르타 - 약초원 관리인 / 실용성과 기억력 / 비밀을 혼자 짊어짐",
-    name: "마르타",
+    summary: "하루 - 동네 빵집 견습 / 손재주와 성실함 / 부탁을 거절하지 못함",
+    name: "하루",
     gender: "여성",
-    age: "32세",
-    role: "약초원 관리인",
+    age: "19세",
+    role: "동네 빵집 견습",
     background:
-      "마르타는 수도원의 약초원과 병실을 오가며 사람들의 통증과 거짓말을 함께 보아 왔다. 누가 언제 다쳤고 어떤 냄새가 옷에 남는지 잘 기억하지만, 자신이 숨겨 온 작은 거래가 드러날까 봐 쉽게 마음을 열지 않는다.",
+      "하루는 바닷가 작은 마을의 빵집에서 새벽 반죽과 배달을 돕는다. 마을 사람들의 입맛과 표정을 잘 기억하지만, 누군가 곤란하다고 말하면 자기 일정을 쉽게 뒤로 미룬다.",
     fields: [
-      ["말투", "담백한 해요체. 급하면 짧은 반말이 섞이고, 감정보다 처방을 먼저 말한다."],
-      ["가치관", "살아 있는 사람을 먼저 구해야 진실도 의미가 있다."],
-      ["강점", "실용성, 냄새와 증상 기억"],
-      ["결함", "비밀을 혼자 짊어짐"],
+      ["말투", "밝은 해요체. 바쁘면 문장이 짧아지고 손이 먼저 움직인다."],
+      ["가치관", "작은 약속을 지키면 하루가 조금 덜 무너진다."],
+      ["강점", "손재주, 성실함"],
+      ["결함", "부탁을 거절하지 못함"],
     ],
-    strongAbilities: ["CON", "WIS"],
+    strongAbilities: ["DEX", "CON"],
     flawAbilities: ["CHA"],
     abilities: [
       ["STR 힘", "10", "+0"],
-      ["DEX 민첩", "11", "+0"],
+      ["DEX 민첩", "14", "+2"],
       ["CON 체력", "13", "+1"],
-      ["INT 지능", "12", "+1"],
-      ["WIS 통찰", "15", "+2"],
+      ["INT 지능", "11", "+0"],
+      ["WIS 통찰", "12", "+1"],
       ["CHA 매력", "10", "+0"],
     ],
     status: [
-      ["건강", "76", "잔병치레 없이 버틸 수 있음"],
-      ["피로", "16", "밤새 병실을 돌본 여파가 있음"],
-      ["사기", "55", "진실보다 피해를 줄이는 쪽으로 기울어 있음"],
+      ["건강", "72", "긴 아침 배달도 버틸 수 있음"],
+      ["피로", "9", "새벽 일을 마쳤지만 아직 움직일 힘이 있음"],
+      ["사기", "64", "마을 축제를 무사히 열고 싶어 함"],
     ],
-    playerState: { hp: 76, fatigue: 16, morale: 55 },
+    playerState: { hp: 72, fatigue: 9, morale: 64 },
     goals: [
-      ["장기 목표", "장부와 죽음이 약초원 기록과 어떻게 연결되는지 밝힌다"],
-      ["단기 목표", "최근 처방 기록과 사라진 약재 목록을 대조한다"],
+      ["장기 목표", "마을 여름 축제를 무사히 열고 모두가 웃는 하루를 만든다"],
+      ["단기 목표", "사라진 축제 안내판을 찾아 첫 배달 동선을 정리한다"],
       ["진행 표시", "단기 0% / 전체 0%"],
     ],
     npcs: [
-      ["아벨 원장", "수도원장", "은혜를 준 권위자 / 부담", "조용히 빚을 상기시키는 말투", "-4"],
-      ["엘리안", "필사 보조원", "기록 협력자 / 보호 욕구", "조심스러운 해요체", "10"],
-      ["루카", "병실 수도사", "같은 비밀을 아는 사람 / 압박", "상냥하지만 캐묻는 말투", "-12"],
+      ["도겸", "빵집 사장", "든든한 어른 / 걱정", "투박하지만 다정한 반말", "12"],
+      ["나리", "축제 준비 담당", "친구 / 일정 압박", "빠르고 또렷한 해요체", "8"],
+      ["윤호", "항구 관리인", "정보통 / 장난", "느긋한 반말 섞인 말투", "4"],
     ],
     prologueMeta: {
-      sceneTitle: "쓴 냄새가 남은 복도",
-      date: "성 마티아 축일",
-      time: "저녁 종이 그친 뒤",
-      place: "수도원 병실과 봉인된 필사실 사이의 복도",
+      sceneTitle: "비어 있는 안내판 자리",
+      date: "여름 축제 전날",
+      time: "이른 아침",
+      place: "솔비마을 빵집 앞 골목",
     },
     prologue:
-      "저녁 종 뒤, 마르타는 병실에서 맡은 낯선 쓴 냄새가 봉인된 필사실 복도에도 남아 있음을 알아차린다. 복도는 이미 조용해졌지만, 냄새는 아직 사라지지 않았고 누군가 급히 지나간 흔적이 희미하다.",
+      "이른 아침, 하루는 갓 구운 빵 상자를 들고 빵집 문을 나선다. 축제 안내판이 있어야 할 골목 입구는 텅 비어 있고, 바닥에는 누군가 급히 끌고 간 듯한 나무 자국이 남아 있다.",
   },
   {
-    summary: "요한 - 외부 심부름꾼 / 발 빠름과 붙임성 / 규칙을 가볍게 봄",
-    name: "요한",
-    gender: "남성",
-    age: "24세",
-    role: "외부 심부름꾼",
+    summary: "민서 - 마을 도서관 봉사자 / 기억력과 친화력 / 걱정이 많음",
+    name: "민서",
+    gender: "여성",
+    age: "27세",
+    role: "마을 도서관 봉사자",
     background:
-      "요한은 수도원 안팎의 심부름을 맡으며 문지기, 시장 상인, 하급 수도사와 두루 말을 텄다. 닫힌 문을 돌아가는 길을 잘 찾지만, 규칙을 가볍게 넘긴 전력이 있어 사건이 커지면 가장 먼저 의심받기 쉽다.",
+      "민서는 오래된 도서관에서 반납 기록과 동네 소식 게시판을 챙긴다. 사람들의 취향과 지난 대화를 잘 기억하지만, 일이 꼬이면 먼저 최악의 경우를 떠올린다.",
     fields: [
-      ["말투", "가벼운 반말 섞인 해요체. 농담으로 긴장을 누그러뜨리려 한다."],
-      ["가치관", "닫힌 문보다 사람 입에서 진실이 먼저 샌다."],
-      ["강점", "기동력, 붙임성"],
-      ["결함", "규칙을 가볍게 봄"],
+      ["말투", "차분한 해요체. 불안할수록 확인 질문이 많아진다."],
+      ["가치관", "기록은 사람을 묶어두기보다 다시 만나게 해준다."],
+      ["강점", "기억력, 친화력"],
+      ["결함", "걱정이 많음"],
+    ],
+    strongAbilities: ["INT", "CHA"],
+    flawAbilities: ["CON"],
+    abilities: [
+      ["STR 힘", "9", "-1"],
+      ["DEX 민첩", "11", "+0"],
+      ["CON 체력", "10", "+0"],
+      ["INT 지능", "15", "+2"],
+      ["WIS 통찰", "12", "+1"],
+      ["CHA 매력", "14", "+2"],
+    ],
+    status: [
+      ["건강", "68", "큰 문제는 없지만 체력이 높지는 않음"],
+      ["피로", "11", "자료 정리로 조금 지쳐 있음"],
+      ["사기", "61", "걱정은 있지만 사람들을 돕고 싶어 함"],
+    ],
+    playerState: { hp: 68, fatigue: 11, morale: 61 },
+    goals: [
+      ["장기 목표", "흩어진 축제 준비 기록을 모아 마을 사람들이 서로 도울 수 있게 한다"],
+      ["단기 목표", "도서관 게시판에서 사라진 일정표의 마지막 위치를 확인한다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["소라", "초등학생 독서회원", "작은 조력자 / 호기심", "빠른 반말", "10"],
+      ["나리", "축제 준비 담당", "일정 공유자 / 압박", "빠르고 또렷한 해요체", "6"],
+      ["태준", "헌책방 주인", "오래된 기억 / 농담", "느린 존댓말", "3"],
+    ],
+    prologueMeta: {
+      sceneTitle: "비어 있는 게시판",
+      date: "여름 축제 전날",
+      time: "오전 열 시",
+      place: "솔비마을 도서관 로비",
+    },
+    prologue:
+      "오전 열 시, 민서는 도서관 로비 게시판 앞에서 멈춘다. 축제 일정표가 사라진 자리에는 압정 네 개만 남아 있고, 반납함 위에는 누군가 두고 간 젖은 지도 조각이 놓여 있다.",
+  },
+  {
+    summary: "도윤 - 자전거 배달원 / 기동력과 눈썰미 / 성급함",
+    name: "도윤",
+    gender: "남성",
+    age: "22세",
+    role: "자전거 배달원",
+    background:
+      "도윤은 마을 안쪽 골목과 항구길을 자전거로 오가며 가게 물건과 축제 준비물을 나른다. 빠른 길을 잘 찾고 작은 변화를 빨리 보지만, 기다리라는 말을 가장 어려워한다.",
+    fields: [
+      ["말투", "시원한 반말 섞인 해요체. 급하면 말보다 페달이 먼저 나간다."],
+      ["가치관", "막힌 길도 돌아가면 결국 어딘가로 이어진다."],
+      ["강점", "기동력, 눈썰미"],
+      ["결함", "성급함"],
     ],
     strongAbilities: ["DEX", "CHA"],
     flawAbilities: ["WIS"],
@@ -122,127 +122,127 @@ const pcProfiles = [
       ["CHA 매력", "14", "+2"],
     ],
     status: [
-      ["건강", "72", "가벼운 상처는 익숙함"],
+      ["건강", "74", "가벼운 넘어짐에는 익숙함"],
       ["피로", "8", "아직 몸이 가볍고 반응이 빠름"],
-      ["사기", "64", "위험을 장난처럼 밀고 나갈 기세"],
+      ["사기", "66", "마을 전체를 한 바퀴 돌 기세"],
     ],
-    playerState: { hp: 72, fatigue: 8, morale: 64 },
+    playerState: { hp: 74, fatigue: 8, morale: 66 },
     goals: [
-      ["장기 목표", "누가 수도원 안팎의 길을 이용해 장부를 빼냈는지 밝힌다"],
-      ["단기 목표", "문지기와 심부름 동선을 맞춰 빈 시간을 찾는다"],
+      ["장기 목표", "축제 준비물이 제시간에 제자리로 돌아가게 만든다"],
+      ["단기 목표", "사라진 풍등 상자의 배달 경로를 역추적한다"],
       ["진행 표시", "단기 0% / 전체 0%"],
     ],
     npcs: [
-      ["토마스", "문지기", "말이 통하는 어른 / 목격자", "걱정 많은 짧은 문장", "8"],
-      ["아벨 원장", "수도원장", "감시자 / 불신", "차갑고 단정한 존댓말", "-15"],
-      ["니코", "시장 연락책", "가벼운 빚 / 바깥 소문", "빠르고 장난스러운 말투", "6"],
+      ["윤호", "항구 관리인", "길 정보 / 장난", "느긋한 반말", "8"],
+      ["미라", "꽃집 주인", "배달 의뢰인 / 신뢰", "상냥하지만 빠른 존댓말", "9"],
+      ["재현", "동네 친구", "경쟁심 / 도움 가능", "짧고 씩씩한 반말", "-3"],
     ],
     prologueMeta: {
-      sceneTitle: "급히 잠긴 뒷문",
-      date: "성 마티아 축일",
-      time: "저녁 종 직후",
-      place: "수도원 북쪽 뒷문과 바깥 흙길",
+      sceneTitle: "끊긴 배달 표식",
+      date: "여름 축제 전날",
+      time: "늦은 오전",
+      place: "솔비마을 항구길 삼거리",
     },
     prologue:
-      "요한은 저녁 종 직후, 원래 닫혀 있어야 할 수도원 뒷문 앞에 멈춰 선다. 빗장은 안쪽에서 급히 걸린 흔적이 있고, 바깥 흙길에는 아직 마르지 않은 발자국이 끊겨 있다.",
+      "도윤은 항구길 삼거리에서 자전거를 멈춘다. 풍등 상자를 표시하던 분필 화살표가 빗물에 반쯤 지워졌고, 길가 벤치 아래에는 배달표 한 장이 접힌 채 끼어 있다.",
   },
   {
-    summary: "베네딕트 - 문서 보관인 / 기록 지식과 신중함 / 행동이 늦음",
-    name: "베네딕트",
-    gender: "남성",
-    age: "46세",
-    role: "문서 보관인",
-    background:
-      "베네딕트는 오래된 장부와 봉인 문서의 분류 규칙을 누구보다 잘 안다. 그는 기록의 빈칸과 서체 변화를 읽어내지만, 모든 가능성을 확인하려다 결정적인 순간에 몸이 늦게 움직인다.",
-    fields: [
-      ["말투", "정중한 하십시오체. 생각이 길어질수록 문장이 조심스럽게 늘어난다."],
-      ["가치관", "기록은 사람보다 오래 남으므로 함부로 고쳐서는 안 된다."],
-      ["강점", "기록 지식, 신중함"],
-      ["결함", "행동이 늦음"],
-    ],
-    strongAbilities: ["INT", "WIS"],
-    flawAbilities: ["STR", "DEX"],
-    abilities: [
-      ["STR 힘", "8", "-1"],
-      ["DEX 민첩", "9", "-1"],
-      ["CON 체력", "11", "+0"],
-      ["INT 지능", "16", "+3"],
-      ["WIS 통찰", "14", "+2"],
-      ["CHA 매력", "10", "+0"],
-    ],
-    status: [
-      ["건강", "68", "무리한 이동에는 약함"],
-      ["피로", "14", "긴장하면 집중이 길어지는 대신 몸이 굳음"],
-      ["사기", "58", "기록을 지켜야 한다는 책임감이 큼"],
-    ],
-    playerState: { hp: 68, fatigue: 14, morale: 58 },
-    goals: [
-      ["장기 목표", "조작된 기록과 진짜 장부의 계보를 복원한다"],
-      ["단기 목표", "봉인 문서 목록에서 빠진 색인 번호를 확인한다"],
-      ["진행 표시", "단기 0% / 전체 0%"],
-    ],
-    npcs: [
-      ["아벨 원장", "수도원장", "상관 / 문서 봉인권자", "느리고 단호한 명령형", "2"],
-      ["엘리안", "필사 보조원", "제자 같은 동료 / 신뢰", "조심스러운 해요체", "14"],
-      ["세라", "외부 감찰관", "기록을 요구하는 압력 / 경계", "건조한 공식 어투", "-10"],
-    ],
-    prologueMeta: {
-      sceneTitle: "비어 있는 색인 번호",
-      date: "성 마티아 축일",
-      time: "늦은 저녁",
-      place: "수도원 기록 보관실",
-    },
-    prologue:
-      "베네딕트는 늦은 저녁 기록 보관실에서 봉인 장부 목록을 펼쳐 두고 있다. 목록 한가운데에는 존재해서는 안 되는 여백 번호가 남아 있고, 마지막 열람 서명란은 누군가 일부러 흐린 듯 번져 있다.",
-  },
-  {
-    summary: "리나 - 견습 서기 / 언변과 계산력 / 의심이 많음",
-    name: "리나",
+    summary: "세아 - 임시 카페 매니저 / 조율력과 침착함 / 혼자 책임지려 함",
+    name: "세아",
     gender: "여성",
-    age: "21세",
-    role: "견습 서기",
+    age: "34세",
+    role: "임시 카페 매니저",
     background:
-      "리나는 숫자와 말의 빈틈을 빨리 잡아내는 견습 서기다. 후원금 계산과 식량 장부를 베껴 쓰며 수도원의 현실적인 균열을 보았지만, 쉽게 믿지 않는 성격 때문에 도움을 받을 순간에도 먼저 상대를 시험한다.",
+      "세아는 축제 기간 동안 빈 점포를 빌려 임시 카페를 맡았다. 사람과 물건의 흐름을 차분히 정리하지만, 문제가 생기면 도움을 청하기보다 자기 손으로 끝내려 한다.",
     fields: [
-      ["말투", "또렷한 해요체. 질문이 많고, 중요한 말 앞에서는 잠깐 멈춘다."],
-      ["가치관", "숫자는 거짓말을 못 하지만 사람은 숫자를 숨길 수 있다."],
-      ["강점", "언변, 계산력"],
-      ["결함", "의심이 많음"],
+      ["말투", "단정한 해요체. 결정할 때는 짧고 분명해진다."],
+      ["가치관", "좋은 자리는 혼자 만드는 게 아니라 사람들이 머물 수 있게 여는 것이다."],
+      ["강점", "조율력, 침착함"],
+      ["결함", "혼자 책임지려 함"],
     ],
-    strongAbilities: ["INT", "CHA"],
-    flawAbilities: ["STR", "CON"],
+    strongAbilities: ["WIS", "CHA"],
+    flawAbilities: ["STR"],
     abilities: [
       ["STR 힘", "8", "-1"],
-      ["DEX 민첩", "13", "+1"],
-      ["CON 체력", "10", "+0"],
-      ["INT 지능", "15", "+2"],
-      ["WIS 통찰", "12", "+1"],
-      ["CHA 매력", "14", "+2"],
+      ["DEX 민첩", "11", "+0"],
+      ["CON 체력", "12", "+1"],
+      ["INT 지능", "13", "+1"],
+      ["WIS 통찰", "14", "+2"],
+      ["CHA 매력", "15", "+2"],
     ],
     status: [
-      ["건강", "66", "큰 부상은 없지만 체력은 낮음"],
-      ["피로", "12", "머리는 맑지만 몸은 쉽게 지침"],
-      ["사기", "62", "의심이 오히려 앞으로 나아가게 함"],
+      ["건강", "70", "무리하지 않으면 안정적임"],
+      ["피로", "13", "준비 막바지라 어깨가 무거움"],
+      ["사기", "63", "손님을 맞을 준비를 끝내고 싶어 함"],
     ],
-    playerState: { hp: 66, fatigue: 12, morale: 62 },
+    playerState: { hp: 70, fatigue: 13, morale: 63 },
     goals: [
-      ["장기 목표", "후원금 장부와 사라진 필사실 장부의 숫자 불일치를 밝힌다"],
-      ["단기 목표", "최근 지출 내역과 식량 배급표를 비교한다"],
+      ["장기 목표", "임시 카페를 마을 사람들이 쉬어갈 수 있는 축제 거점으로 만든다"],
+      ["단기 목표", "없어진 컵 상자와 좌석 배치표를 찾아 개장 준비를 맞춘다"],
       ["진행 표시", "단기 0% / 전체 0%"],
     ],
     npcs: [
-      ["마르타", "약초원 관리인", "숫자가 맞지 않는 거래처 / 의심", "실용적인 해요체", "-2"],
-      ["베네딕트", "문서 보관인", "검산을 맡긴 선배 / 신뢰", "정중한 하십시오체", "9"],
-      ["오스카", "외부 후원 대리인", "돈의 흐름 / 위험", "매끄러운 존댓말", "-14"],
+      ["도겸", "빵집 사장", "재료 공급자 / 신뢰", "투박하지만 다정한 반말", "10"],
+      ["하루", "빵집 견습", "배달 협력자 / 걱정", "밝은 해요체", "7"],
+      ["은채", "공방 주인", "장식 담당 / 일정 충돌", "느긋한 존댓말", "-2"],
     ],
     prologueMeta: {
-      sceneTitle: "맞지 않는 합계",
-      date: "성 마티아 축일",
-      time: "저녁 종 직후",
-      place: "수도원 작은 회계실",
+      sceneTitle: "쌓이지 않은 컵",
+      date: "여름 축제 전날",
+      time: "오후 두 시",
+      place: "솔비마을 임시 카페",
     },
     prologue:
-      "리나는 저녁 종 직후, 작은 회계실 책상 위에 후원금 장부와 식량 배급표를 나란히 펼쳐 둔다. 합계는 사라진 필사실 장부의 마지막 기록과 정확히 같은 금액만큼 어긋나 있다.",
+      "오후 두 시, 세아는 임시 카페의 빈 선반 앞에서 발걸음을 멈춘다. 컵 상자는 도착하지 않았고, 테이블 위 좌석 배치표에는 누군가 연필로 새 동선을 그려 두었다.",
+  },
+  {
+    summary: "준 - 등대지기 손자 / 관찰력과 책임감 / 혼자 앞서 나감",
+    name: "준",
+    gender: "남성",
+    age: "16세",
+    role: "등대지기 손자",
+    background:
+      "준은 할아버지를 도와 등대 주변 길과 날씨를 살핀다. 바다와 하늘의 작은 변화를 잘 알아차리지만, 자신이 먼저 해결해야 한다고 믿어 어른들에게 늦게 말하는 편이다.",
+    fields: [
+      ["말투", "짧은 반말 섞인 해요체. 중요한 걸 보면 목소리가 낮아진다."],
+      ["가치관", "불빛은 멀리 있는 사람에게도 길을 알려줄 수 있다."],
+      ["강점", "관찰력, 책임감"],
+      ["결함", "혼자 앞서 나감"],
+    ],
+    strongAbilities: ["DEX", "WIS"],
+    flawAbilities: ["CHA"],
+    abilities: [
+      ["STR 힘", "10", "+0"],
+      ["DEX 민첩", "14", "+2"],
+      ["CON 체력", "12", "+1"],
+      ["INT 지능", "11", "+0"],
+      ["WIS 통찰", "15", "+2"],
+      ["CHA 매력", "9", "-1"],
+    ],
+    status: [
+      ["건강", "71", "등대 계단을 오르내리는 데 익숙함"],
+      ["피로", "10", "밤바람을 맞아 조금 졸리지만 버틸 수 있음"],
+      ["사기", "60", "축제 불빛을 꼭 지키고 싶어 함"],
+    ],
+    playerState: { hp: 71, fatigue: 10, morale: 60 },
+    goals: [
+      ["장기 목표", "밤 축제의 등대 불빛과 바닷길 안전을 지킨다"],
+      ["단기 목표", "사라진 예비 렌즈 상자를 찾아 등대 점검을 끝낸다"],
+      ["진행 표시", "단기 0% / 전체 0%"],
+    ],
+    npcs: [
+      ["광수", "등대지기", "할아버지 / 신뢰", "느리고 단단한 반말", "14"],
+      ["윤호", "항구 관리인", "어른 친구 / 농담", "느긋한 반말", "5"],
+      ["소라", "초등학생 독서회원", "동생 같은 이웃 / 호기심", "빠른 반말", "4"],
+    ],
+    prologueMeta: {
+      sceneTitle: "흔들리는 등대 창고",
+      date: "여름 축제 전날",
+      time: "해질녘",
+      place: "솔비마을 등대 창고",
+    },
+    prologue:
+      "해질녘, 준은 등대 창고 문이 바람에 흔들리는 소리를 듣는다. 예비 렌즈 상자가 있어야 할 선반은 비어 있고, 창고 바닥에는 젖은 밧줄 끝이 바깥쪽으로 이어져 있다.",
   },
 ];
 
@@ -263,10 +263,8 @@ function modLabel(mod) {
   return mod > 0 ? `+${mod}` : String(mod);
 }
 
-function scoreForMod(mod) {
-  if (mod > 0) return randomInt(10 + mod * 2, 11 + mod * 2);
-  if (mod < 0) return randomInt(10 + mod * 2, 11 + mod * 2);
-  return randomInt(10, 11);
+function abilityMod(score) {
+  return Math.floor((score - 10) / 2);
 }
 
 function sumPositiveMods(mods) {
@@ -277,76 +275,128 @@ function sumNegativeMods(mods) {
   return Object.values(mods).reduce((sum, mod) => sum + Math.min(mod, 0), 0);
 }
 
-function abilitiesByAdjustmentPriority(profile, direction) {
-  const protectedAbilities = new Set(direction === "positive" ? profile.strongAbilities : profile.flawAbilities);
-  return [
-    ...abilityDefinitions.map(([id]) => id).filter((id) => !protectedAbilities.has(id)),
-    ...abilityDefinitions.map(([id]) => id).filter((id) => protectedAbilities.has(id)),
-  ];
+function abilityIds() {
+  return abilityDefinitions.map(([id]) => id);
 }
 
-function buildRandomMods(profile) {
-  const strongAbilities = new Set(profile.strongAbilities);
-  const flawAbilities = new Set(profile.flawAbilities);
-  const mods = {};
-
-  abilityDefinitions.forEach(([id]) => {
-    if (strongAbilities.has(id)) {
-      mods[id] = randomInt(0, 2);
-    } else if (flawAbilities.has(id)) {
-      mods[id] = randomInt(-2, 0);
-    } else {
-      mods[id] = randomInt(-1, 1);
-    }
-  });
-
-  if (!Object.values(mods).some((mod) => mod > 0)) {
-    mods[profile.strongAbilities[0]] = 1;
-  }
-
-  if (!Object.values(mods).some((mod) => mod < 0)) {
-    mods[profile.flawAbilities[0]] = -1;
-  }
-
-  while (sumPositiveMods(mods) > 4) {
-    const target = abilitiesByAdjustmentPriority(profile, "positive").find((id) => mods[id] > 0);
-    if (!target) break;
-    mods[target] -= 1;
-  }
-
-  while (sumNegativeMods(mods) < -4) {
-    const target = abilitiesByAdjustmentPriority(profile, "negative").find((id) => mods[id] < 0);
-    if (!target) break;
-    mods[target] += 1;
-  }
-
-  return mods;
+function normalizeTaggedAbilities(values) {
+  const validIds = new Set(abilityIds());
+  return [...new Set(values || [])].filter((id) => validIds.has(id)).slice(0, 2);
 }
 
-function validateAbilityBalance(abilities) {
-  const mods = abilities.map(([, , mod]) => Number(mod));
-  const positiveSum = mods.reduce((sum, mod) => sum + Math.max(mod, 0), 0);
-  const negativeSum = mods.reduce((sum, mod) => sum + Math.min(mod, 0), 0);
+function modsFromScores(scores) {
+  return Object.fromEntries(abilityDefinitions.map(([id]) => [id, abilityMod(scores[id])]));
+}
+
+function validateAbilityBalance(mods, warnings = [], adjustments = []) {
+  const values = Object.values(mods);
+  const positiveSum = sumPositiveMods(mods);
+  const negativeSum = sumNegativeMods(mods);
+  const hasPositive = values.some((mod) => mod > 0);
+  const hasNegative = values.some((mod) => mod < 0);
 
   return {
-    hasPositive: mods.some((mod) => mod > 0),
-    hasNegative: mods.some((mod) => mod < 0),
+    hasPositive,
+    hasNegative,
     positiveSum,
     negativeSum,
-    valid: mods.some((mod) => mod > 0) && mods.some((mod) => mod < 0) && positiveSum <= 4 && negativeSum >= -4,
+    valid: hasPositive && hasNegative && positiveSum <= 4 && negativeSum >= -4,
+    warnings,
+    adjustments,
   };
 }
 
 function generateAbilities(profile) {
-  const mods = buildRandomMods(profile);
-  const abilities = abilityDefinitions.map(([id, label]) => [label, String(scoreForMod(mods[id])), modLabel(mods[id])]);
-  const balance = validateAbilityBalance(abilities);
+  const strongAbilities = normalizeTaggedAbilities(profile.strongAbilities);
+  const flawAbilities = normalizeTaggedAbilities(profile.flawAbilities);
+  const strongSet = new Set(strongAbilities);
+  const flawSet = new Set(flawAbilities);
+  const scores = {};
+  const generation = {};
 
-  if (!balance.valid) {
-    throw new Error("Ability balance rule failed");
+  abilityDefinitions.forEach(([id]) => {
+    const hasStrong = strongSet.has(id);
+    const hasFlaw = flawSet.has(id);
+    const base = randomInt(hasFlaw ? 9 : 8, 12);
+    let adjustment = 0;
+    let conflictRoll = null;
+
+    if (hasStrong && hasFlaw) {
+      conflictRoll = randomInt(1, 6);
+      adjustment = conflictRoll >= 4 ? 1 : -1;
+    } else if (hasStrong) {
+      adjustment = 3;
+    } else if (hasFlaw) {
+      adjustment = -3;
+    }
+
+    scores[id] = base + adjustment;
+    generation[id] = {
+      base,
+      adjustment,
+      conflictRoll,
+      strong: hasStrong,
+      flaw: hasFlaw,
+    };
+  });
+
+  const protectedIds = new Set([...strongAbilities, ...flawAbilities]);
+  const neutralIds = abilityIds().filter((id) => !protectedIds.has(id));
+  const adjustments = [];
+  const warnings = [];
+  let mods = modsFromScores(scores);
+
+  while (sumPositiveMods(mods) > 4) {
+    const target = neutralIds
+      .filter((id) => mods[id] > 0)
+      .sort((left, right) => scores[left] - scores[right] || abilityIds().indexOf(left) - abilityIds().indexOf(right))[0];
+
+    if (!target) {
+      warnings.push("양수 보정 합을 더 낮출 중립 능력치가 없습니다.");
+      break;
+    }
+
+    scores[target] -= 1;
+    adjustments.push({ type: "positiveSum", ability: target, delta: -1, score: scores[target] });
+    mods = modsFromScores(scores);
   }
 
-  return { abilities, balance };
+  while (sumNegativeMods(mods) < -4) {
+    const target = neutralIds
+      .filter((id) => mods[id] < 0)
+      .sort((left, right) => scores[right] - scores[left] || abilityIds().indexOf(left) - abilityIds().indexOf(right))[0];
+
+    if (!target) {
+      warnings.push("음수 보정 합을 더 높일 중립 능력치가 없습니다.");
+      break;
+    }
+
+    scores[target] += 1;
+    adjustments.push({ type: "negativeSum", ability: target, delta: 1, score: scores[target] });
+    mods = modsFromScores(scores);
+  }
+
+  const balance = validateAbilityBalance(mods, warnings, adjustments);
+
+  if (!balance.hasPositive) {
+    balance.warnings.push("양수 보정이 없습니다.");
+  }
+
+  if (!balance.hasNegative) {
+    balance.warnings.push("음수 보정이 없습니다.");
+  }
+
+  balance.valid = balance.hasPositive && balance.hasNegative && balance.positiveSum <= 4 && balance.negativeSum >= -4;
+
+  return {
+    abilities: abilityDefinitions.map(([id, label]) => [label, String(scores[id]), modLabel(mods[id])]),
+    scores,
+    mods,
+    balance,
+    generation,
+    strongAbilities,
+    flawAbilities,
+  };
 }
 
 function buildCharacterDraft(profile) {
@@ -362,7 +412,12 @@ function buildCharacterDraft(profile) {
     goals: profile.goals,
     npcs: profile.npcs,
     abilities: generated.abilities,
+    abilityScores: generated.scores,
+    mods: generated.mods,
     abilityBalance: generated.balance,
+    abilityGeneration: generated.generation,
+    strongAbilities: generated.strongAbilities,
+    flawAbilities: generated.flawAbilities,
     status: profile.status,
   };
 }
@@ -381,24 +436,24 @@ const defaultSessionRules = {
   checks: {
     formula: "1D20 + ability.mod >= DC",
     dcRange: { min: 10, max: 22 },
-    abilitySource: "player.abilities[*].mod",
+    abilitySource: "player.mods[ability]",
     difficultyMode: "easy",
     easyMode: {
       partialSuccessBias: true,
-      preserveCoreClues: true,
-      note: "쉬운 난이도에서는 실패해도 핵심 단서가 완전히 사라지지 않고, 비용/시간/상태 부담으로 전환한다.",
+      preserveSmallWins: true,
+      note: "쉬운 난이도에서는 실패해도 작은 성취나 다음 기회가 남고, 비용/시간/관계 부담으로 전환한다.",
     },
     resolutionOrder: ["criticalFailure", "criticalSuccess", "success", "partialSuccess", "failure"],
     resultBandsByDifficulty: {
       쉬움: [
-        { key: "criticalSuccess", condition: "natural20 or total >= dc + 5", label: "대성공", effect: "목표 진행 또는 단서 품질을 크게 올린다." },
+        { key: "criticalSuccess", condition: "natural20 or total >= dc + 5", label: "대성공", effect: "목표 진행, 관계 신뢰, 준비 품질 중 하나를 크게 올린다." },
         { key: "success", condition: "total >= dc", label: "성공", effect: "의도한 행동이 성립하고 장면이 전진한다." },
-        { key: "partialSuccess", condition: "dc - 4 <= total < dc", label: "부분 성공", effect: "핵심 정보는 얻되 피로, 시간, 관계, 위험 중 하나의 비용이 생긴다." },
+        { key: "partialSuccess", condition: "dc - 4 <= total < dc", label: "부분 성공", effect: "필요한 진전은 얻되 피로, 시간, 관계, 일정 중 하나의 비용이 생긴다." },
         { key: "failure", condition: "dc - 8 <= total <= dc - 5", label: "실패", effect: "행동은 빗나가지만 세계의 반응과 다음 실마리는 남긴다." },
-        { key: "criticalFailure", condition: "natural1 or total <= dc - 9", label: "대실패", effect: "상태 또는 관계에 뚜렷한 불이익을 주되, 추리의 필수 단서는 파괴하지 않는다." },
+        { key: "criticalFailure", condition: "natural1 or total <= dc - 9", label: "대실패", effect: "상태 또는 관계에 뚜렷한 불이익을 주되, 일을 완전히 망치지 않고 회복 경로를 남긴다." },
       ],
       보통: [
-        { key: "criticalSuccess", condition: "natural20 or total >= dc + 5", label: "대성공", effect: "목표 진행, 단서 품질, NPC 반응 중 하나를 크게 개선한다." },
+        { key: "criticalSuccess", condition: "natural20 or total >= dc + 5", label: "대성공", effect: "목표 진행, 준비 품질, NPC 반응 중 하나를 크게 개선한다." },
         { key: "success", condition: "total >= dc", label: "성공", effect: "의도한 행동이 성립하고 장면이 전진한다." },
         { key: "partialSuccess", condition: "dc - 2 <= total < dc", label: "부분 성공", effect: "정보나 진전은 얻지만 분명한 비용이 생긴다." },
         { key: "failure", condition: "dc - 7 <= total <= dc - 3", label: "실패", effect: "행동은 실패하고 피로, 사기, 관계, 시간 중 하나에 불이익이 생긴다." },
@@ -413,11 +468,11 @@ const defaultSessionRules = {
       ],
     },
     dcGuidelines: [
-      { dc: 10, label: "쉬움", examples: "명백한 흔적 확인, 우호 NPC에게 기본 질문" },
-      { dc: 13, label: "보통", examples: "압박 속 조사, 애매한 말투의 거짓 감지" },
-      { dc: 16, label: "어려움", examples: "감춰진 단서 연결, 적대 NPC 설득" },
-      { dc: 19, label: "매우 어려움", examples: "위험한 잠입, 결정적 모순 포착" },
-      { dc: 22, label: "극한", examples: "준비 없는 돌파, 강한 권위자 앞 정면 폭로" },
+      { dc: 10, label: "쉬움", examples: "눈에 띄는 준비물 확인, 우호 NPC에게 기본 질문" },
+      { dc: 13, label: "보통", examples: "시간 압박 속 동선 정리, 애매한 부탁 조율" },
+      { dc: 16, label: "어려움", examples: "꼬인 동선 정리, 비협조적인 NPC 설득" },
+      { dc: 19, label: "매우 어려움", examples: "마감 직전 큰 일정 충돌 해결" },
+      { dc: 22, label: "극한", examples: "준비 없는 돌파, 여러 사람의 이해관계 동시 조율" },
     ],
   },
   status: {
@@ -476,11 +531,11 @@ const setupSteps = [
     draft: {
       kind: "fields",
       fields: [
-        ["장르", "중세 종교 추리"],
-        ["시대/기술", "중세"],
-        ["참조 세계", "현실 유럽 중세 수도원 변주"],
-        ["분위기", "어둡지만 작은 승리가 남는 분위기"],
-        ["핵심 갈등", "닫힌 공동체 안에서 사라진 장부와 의문스러운 죽음"],
+        ["장르", "생활/모험"],
+        ["시대/기술", "현대 소도시"],
+        ["참조 세계", "바닷가 작은 마을 솔비마을"],
+        ["분위기", "따뜻하지만 분주하고 작은 문제가 이어지는 분위기"],
+        ["핵심 갈등", "여름 축제 전날 사라진 준비물과 엇갈린 부탁을 해결해야 하는 하루"],
       ],
     },
   },
@@ -493,9 +548,9 @@ const setupSteps = [
     draft: {
       kind: "paragraph",
       text:
-        "수도원은 오래된 필사본과 약초 기록으로 명성을 얻었지만, 외부 영주와 교단의 후원 사이에서 조용히 균열이 생기고 있다. " +
-        "최근 봉인된 필사실의 장부가 사라졌고, 몇몇 수도사는 서로 다른 시간의 종소리를 기억한다. " +
-        "세계는 폐쇄적이지만 플레이어의 작은 발견과 신뢰 형성은 오래 남는다.",
+        "솔비마을은 바다와 언덕 사이에 붙은 작은 동네로, 여름 축제를 앞두고 가게, 도서관, 항구, 등대가 모두 조금씩 바빠져 있다. " +
+        "최근 축제 준비물이 제자리에 도착하지 않고, 서로의 부탁이 엇갈리며 작은 문제가 연쇄적으로 번지고 있다. " +
+        "세계는 위험보다 관계와 시간 압박이 중요하며, 플레이어의 작은 도움과 신뢰 형성은 오래 남는다.",
     },
   },
   {
@@ -527,12 +582,12 @@ const setupSteps = [
     draft: {
       kind: "promise",
       longTermGoal: pcProfiles[0].goals[0][1],
-      title: "추리·수사",
-      bullets: ["범인은 시작 전에 존재한다", "단서는 공정하게 배치된다", "우연이나 초자연으로 해결하지 않는다", "플레이어의 추론을 빼앗지 않는다", "작은 성취는 세션에 남는다"],
+      title: "생활/모험",
+      bullets: ["작은 문제는 해결 가능한 형태로 제시된다", "실패해도 회복 경로와 다음 기회가 남는다", "NPC 관계 변화가 플레이의 핵심 보상이다", "시간과 피로는 압박을 만들지만 플레이를 막지 않는다", "작은 성취는 세션에 남는다"],
       difficulty: [
         ["플레이 난이도", "쉬움"],
-        ["판정 기준", "DC 10~22를 사용하되, 쉬운 난이도에서는 부분 성공과 단서 보존을 넉넉히 적용한다"],
-        ["톤과 난이도", "세계는 어둡더라도 플레이는 자주 작은 성취를 얻을 수 있다"],
+        ["판정 기준", "DC 10~22를 사용하되, 쉬운 난이도에서는 부분 성공과 회복 가능한 비용을 넉넉히 적용한다"],
+        ["톤과 난이도", "세계는 분주하고 문제가 생겨도 플레이는 자주 작은 성취를 얻을 수 있다"],
       ],
       gameOver: [
         ["자동 사망", "건강이 0이 되면 PC는 자동 사망하며 세션 종료 조건이 된다"],
@@ -567,11 +622,14 @@ function buildInitialSetupState() {
     revision: "",
     saved: false,
     confirmed: false,
+    stale: false,
   }));
 }
 
 function buildWorldDraftFromSeed(seed) {
   const text = seed.trim();
+  const hasSliceOfLife = /생활|일상|마을|동네|축제|가게|관계|부탁|소소|회복/.test(text);
+  const hasAdventure = /모험|여행|배달|길|탐험|바다|숲|언덕|섬/.test(text);
   const hasMystery = /추리|수사|사건|범인|단서/.test(text);
   const hasPolitical = /정치|권력|의회|협상|파벌|배신/.test(text);
   const hasThriller = /스릴러|위협|음모|배신|추적/.test(text);
@@ -582,29 +640,31 @@ function buildWorldDraftFromSeed(seed) {
   const hasDark = /어둡|암울|불안|폐쇄|비극/.test(text);
   const wantsEasy = /쉬움|쉽|작은 승리|가볍|친절/.test(text);
   const wantsHard = /어려움|가혹|하드|위험|높은 난이도/.test(text);
-  const place = hasUnderwater ? "근미래 해저 도시" : hasMedieval ? "현실 유럽 중세 수도원 변주" : "사용자 seed 기반의 원형 세계";
+  const place = hasUnderwater ? "근미래 해저 도시" : hasMedieval ? "현실 유럽 중세 수도원 변주" : "바닷가 작은 마을 솔비마을";
   const genreParts = [];
+  if (hasSliceOfLife || (!hasMystery && !hasPolitical && !hasThriller)) genreParts.push("생활");
+  if (hasAdventure || (!hasMystery && !hasPolitical && !hasThriller)) genreParts.push("모험");
   if (hasMedieval) genreParts.push("중세");
   if (hasNearFuture && !hasUnderwater) genreParts.push("근미래");
   if (hasUnderwater) genreParts.push("해저 도시");
   if (hasPolitical) genreParts.push("정치");
   if (hasMystery) genreParts.push("추리·수사");
   if (hasThriller) genreParts.push("스릴러");
-  const genre = genreParts.length ? genreParts.join(" ") : "사용자 정의 모험";
-  const tone = hasDark || hasThriller ? "불안과 압력이 강하지만 작은 성취가 남는 분위기" : "긴장과 회복이 함께 있는 분위기";
+  const genre = [...new Set(genreParts)].join("/") || "생활/모험";
+  const tone = hasDark || hasThriller ? "불안과 압력이 있어도 작은 성취와 회복이 남는 분위기" : "따뜻함, 분주함, 회복이 함께 있는 분위기";
   const difficulty = wantsHard ? "어려움" : wantsEasy ? "쉬움" : "보통";
   const coreConflict = hasMystery
     ? "닫힌 공동체 안에서 사라진 기록, 숨겨진 동기, 의심스러운 죽음이 얽힌 사건"
     : hasPolitical || hasScarcity
       ? "부족한 자원, 파벌 간 이해관계, 배신 가능성이 플레이어의 선택을 압박하는 갈등"
-    : "아직 말로 정리되지 않은 욕망과 위기가 플레이어의 첫 선택을 압박한다";
+    : "축제 준비, 엇갈린 부탁, 사라진 준비물, 관계 회복이 플레이어의 첫 선택을 압박한다";
 
   return {
     frame: {
       kind: "fields",
       fields: [
         ["장르", genre],
-        ["시대/기술", hasNearFuture ? "근미래" : hasMedieval ? "중세" : "seed에서 구체화 필요"],
+        ["시대/기술", hasNearFuture ? "근미래" : hasMedieval ? "중세" : "현대 소도시"],
         ["참조 세계", place],
         ["분위기", tone],
         ["핵심 갈등", coreConflict],
@@ -614,7 +674,7 @@ function buildWorldDraftFromSeed(seed) {
       kind: "paragraph",
       text:
         `${text || "아직 seed가 비어 있다."} 이 seed를 바탕으로 세계는 첫 장면 전부터 압력을 품고 있다. ` +
-        `${hasMystery ? "사건의 진실은 플레이 전에 잠겨야 하며, 단서는 플레이어가 공정하게 발견할 수 있어야 한다. " : "AI 마스터는 사용자의 다음 요청을 통해 장르 약속을 더 좁혀야 한다. "}` +
+        `${hasMystery ? "사건의 진실은 플레이 전에 잠겨야 하며, 단서는 플레이어가 공정하게 발견할 수 있어야 한다. " : "생활/모험에서는 작은 목표, 관계 변화, 회복 가능한 비용을 중심으로 장면을 이어간다. "}` +
         `${tone} 세계 설정은 플레이를 제한하기보다 기대를 만들고, 이후 단계의 PC 후보와 프롤로그는 이 골격을 기준으로 제안된다.`,
     },
     difficulty,
@@ -623,20 +683,20 @@ function buildWorldDraftFromSeed(seed) {
 
 const state = {
   player: {
-    name: "엘리안",
-    role: "젊은 필사 보조원",
-    goal: "사라진 장부와 의문사의 진실을 밝힌다",
-    shortGoal: "봉인된 필사실 주변의 첫 단서를 확인한다",
-    hp: 70,
-    fatigue: 10,
-    morale: 60,
+    name: "하루",
+    role: "동네 빵집 견습",
+    goal: "마을 여름 축제를 무사히 열고 모두가 웃는 하루를 만든다",
+    shortGoal: "사라진 축제 안내판을 찾아 첫 배달 동선을 정리한다",
+    hp: 72,
+    fatigue: 9,
+    morale: 64,
   },
   world: {
-    genre: "중세 종교 추리",
-    reference: "현실 유럽 중세 수도원 변주",
-    promise: "추리·수사: 범인 있음, 공정 단서, 플레이어 추론 존중",
+    genre: "생활/모험",
+    reference: "바닷가 작은 마을 솔비마을",
+    promise: "생활/모험: 작은 목표, 회복 가능한 실패, 관계 변화",
   },
-  npcs: ["아벨 원장: 침묵하는 권위자", "마르타: 약초원 관리인", "토마스: 불안한 문지기"],
+  npcs: ["도겸: 빵집 사장, 든든한 어른", "나리: 축제 준비 담당, 친구", "윤호: 항구 관리인, 정보통"],
   prologueSeed: initialPrologueDraft.summary,
   prologueMeta: {
     sceneTitle: initialPrologueDraft.sceneTitle,
@@ -676,6 +736,7 @@ function statusLabel(status) {
     drafted: "초안",
     saved: "임시",
     confirmed: "확정",
+    stale: "재확인",
   }[status];
 }
 
@@ -743,7 +804,12 @@ function renderDraft(draft, revision) {
           <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
           ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
         </div>
-        <p class="balance-note">보정치 균형 검사 통과: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
+        <p class="balance-note">보정치 균형 검사 ${draft.abilityBalance.valid ? "통과" : "경고"}: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
+        ${
+          draft.abilityBalance.warnings?.length
+            ? `<p class="system-note">능력치 경고: ${draft.abilityBalance.warnings.join(" / ")}</p>`
+            : ""
+        }
         <p class="system-note">매턴 판정 시 1D20 주사위 값에 보정치를 더해 DC 10~22와 비교합니다. 난이도에 따라 같은 수치라도 성공, 부분 성공, 실패의 결과 폭이 달라집니다.</p>
       </section>
       <section class="draft-section">
@@ -851,11 +917,12 @@ function renderSetup() {
       const classes = [
         index === setupState.current ? "is-current" : "",
         itemState.confirmed ? "is-confirmed" : "",
+        itemState.stale ? "is-stale" : "",
         itemState.status === "locked" ? "is-locked" : "",
       ]
         .filter(Boolean)
         .join(" ");
-      return `<li class="${classes}"><button type="button" data-step="${index}"><span>${step.mark}</span>${step.label}<em>${statusLabel(itemState.confirmed ? "confirmed" : itemState.status)}</em></button></li>`;
+      return `<li class="${classes}"><button type="button" data-step="${index}"><span>${step.mark}</span>${step.label}<em>${statusLabel(itemState.stale ? "stale" : itemState.confirmed ? "confirmed" : itemState.status)}</em></button></li>`;
     })
     .join("");
 
@@ -869,7 +936,7 @@ function renderSetup() {
 
   document.querySelector("#stepKicker").textContent = `${currentStep.mark} ${currentStep.kicker}`;
   document.querySelector("#stepTitle").textContent = currentStep.label;
-  document.querySelector("#stepStatus").textContent = statusLabel(currentState.confirmed ? "confirmed" : currentState.status);
+  document.querySelector("#stepStatus").textContent = statusLabel(currentState.stale ? "stale" : currentState.confirmed ? "confirmed" : currentState.status);
   document.querySelector("#stepDraft").innerHTML = renderDraft(currentState.draft, currentState.revision);
   document.querySelector("#revisionRequest").placeholder = currentStep.placeholder;
   document.querySelector("#revisionRequest").value = "";
@@ -881,13 +948,14 @@ function renderSetup() {
   const pcStepIndex = setupSteps.findIndex((step) => step.id === "pc");
   const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
   document.querySelector("#reselectPc").hidden = !(setupState.steps[pcStepIndex].confirmed && setupState.current === characterStepIndex);
-  document.querySelector("#startSession").disabled = !setupState.steps.every((step) => step.confirmed);
+  document.querySelector("#startSession").disabled = !setupState.steps.every((step) => step.confirmed && !step.stale);
 }
 
 function saveCurrentStep() {
   const current = setupState.steps[setupState.current];
   current.saved = true;
   if (!current.confirmed) current.status = "saved";
+  current.stale = false;
   renderSetup();
 }
 
@@ -903,7 +971,7 @@ function applyWorldSeed() {
   setupSteps[promiseStepIndex].draft.difficulty = [
     ["플레이 난이도", draft.difficulty],
     ["판정 기준", `DC 10~22를 사용하되, ${draft.difficulty} 난이도에 맞는 대성공/성공/부분 성공/실패/대실패 기준을 적용한다`],
-    ["톤과 난이도", draft.difficulty === "어려움" ? "세계의 압력과 실패 비용이 선명하지만, 핵심 단서는 공정하게 남긴다" : "세계가 어둡더라도 플레이는 작은 성취와 다음 실마리를 자주 얻을 수 있다"],
+    ["톤과 난이도", draft.difficulty === "어려움" ? "시간 압박과 실패 비용이 선명하지만, 회복 경로와 작은 성취는 남긴다" : "세계가 바쁘고 문제가 생겨도 플레이는 작은 성취와 다음 기회를 자주 얻을 수 있다"],
   ];
 
   setupState.current = frameStepIndex;
@@ -937,10 +1005,12 @@ function applyCandidate(index) {
   state.prologueMeta = { ...selected.prologueMeta };
   setupState.steps[pcStepIndex].confirmed = true;
   setupState.steps[pcStepIndex].status = "confirmed";
+  setupState.steps[pcStepIndex].stale = false;
   for (let stepIndex = characterStepIndex; stepIndex < setupState.steps.length; stepIndex += 1) {
     setupState.steps[stepIndex].status = stepIndex === characterStepIndex ? "drafted" : "locked";
     setupState.steps[stepIndex].confirmed = false;
     setupState.steps[stepIndex].saved = false;
+    setupState.steps[stepIndex].stale = false;
     setupState.steps[stepIndex].revision = "";
   }
   setupState.current = characterStepIndex;
@@ -959,10 +1029,12 @@ function reselectCandidate() {
   const characterStepIndex = setupSteps.findIndex((step) => step.id === "character");
   setupState.steps[pcStepIndex].confirmed = false;
   setupState.steps[pcStepIndex].status = "drafted";
+  setupState.steps[pcStepIndex].stale = false;
   for (let stepIndex = characterStepIndex; stepIndex < setupState.steps.length; stepIndex += 1) {
     setupState.steps[stepIndex].status = "locked";
     setupState.steps[stepIndex].confirmed = false;
     setupState.steps[stepIndex].saved = false;
+    setupState.steps[stepIndex].stale = false;
   }
   setupState.current = pcStepIndex;
   renderSetup();
@@ -1018,6 +1090,7 @@ function confirmCurrentStep() {
   const current = setupState.steps[setupState.current];
   current.confirmed = true;
   current.status = "confirmed";
+  current.stale = false;
   if (setupState.current < setupSteps.length - 1) {
     setupState.current += 1;
     if (setupState.steps[setupState.current].status === "locked") setupState.steps[setupState.current].status = "drafted";
@@ -1032,11 +1105,11 @@ function reviseCurrentStep() {
   current.revision = request ? `요청 반영: ${request}` : "요청 반영: 현재 초안을 조금 더 정돈했습니다.";
   current.status = "drafted";
   current.confirmed = false;
+  current.stale = false;
   for (let index = setupState.current + 1; index < setupState.steps.length; index += 1) {
     if (setupState.steps[index].confirmed || setupState.steps[index].status === "saved") {
-      setupState.steps[index].status = "drafted";
-      setupState.steps[index].confirmed = false;
-      setupState.steps[index].revision = "앞 단계가 수정되어 재확인이 필요합니다.";
+      setupState.steps[index].stale = true;
+      setupState.steps[index].revision = "앞 단계가 수정되어 재확인이 필요합니다. 내용을 검토한 뒤 다시 확정하세요.";
     }
   }
   renderSetup();
@@ -1122,6 +1195,8 @@ function compileWorldJson() {
     fatigue: state.player.fatigue,
     morale: state.player.morale,
   };
+  const abilityScores = character.abilityScores || Object.fromEntries(character.abilities.map(([label, score]) => [label.split(" ")[0], Number(score)]));
+  const abilityMods = character.mods || Object.fromEntries(character.abilities.map(([label, , mod]) => [label.split(" ")[0], Number(mod)]));
   const runtime = {
     phase: "setup_ready",
     turn: 1,
@@ -1150,7 +1225,8 @@ function compileWorldJson() {
     },
     source: {
       worldSeed: document.querySelector("#worldSeed").value,
-      confirmedStepIds: setupState.steps.filter((step) => step.confirmed).map((step) => step.id),
+      confirmedStepIds: setupState.steps.filter((step) => step.confirmed && !step.stale).map((step) => step.id),
+      staleStepIds: setupState.steps.filter((step) => step.stale).map((step) => step.id),
     },
     world: {
       genre: fieldValue(worldFrame.fields, "장르"),
@@ -1185,10 +1261,10 @@ function compileWorldJson() {
       values: fieldValue(character.fields, "가치관"),
       strengths: fieldValue(character.fields, "강점"),
       flaws: fieldValue(character.fields, "결함"),
-      abilities: Object.fromEntries(
-        character.abilities.map(([label, score, mod]) => [label.split(" ")[0], { label, score: Number(score), mod: Number(mod) }]),
-      ),
+      abilities: abilityScores,
+      mods: abilityMods,
       abilityBalance: character.abilityBalance,
+      abilityGeneration: character.abilityGeneration,
       initialStatus,
       status: {
         ...initialStatus,
@@ -1221,7 +1297,7 @@ function compileWorldJson() {
       },
       clues: [],
       redHerrings: [],
-      notes: "추리·수사 장르에서는 플레이 시작 전 범인, 동기, 방법, 핵심 단서 배치를 잠그는 것을 권장한다.",
+      notes: "생활/모험 장르에서는 큰 숨겨진 진상보다 오늘의 문제, 관계 기대, 시간 압박, 회복 가능한 비용을 명확히 두는 것을 권장한다.",
     },
     prologueSeed: prologueStart.summary,
     prologue: prologueStart,
@@ -1261,25 +1337,25 @@ function renderKnownFacts(facts) {
 function factFromAction(action, resultLabel, index) {
   const factsByResult = {
     성공: [
-      "바닥 먼지가 한쪽으로 쓸려 있다",
-      "문 손잡이에 최근 사용 흔적이 남아 있다",
-      "누군가 서둘러 자리를 비운 흔적이 보인다",
-      "익숙하지 않은 냄새가 통로 끝에 남아 있다",
-      "말하지 않은 긴장이 주변 사람들 사이에 흐른다",
+      "부탁받은 일 하나가 다음 사람에게 이어질 길을 만들었다",
+      "흩어진 준비물의 일부가 제자리로 돌아왔다",
+      "NPC 한 명이 조금 더 마음을 열었다",
+      "마을의 바쁜 동선 속에서 쓸 만한 빈 시간이 보인다",
+      "작은 도움 하나가 주변 분위기를 누그러뜨렸다",
     ],
     "부분 성공": [
-      "희미한 소리가 벽 너머에서 끊겼다",
-      "쓸 만한 단서가 있지만 아직 방향은 불분명하다",
-      "주변 반응이 평소보다 조심스럽다",
-      "확신하기 어려운 어긋남이 하나 보인다",
-      "추가 확인이 필요한 실마리가 남았다",
+      "일은 조금 전진했지만 다른 부탁 하나가 함께 생겼다",
+      "필요한 준비물 일부를 찾았지만 아직 빠진 것이 있다",
+      "상대는 도와주려 하지만 자기 사정도 먼저 말한다",
+      "시간은 조금 지났지만 다음으로 갈 방향은 보인다",
+      "작은 성취와 작은 비용이 함께 남았다",
     ],
     실패: [
-      "정면 접근은 지금 눈에 띄기 쉽다",
-      "상대가 경계심을 품기 시작했다",
-      "이 방법만으로는 단서에 닿기 어렵다",
-      "시간을 더 쓰면 위험이 커질 수 있다",
-      "지금 위치에서는 확인할 수 없는 정보가 있다",
+      "이 방법만으로는 부탁을 끝내기 어렵다",
+      "상대가 미안해하지만 바로 도와주지는 못한다",
+      "시간이 더 필요하고 피로가 조금 쌓인다",
+      "준비물은 아직 찾지 못했지만 물어볼 사람이 생겼다",
+      "지금 위치에서는 해결이 어렵고 다른 동선이 필요하다",
     ],
   };
   const pool = factsByResult[resultLabel] || factsByResult.실패;
@@ -1505,12 +1581,12 @@ function resolveAction(action) {
 
   const resultLabel = success ? "성공" : partial ? "부분 성공" : "실패";
   const resultText = success
-    ? "행동은 의미 있는 정보를 남기고 다음 장면의 문을 연다."
+    ? "행동은 작은 성취를 남기고 다음 장면의 문을 연다."
     : partial
-      ? "원하는 것을 전부 얻지는 못했지만, 작은 단서와 새로운 압력이 남는다."
-      : "길은 막히지 않았지만 비용이 생긴다. 피로가 늘고 상황은 조금 더 까다로워진다.";
+      ? "원하는 것을 전부 얻지는 못했지만, 작은 진전과 새로운 부탁이 남는다."
+      : "길은 막히지 않았지만 비용이 생긴다. 피로가 늘고 일정은 조금 더 까다로워진다.";
   const nextTurn = (state.runtime?.turn || 1) + 1;
-  const nextSceneTitle = success ? "작은 단서가 이어지는 순간" : partial ? "압력이 남은 실마리" : "비용이 생긴 다음 장면";
+  const nextSceneTitle = success ? "작은 성취가 이어지는 순간" : partial ? "부탁이 겹치는 길목" : "비용이 생긴 다음 장면";
 
   state.recentChange = `${action}: ${resultLabel}`;
   state.knownFacts = compactKnownFacts([...state.knownFacts, factFromAction(action, resultLabel, state.log.length)]);
@@ -1535,7 +1611,7 @@ function answerStatusQuestion(question) {
   const normalized = question.trim();
   if (!normalized) return "현재 상태, 목표, 알려진 정보, 최근 변화에 대해 물어볼 수 있습니다.";
   if (normalized.includes("목표")) return `장기 목표는 "${state.player.goal}", 현재 단기 목표는 "${state.player.shortGoal}"입니다.`;
-  if (normalized.includes("정보") || normalized.includes("단서")) return `현재 알고 있는 정보는 ${renderKnownFacts(state.knownFacts)}입니다.`;
+  if (normalized.includes("정보") || normalized.includes("실마리") || normalized.includes("단서")) return `현재 알고 있는 정보는 ${renderKnownFacts(state.knownFacts)}입니다.`;
   if (normalized.includes("상태") || normalized.includes("피로") || normalized.includes("사기") || normalized.includes("HP")) {
     return `HP ${state.player.hp}, 피로 ${state.player.fatigue}, 사기 ${state.player.morale}입니다.`;
   }

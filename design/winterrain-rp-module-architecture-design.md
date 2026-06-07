@@ -99,10 +99,64 @@ Two states must stay separate.
       "status": "drafted",
       "draft": {},
       "confirmed": null,
+      "stale": false,
+      "dependsOn": [],
+      "revisionHistory": []
+    },
+    "worldContext": {
+      "status": "locked",
+      "draft": {},
+      "confirmed": null,
+      "stale": false,
+      "dependsOn": ["worldFrame"],
+      "revisionHistory": []
+    },
+    "pcCandidates": {
+      "status": "locked",
+      "draft": {},
+      "confirmed": null,
+      "selectedIndex": null,
+      "stale": false,
+      "dependsOn": ["worldFrame", "worldContext"],
+      "revisionHistory": []
+    },
+    "characterDetail": {
+      "status": "locked",
+      "draft": {},
+      "confirmed": null,
+      "stale": false,
+      "dependsOn": ["pcCandidates"],
+      "revisionHistory": []
+    },
+    "sessionRules": {
+      "status": "locked",
+      "draft": {},
+      "confirmed": null,
+      "stale": false,
+      "dependsOn": ["worldFrame", "worldContext", "characterDetail"],
+      "revisionHistory": []
+    },
+    "prologue": {
+      "status": "locked",
+      "draft": {},
+      "confirmed": null,
+      "stale": false,
+      "dependsOn": ["worldFrame", "worldContext", "characterDetail", "sessionRules"],
       "revisionHistory": []
     }
   }
 }
+```
+
+`currentStep` enum:
+
+```text
+worldFrame
+worldContext
+pcCandidates
+characterDetail
+sessionRules
+prologue
 ```
 
 Step status:
@@ -119,9 +173,11 @@ Rules:
 - `draft` may be regenerated or revised freely.
 - `saved` preserves a work-in-progress draft but does not commit it to canonical setup.
 - `confirmed` is the only value used by `SessionCompiler`.
+- `stale` is separate from status. A confirmed step can remain confirmed but stale after an earlier dependency changes.
+- `프롤로그 시작` must stay disabled while any required confirmed step is stale.
 - Before prologue starts, the user must approve saving the compiled setup as `[캐릭터명]-[날짜]-[장르].json`.
 - The saved JSON is the canonical base for play; LLM output can propose prose or effects but cannot mutate this file by claim.
-- The user can go backward to revise a confirmed step, but that should mark dependent later steps as potentially stale in a future implementation.
+- The user can go backward to revise a confirmed step. Dependent later steps should show stale warning badges until re-confirmed.
 
 ### SessionState
 
@@ -157,7 +213,7 @@ Rules:
   "rules": {
     "source": ["prompt/Core.md", "prompt/Setup.md", "prompt/StatusView.md"],
     "checks": {
-      "formula": "1D20 + ability.mod >= DC",
+      "formula": "1D20 + player.mods[ability] >= DC",
       "dcRange": {"min": 10, "max": 22},
       "difficultyMode": "easy",
       "easyMode": {
@@ -281,6 +337,76 @@ Rules:
 }
 ```
 
+### Ability Generation
+
+능력치는 PC 후보를 선택한 뒤 `④ 캐릭터 상세` 단계에서 앱이 생성한다. 모델은 강점/결함 후보를 제안할 수 있지만, 최종 능력치와 보정치 계산은 앱이 deterministic하게 수행한다. 결과는 `player.abilities`와 `player.mods`에 분리 기록한다.
+
+Abilities:
+
+```text
+STR / DEX / CON / INT / WIS / CHA
+```
+
+Generation order:
+
+1. 기본값 생성
+   - 결함이 없는 능력치: `rand(8, 12)`
+   - 결함이 붙은 능력치: `rand(9, 12)`
+   - 결함 능력치의 하한은 9다. `-3` 적용 뒤 최솟값이 6이 되어 보정치가 `-2`에 수렴하게 하기 위함이다.
+2. 강점/결함 반영
+   - 강점과 결함은 각각 최대 2개까지 지정할 수 있다.
+   - 같은 능력치에 강점과 결함이 동시에 붙을 수 있다.
+   - 강점만 있는 능력치: `+3`
+   - 결함만 있는 능력치: `-3`
+   - 강점과 결함이 모두 있는 능력치: `1D6`; 4 이상이면 `+1`, 3 이하이면 `-1`
+3. 보정치 계산
+   - `mod = floor((ability - 10) / 2)`
+   - `player.mods.STR` 등 각 키에 기록한다.
+4. 균형 검사 및 조정
+   - 양수 보정 존재: `mod > 0`인 능력치가 1개 이상
+   - 음수 보정 존재: `mod < 0`인 능력치가 1개 이상
+   - 양수 보정 합 상한: `sum(max(mod, 0)) <= 4`
+   - 음수 보정 합 하한: `sum(min(mod, 0)) >= -4`
+
+Adjustment rules:
+
+- 강점/결함이 붙은 능력치는 조정 대상에서 제외한다.
+- 양수 합 초과 시, 보정치가 양수인 중립 능력치 중 가장 낮은 것부터 점수를 `-1`씩 조정한다.
+- 음수 합 초과 시, 보정치가 음수인 중립 능력치 중 가장 높은 것부터 점수를 `+1`씩 조정한다.
+- 중립 능력치가 모두 소진되어도 조건을 충족하지 못하면 앱은 경고를 표시하고 현재 상태로 확정할 수 있다.
+
+Example:
+
+| Ability | Base | Tag adjustment | Final | Mod |
+| --- | ---: | ---: | ---: | ---: |
+| STR | 10 | 0 | 10 | +0 |
+| DEX | 11 | 0 | 11 | +0 |
+| CON | 11 | -3 | 8 | -1 |
+| INT | 9 | +3 | 12 | +1 |
+| WIS | 8 | 0 | 8 | -1 |
+| CHA | 10 | 0 | 10 | +0 |
+
+For this example, `positiveSum = +1` and `negativeSum = -2`, so the balance check passes.
+
+### SessionCompiler Mapping
+
+`SessionCompiler` reads confirmed setup values only. It does not read `draft` values and must refuse or warn if any required confirmed step is stale.
+
+| Setup step | SessionState target | Rule |
+| --- | --- | --- |
+| `worldFrame` | `world.genre`, `world.era`, `world.referenceWorld`, `world.tone`, `world.coreConflict` | ① 세계 골격 supplies the stable frame. |
+| `worldContext` | `world.context` | ② 세계 맥락 is stored as context. It must not be silently merged into `world.coreConflict`. |
+| `pcCandidates` | `source.selectedCandidate`, `player` seed reference | Only the selected candidate metadata is carried forward. Unselected candidates remain setup history, not runtime state. |
+| `characterDetail` | `player`, `player.abilities`, `player.mods`, `player.initialStatus`, `player.status`, `npcs` | App-generated abilities/mods and confirmed NPC relationship network become canonical. |
+| `sessionRules` | `world.promiseCard`, `rules.checks.difficultyMode`, `rules.checks.activeResultBands`, game-over rules | ⑤ locks long-term goal, genre promises, play difficulty, and ending conditions. |
+| `prologue` | `player.goals.shortTerm`, `prologue`, `runtime.currentDate`, `runtime.currentTime`, `runtime.currentPlace`, `runtime.currentSceneTitle`, initial `session.knownFacts` | ⑥ creates the first playable scene and short-term goal. |
+
+Short-term goal rule:
+
+- `⑥ 프롤로그` proposes the initial short-term goal from the confirmed long-term goal, selected PC, and first scene pressure.
+- The player may revise this value before confirming the prologue.
+- The confirmed value is stored as `player.goals.shortTerm` and is used by the first 2부 status view.
+
 Compatibility note:
 
 - Internal names can be readable webapp names.
@@ -365,7 +491,7 @@ flowchart TD
 - A confirmed step becomes the source for later prompts.
 - The app should expose progress clearly through circled-number navigation and per-step status.
 - `프롤로그 시작` should remain disabled until all required setup steps are confirmed.
-- Future implementation should mark dependent later steps stale when an earlier confirmed step changes.
+- When an earlier confirmed step changes, dependent later steps keep their confirmed values but become stale until re-confirmed.
 
 ## 2부 세션 플레이 UX
 

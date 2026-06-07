@@ -284,6 +284,15 @@ textarea {
   background: rgba(31, 111, 104, 0.08);
 }
 
+.setup-steps li.is-stale button {
+  border-color: rgba(180, 138, 53, 0.8);
+  background: rgba(180, 138, 53, 0.12);
+}
+
+.setup-steps li.is-stale em {
+  color: var(--rust);
+}
+
 .setup-steps li.is-locked button {
   color: var(--muted);
 }
