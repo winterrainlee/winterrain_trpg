@@ -216,7 +216,7 @@ Rules:
     "checks": {
       "formula": "1D20 + player.mods[ability] >= DC",
       "dcRange": {"min": 10, "max": 22},
-      "difficultyMode": "easy",
+      "difficultyMode": "보통",
       "easyMode": {
         "partialSuccessBias": true,
         "preserveCoreClues": true

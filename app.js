@@ -437,7 +437,7 @@ const defaultSessionRules = {
     formula: "1D20 + ability.mod >= DC",
     dcRange: { min: 10, max: 22 },
     abilitySource: "player.mods[ability]",
-    difficultyMode: "easy",
+    difficultyMode: "보통",
     easyMode: {
       partialSuccessBias: true,
       preserveSmallWins: true,
@@ -641,8 +641,8 @@ const setupSteps = [
       longTermGoal: pcProfiles[0].goals[0][1],
       title: "생활/모험",
       bullets: ["작은 문제는 해결 가능한 형태로 제시된다", "실패해도 회복 경로와 다음 기회가 남는다", "NPC 관계 변화가 플레이의 핵심 보상이다", "시간과 피로는 압박을 만들지만 플레이를 막지 않는다", "작은 성취는 세션에 남는다"],
-      difficultyMode: "쉬움",
-      difficulty: difficultyRows("쉬움"),
+      difficultyMode: "보통",
+      difficulty: difficultyRows("보통"),
       gameOver: [
         ["자동 사망", "건강이 0이 되면 PC는 자동 사망하며 세션 종료 조건이 된다"],
         ["목표 달성", "장기 목표가 달성되면 세션 엔딩으로 이동한다"],
