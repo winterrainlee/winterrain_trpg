@@ -15,6 +15,11 @@ const pcProfiles = [
     ],
     strongAbilities: ["DEX", "CON"],
     flawAbilities: ["CHA"],
+    abilityLinks: [
+      { trait: "손재주", type: "strong", ability: "DEX", reason: "섬세한 손놀림과 빠른 처리" },
+      { trait: "성실함", type: "strong", ability: "CON", reason: "반복 노동을 버티는 꾸준함" },
+      { trait: "부탁을 거절하지 못함", type: "flaw", ability: "CHA", reason: "사회적 경계 설정이 약함" },
+    ],
     abilities: [
       ["STR 힘", "10", "+0"],
       ["DEX 민첩", "14", "+2"],
@@ -63,7 +68,12 @@ const pcProfiles = [
       ["결함", "걱정이 많음"],
     ],
     strongAbilities: ["INT", "CHA"],
-    flawAbilities: ["CON"],
+    flawAbilities: ["WIS"],
+    abilityLinks: [
+      { trait: "기억력", type: "strong", ability: "INT", reason: "기록과 단서를 정확히 떠올림" },
+      { trait: "친화력", type: "strong", ability: "CHA", reason: "사람에게 다가가는 힘" },
+      { trait: "걱정이 많음", type: "flaw", ability: "WIS", reason: "위험 판단이 불안 쪽으로 기울기 쉬움" },
+    ],
     abilities: [
       ["STR 힘", "9", "-1"],
       ["DEX 민첩", "11", "+0"],
@@ -111,8 +121,13 @@ const pcProfiles = [
       ["강점", "기동력, 눈썰미"],
       ["결함", "성급함"],
     ],
-    strongAbilities: ["DEX", "CHA"],
+    strongAbilities: ["DEX", "WIS"],
     flawAbilities: ["WIS"],
+    abilityLinks: [
+      { trait: "기동력", type: "strong", ability: "DEX", reason: "빠르게 움직이고 방향을 바꿈" },
+      { trait: "눈썰미", type: "strong", ability: "WIS", reason: "작은 변화와 단서를 알아차림" },
+      { trait: "성급함", type: "flaw", ability: "WIS", reason: "관찰보다 판단이 앞설 수 있음" },
+    ],
     abilities: [
       ["STR 힘", "11", "+0"],
       ["DEX 민첩", "15", "+2"],
@@ -161,7 +176,12 @@ const pcProfiles = [
       ["결함", "혼자 책임지려 함"],
     ],
     strongAbilities: ["WIS", "CHA"],
-    flawAbilities: ["STR"],
+    flawAbilities: ["CHA"],
+    abilityLinks: [
+      { trait: "조율력", type: "strong", ability: "CHA", reason: "사람과 일정의 흐름을 맞춤" },
+      { trait: "침착함", type: "strong", ability: "WIS", reason: "압박 속에서도 상황을 읽음" },
+      { trait: "혼자 책임지려 함", type: "flaw", ability: "CHA", reason: "도움 요청과 협업이 늦어짐" },
+    ],
     abilities: [
       ["STR 힘", "8", "-1"],
       ["DEX 민첩", "11", "+0"],
@@ -209,8 +229,13 @@ const pcProfiles = [
       ["강점", "관찰력, 책임감"],
       ["결함", "혼자 앞서 나감"],
     ],
-    strongAbilities: ["DEX", "WIS"],
-    flawAbilities: ["CHA"],
+    strongAbilities: ["WIS", "CON"],
+    flawAbilities: ["WIS"],
+    abilityLinks: [
+      { trait: "관찰력", type: "strong", ability: "WIS", reason: "바다와 날씨의 변화를 읽음" },
+      { trait: "책임감", type: "strong", ability: "CON", reason: "맡은 일을 끝까지 버팀" },
+      { trait: "혼자 앞서 나감", type: "flaw", ability: "WIS", reason: "확인 없이 판단을 서두를 수 있음" },
+    ],
     abilities: [
       ["STR 힘", "10", "+0"],
       ["DEX 민첩", "14", "+2"],
@@ -279,9 +304,39 @@ function abilityIds() {
   return abilityDefinitions.map(([id]) => id);
 }
 
+function abilityLabel(id) {
+  return abilityDefinitions.find(([abilityId]) => abilityId === id)?.[1] || id;
+}
+
 function normalizeTaggedAbilities(values) {
   const validIds = new Set(abilityIds());
   return [...new Set(values || [])].filter((id) => validIds.has(id)).slice(0, 2);
+}
+
+function normalizeAbilityLinks(profile, strongAbilities, flawAbilities) {
+  const validIds = new Set(abilityIds());
+  const allowedStrong = new Set(strongAbilities);
+  const allowedFlaw = new Set(flawAbilities);
+
+  return (profile.abilityLinks || [])
+    .filter((link) => link && validIds.has(link.ability) && ["strong", "flaw"].includes(link.type))
+    .filter((link) => (link.type === "strong" ? allowedStrong.has(link.ability) : allowedFlaw.has(link.ability)))
+    .slice(0, 4);
+}
+
+function abilityLinksForCharacter(character) {
+  if (character.abilityLinks?.length) {
+    return character.abilityLinks;
+  }
+
+  const profile = pcProfiles.find((candidate) => candidate.name === character.name);
+  if (!profile) {
+    return [];
+  }
+
+  const strongAbilities = normalizeTaggedAbilities(character.strongAbilities || profile.strongAbilities);
+  const flawAbilities = normalizeTaggedAbilities(character.flawAbilities || profile.flawAbilities);
+  return normalizeAbilityLinks(profile, strongAbilities, flawAbilities);
 }
 
 function modsFromScores(scores) {
@@ -309,6 +364,7 @@ function validateAbilityBalance(mods, warnings = [], adjustments = []) {
 function generateAbilities(profile) {
   const strongAbilities = normalizeTaggedAbilities(profile.strongAbilities);
   const flawAbilities = normalizeTaggedAbilities(profile.flawAbilities);
+  const abilityLinks = normalizeAbilityLinks(profile, strongAbilities, flawAbilities);
   const strongSet = new Set(strongAbilities);
   const flawSet = new Set(flawAbilities);
   const scores = {};
@@ -396,6 +452,7 @@ function generateAbilities(profile) {
     generation,
     strongAbilities,
     flawAbilities,
+    abilityLinks,
   };
 }
 
@@ -418,6 +475,7 @@ function buildCharacterDraft(profile) {
     abilityGeneration: generated.generation,
     strongAbilities: generated.strongAbilities,
     flawAbilities: generated.flawAbilities,
+    abilityLinks: generated.abilityLinks,
     status: profile.status,
   };
 }
@@ -939,6 +997,7 @@ function renderDraft(draft, revision) {
   }
 
   if (draft.kind === "character") {
+    const abilityLinks = abilityLinksForCharacter(draft);
     return `
       <section class="draft-section">
         <h4>간단 소개</h4>
@@ -962,6 +1021,19 @@ function renderDraft(draft, revision) {
           <div class="table-head"><span>능력</span><span>수치</span><span>보정</span></div>
           ${draft.abilities.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
         </div>
+        ${
+          abilityLinks.length
+            ? `<div class="ability-link-table">
+                <div class="table-head"><span>특성</span><span>적용</span><span>근거</span></div>
+                ${abilityLinks
+                  .map(
+                    (link) =>
+                      `<div><span>${link.trait}</span><span>${link.type === "strong" ? "강점" : "결함"} -> ${abilityLabel(link.ability)}</span><span>${link.reason}</span></div>`,
+                  )
+                  .join("")}
+              </div>`
+            : ""
+        }
         <p class="balance-note">보정치 균형 검사 ${draft.abilityBalance.valid ? "통과" : "경고"}: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
         ${
           draft.abilityBalance.warnings?.length
@@ -1378,6 +1450,7 @@ function compileWorldJson() {
   };
   const abilityScores = character.abilityScores || Object.fromEntries(character.abilities.map(([label, score]) => [label.split(" ")[0], Number(score)]));
   const abilityMods = character.mods || Object.fromEntries(character.abilities.map(([label, , mod]) => [label.split(" ")[0], Number(mod)]));
+  const abilityLinks = abilityLinksForCharacter(character);
   const runtime = {
     phase: "setup_ready",
     turn: 1,
@@ -1442,6 +1515,11 @@ function compileWorldJson() {
       values: fieldValue(character.fields, "가치관"),
       strengths: fieldValue(character.fields, "강점"),
       flaws: fieldValue(character.fields, "결함"),
+      abilityTags: {
+        strong: character.strongAbilities,
+        flaw: character.flawAbilities,
+      },
+      abilityLinks,
       abilities: abilityScores,
       mods: abilityMods,
       abilityBalance: character.abilityBalance,

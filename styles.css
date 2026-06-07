@@ -435,6 +435,7 @@ textarea {
 }
 
 .ability-table,
+.ability-link-table,
 .status-table {
   display: grid;
   gap: 8px;
@@ -442,6 +443,7 @@ textarea {
 
 .npc-table div,
 .ability-table div,
+.ability-link-table div,
 .status-table div {
   display: grid;
   gap: 8px;
@@ -459,8 +461,17 @@ textarea {
 }
 
 .ability-table div,
+.ability-link-table div,
 .status-table div {
   grid-template-columns: 1.2fr 0.5fr 1.8fr;
+}
+
+.ability-link-table {
+  margin-top: 10px;
+}
+
+.ability-link-table div {
+  grid-template-columns: 0.8fr 1fr 1.8fr;
 }
 
 .status-table div {
@@ -842,6 +853,7 @@ dd {
   .difficulty-options,
   .npc-table div,
   .ability-table div,
+  .ability-link-table div,
   .status-table div,
   .after-grid {
     grid-template-columns: 1fr;

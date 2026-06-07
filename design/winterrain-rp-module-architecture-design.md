@@ -305,6 +305,8 @@ Rules:
     "background": "",
     "values": [],
     "traits": {"strengths": [], "flaws": []},
+    "abilityTags": {"strong": [], "flaw": []},
+    "abilityLinks": [],
     "abilities": {"STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0},
     "mods": {"STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0},
     "initialStatus": {"hp": 70, "fatigue": 10, "morale": 60},
@@ -376,6 +378,16 @@ Rules:
 ### Ability Generation
 
 능력치는 PC 후보를 선택한 뒤 `④ 캐릭터 상세` 단계에서 앱이 생성한다. 모델은 강점/결함 후보를 제안할 수 있지만, 최종 능력치와 보정치 계산은 앱이 deterministic하게 수행한다. 결과는 `player.abilities`와 `player.mods`에 분리 기록한다.
+
+Trait linkage:
+
+- `player.traits.strengths/flaws` are player-facing character traits.
+- `player.abilityTags.strong/flaw` are deterministic rule tags used by ability generation.
+- Traits and ability tags do not need to be perfectly identical, but every ability tag must have a readable trait link.
+- Example links: `손재주 -> DEX`, `서툰 손놀림 -> DEX flaw`, `기억력 -> INT`, `눈썰미 -> WIS`, `친화력 -> CHA`, `체력이 약함 -> CON flaw`.
+- If a trait can reasonably pull in opposite directions, the same ability may appear in both `strong` and `flaw`; the conflict rule below resolves it with `1D6`.
+- The app stores the final link rationale as `player.abilityLinks[]` so the UI can explain why a trait affected a specific ability.
+- The model may draft trait text and suggested ability links, but the app validates that ability IDs are one of `STR/DEX/CON/INT/WIS/CHA` and that strong/flaw tags are each capped at two.
 
 Abilities:
 
