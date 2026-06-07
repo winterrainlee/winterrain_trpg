@@ -40,7 +40,7 @@ The core architecture is: deterministic app code owns state, rolls, validation, 
 - Validate model prose for POV leaks, hidden-truth exposure, forced resolution, state-mutation claims, and length/choice expectations.
 - In mystery play, lock culprit, method, motive, timeline, and core evidence before play or before the case starts.
 - In detective reveal turns, do not steal the player's conclusion; stage the declared conclusion and leave room for the next player action.
-- Preserve the initial implementation target: `E4B + 26B`. Keep 12B as a later RP prose profile unless the user explicitly changes the plan.
+- Preserve the implementation target: `26B QAT` as the default engine and `E4B` as the assistant engine. Do not treat 12B or 12B QAT as runtime engine targets.
 
 ## Benchmarks
 

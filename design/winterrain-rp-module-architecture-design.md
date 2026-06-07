@@ -12,8 +12,9 @@ Source references:
 Current implementation decision:
 
 ```text
-IMPLEMENT_E4B_PLUS_26B_FIRST
-KEEP_12B_AS_RP_PROSE_TARGET
+USE_26B_QAT_AS_DEFAULT_ENGINE
+USE_E4B_AS_ASSISTANT_ENGINE
+DISCARD_12B_FOR_RUNTIME_ENGINE
 PROMPT_DIR_IS_REFERENCE_ONLY
 ```
 
@@ -58,8 +59,8 @@ flowchart LR
   C --> D["3부 애프터 세션<br/>Review and Next Seed"]
   D -->|continue same campaign| A
 
-  A -.-> M1["Draft route<br/>26B setup drafts<br/>E4B compact fallback"]
-  C -.-> M2["Prose route<br/>26B master prose<br/>12B later rp_prose profile"]
+  A -.-> M1["Draft route<br/>26B QAT setup drafts<br/>E4B compact fallback"]
+  C -.-> M2["Prose route<br/>26B QAT master prose<br/>E4B brief fallback"]
   C -.-> M3["Status Q&A route<br/>E4B status assistant"]
   D -.-> M4["Summary route<br/>26B or E4B aftertalk"]
 ```
@@ -75,7 +76,7 @@ flowchart LR
 | `SessionStore` | App | No | 세션 JSON, 턴 로그, world changes 저장 |
 | `RuleEngine` | App | No | 판정, DC, 피로/사기, 목표 진행, 엔딩 조건 |
 | `ScenePlanner` | App + optional LLM | Optional | 다음 장면 seed, required/forbidden beats 생성 |
-| `MasterProse` | 26B first, 12B later | Yes | 플레이어용 장면 산문 생성 |
+| `MasterProse` | 26B QAT | Yes | 플레이어용 장면 산문 생성 |
 | `StatusView` | App | No | 상태창 deterministic 렌더링 |
 | `StatusAssistant` | E4B | Yes | 허용된 상태 slice 안에서 질문 답변 |
 | `StateApplier` | App | No | effects와 선택 결과를 canonical state에 반영 |
@@ -248,9 +249,44 @@ Rules:
       "dcGuidelines": []
     },
     "status": {
-      "hp": {"range": [0, 100], "default": 70, "deathAt": 0},
-      "fatigue": {"range": [0, 20], "startingRange": [8, 12], "bands": [], "recovery": {}},
-      "morale": {"range": [0, 100], "default": 60, "startingRange": [50, 70], "bands": [], "gain": {}, "loss": {}}
+      "hp": {
+        "range": [0, 100],
+        "default": 70,
+        "deathAt": 0,
+        "bands": [
+          {"label": "위험", "range": [0, 20], "modifier": -2, "appliesTo": "allChecks"},
+          {"label": "중상", "range": [21, 40], "modifier": -1, "appliesTo": "physicalChecks"},
+          {"label": "불편", "range": [41, 60], "modifier": 0, "appliesTo": "fictionOnly"},
+          {"label": "양호", "range": [61, 80], "modifier": 0, "appliesTo": "allChecks"},
+          {"label": "건재", "range": [81, 100], "modifier": 1, "appliesTo": "physicalChecks"}
+        ]
+      },
+      "fatigue": {
+        "range": [0, 20],
+        "startingRange": [8, 12],
+        "bands": [
+          {"label": "상쾌", "range": [0, 3], "modifier": 1, "appliesTo": "allChecks"},
+          {"label": "보통", "range": [4, 8], "modifier": 0, "appliesTo": "allChecks"},
+          {"label": "피곤", "range": [9, 13], "modifier": 0, "appliesTo": "fictionOnly"},
+          {"label": "탈진 직전", "range": [14, 17], "modifier": -1, "appliesTo": "allChecks"},
+          {"label": "한계", "range": [18, 20], "modifier": -2, "appliesTo": "allChecks", "hardModeTurnEndHpLoss": 5}
+        ],
+        "recovery": {}
+      },
+      "morale": {
+        "range": [0, 100],
+        "default": 60,
+        "startingRange": [50, 70],
+        "bands": [
+          {"label": "무너짐", "range": [0, 20], "modifier": -2, "appliesTo": "socialAndRiskChecks"},
+          {"label": "위축", "range": [21, 40], "modifier": -1, "appliesTo": "socialAndRiskChecks"},
+          {"label": "보통", "range": [41, 60], "modifier": 0, "appliesTo": "allChecks"},
+          {"label": "의욕", "range": [61, 80], "modifier": 0, "appliesTo": "fictionOnly"},
+          {"label": "고양", "range": [81, 100], "modifier": 1, "appliesTo": "socialAndGoalChecks"}
+        ],
+        "gain": {},
+        "loss": {}
+      }
     },
     "goals": {
       "shortGoalCompleteWhen": "player.goals.progress.shortPercent == 100",
@@ -388,6 +424,92 @@ Example:
 
 For this example, `positiveSum = +1` and `negativeSum = -2`, so the balance check passes.
 
+### Status Five-Step Bands
+
+건강, 피로, 사기는 모두 앱이 deterministic하게 관리한다. 모델은 상태 수치를 새로 정하거나 변경했다고 선언할 수 없고, 상태 변화는 `RuleEngine`과 `StateApplier`가 검증한 결과만 `player.status`에 반영한다.
+
+각 상태는 5단계 band를 가진다. UI는 현재 수치와 함께 band 이름을 표시하고, fiction prose는 이 band를 넘는 과장된 표현을 만들지 않도록 참조한다.
+
+Health / `hp`:
+
+| Stage | Range | Rule |
+| --- | ---: | --- |
+| 위험 | 0-20 | 생존이 우선이다. `hp == 0`이면 자동 사망하고 Ending 모듈로 이동한다. |
+| 중상 | 21-40 | 이동, 저항, 힘쓰기가 불리하다. 물리 판정에 `-1`을 적용할 수 있다. |
+| 불편 | 41-60 | 활동은 가능하지만 무리하면 피로와 추가 부상 위험이 커진다. |
+| 양호 | 61-80 | 일상/모험 장면을 안정적으로 수행할 수 있다. |
+| 건재 | 81-100 | 몸 상태가 좋아 이동, 버티기, 힘쓰기에 여유가 있다. 물리 판정에 `+1`을 적용할 수 있다. |
+
+Fatigue / `fatigue`:
+
+| Stage | Range | Rule |
+| --- | ---: | --- |
+| 상쾌 | 0-3 | 휴식이 충분하다. 전 판정에 `+1`을 적용할 수 있다. |
+| 보통 | 4-8 | 누적 부담이 낮다. 별도 보정은 없다. |
+| 피곤 | 9-13 | 아직 움직일 수 있지만 장면 비용으로 피로가 쌓이기 쉽다. |
+| 탈진 직전 | 14-17 | 집중과 판단이 흐려진다. 전 판정에 `-1`을 적용할 수 있다. |
+| 한계 | 18-20 | 전 판정에 `-2`를 적용할 수 있다. `difficultyMode == "어려움"`이면 턴 종료 시 건강 `-5`가 발생한다. |
+
+Morale / `morale`:
+
+| Stage | Range | Rule |
+| --- | ---: | --- |
+| 무너짐 | 0-20 | 포기, 공포, 충동적 선택의 압력이 강하다. 사회/위험 감수 판정에 `-2`를 적용할 수 있다. |
+| 위축 | 21-40 | 설득, 협상, 위험 감수 판단이 불리하다. 사회/위험 감수 판정에 `-1`을 적용할 수 있다. |
+| 보통 | 41-60 | 불안과 의욕이 균형을 이룬다. 별도 보정은 없다. |
+| 의욕 | 61-80 | 움직일 마음은 있지만 무모한 고양 상태는 아니다. fiction tone만 밝아진다. |
+| 고양 | 81-100 | 목표 추진, 설득, 격려 장면에 여유가 생긴다. 사회/목표 판정에 `+1`을 적용할 수 있다. |
+
+Status influence in 2부 turn resolution:
+
+```text
+자유 행동 입력
+→ LLM: 의도 + 행동 + 대상 + 기대 결과 해석
+→ App: sceneDC 산정
+   - 행동 자체의 어려움
+   - NPC 성향
+   - 플롯/시간/장소 맥락
+→ App: conditionModifier 산정
+   - 건강: 신체, 이동, 버티기, 힘쓰기 계열
+   - 피로: 누적 부담. 특히 장기 행동과 전반 판정에 영향
+   - 사기: 설득, 협상, 위험 감수, 목표 추진에 영향
+→ App: d20 + abilityMod + conditionModifier vs sceneDC
+→ App: result band 확정
+→ App: state delta 확정
+→ MasterProse: scene context + action intent + result band + NPC reaction seed + state delta
+```
+
+DC and player condition must remain separate in logs. `sceneDC` represents the objective scene difficulty; `conditionModifier` represents the PC's current ability to perform under that condition.
+
+Status role boundaries:
+
+- `morale` makes play harder or easier through social, risk, and goal-push modifiers. It is not a direct game-over condition.
+- `fatigue` represents accumulated burden. In `difficultyMode == "어려움"`, fatigue stage `한계` applies `hp -5` at turn end.
+- `hp` is the hard survival line. `hp <= 0` immediately triggers game over and routes to the Ending module.
+- The model may describe the felt pressure of low morale or high fatigue, but only the app may calculate modifiers, health loss, or game-over transitions.
+
+### NPC Network Rules
+
+`④ 캐릭터 상세` must create an initial NPC network that can support play pressure without forcing a villain. The default term is `마찰 NPC`, not enemy NPC.
+
+Core rules:
+
+- The initial NPC network should include at least three major NPCs.
+- At least one major NPC must be a `마찰 NPC`.
+- In 생활/모험, a friction NPC usually has `relationshipScore` around `-5` to `-12`.
+- The friction reason should prefer goal conflict, misunderstanding, responsibility, scarce resources, schedule pressure, or different priorities over malice or violence.
+- A friction NPC must remain persuadable, negotiable, or capable of relationship change unless the genre contract says otherwise.
+- The app records the friction as tags and relationship score; the model may portray tone and reaction, but cannot secretly turn a friction NPC into a hidden culprit or hard antagonist without genre support.
+
+Genre-specific interpretation:
+
+| Genre | Friction NPC role |
+| --- | --- |
+| 생활/모험 | Non-villain obstacle, skeptical helper, overworked coordinator, rival, rule-bound gatekeeper. |
+| 추리/수사 | May become a suspect, unreliable witness, obstructive official, or later antagonist candidate, but truth-lock rules decide actual guilt. |
+| 정치 | May become an opposing faction actor, leverage holder, public rival, or active adversary if faction state supports it. |
+| 전쟁 | The NPC network must include allied NPCs and enemy NPCs. At least one allied NPC should also be a friction NPC through command conflict, supply priority, morale pressure, field judgment, or competing mission priorities. |
+
 ### SessionCompiler Mapping
 
 `SessionCompiler` reads confirmed setup values only. It does not read `draft` values and must refuse or warn if any required confirmed step is stale.
@@ -447,7 +569,7 @@ right control panel:
 | Step | Purpose | Output |
 | --- | --- | --- |
 | `① 세계 골격` | seed를 장르, 시대, 참조 세계, 톤, 핵심 갈등으로 정리 | `worldFrame` draft |
-| `② 세계 맥락` | 정치/문화/권력/현재 긴장 상태를 1~2단락으로 구체화 | `worldContext` draft |
+| `② 세계 맥락` | ① 세계 골격을 보충하는 플레이어용 세계 소개문을 600자 내외로 구체화 | `worldContext` draft |
 | `③ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
 | `④ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, 건강/피로/사기, 핵심 NPC를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status`, `npcs` |
 | `⑤ 세션 규칙` | 장기 목표, 장르 약속, 난이도, 게임 오버 조건을 프롤로그 직전 확정 | `player.goals.longTerm`, `promiseCard`, `difficulty`, `gameOver` |
@@ -458,7 +580,7 @@ right control panel:
 ```mermaid
 flowchart TD
   A["World seed input"] --> B["Current setup step"]
-  B --> C["Build draft<br/>dummy now, 26B later"]
+  B --> C["Build draft<br/>dummy now, 26B QAT later"]
   C --> D["Show draft on right stage"]
   D --> E{"Player action"}
   E -->|"수정 요청"| F["Revise current draft"]
@@ -487,6 +609,7 @@ flowchart TD
 - `설정 초기화` is a global destructive action in the left rail. It returns setup to `① 세계 골격`, clears unconfirmed setup state, and requires confirmation.
 - `④ 캐릭터 상세` owns the player's deeper background, speech style, values, strengths/flaws, six abilities, modifiers, health/fatigue/morale, and the initial relationship network.
 - `⑤ 세션 규칙` locks the long-term goal, genre promises, play difficulty, and game-over conditions immediately before prologue.
+- `⑤ 세션 규칙` should expose play difficulty as radio choices: `쉬움`, `보통`, `어려움`. Changing the selected difficulty immediately changes the player-facing explanation for result bands, failure cost, intent-confirmation behavior, and status pressure.
 - `⑥ 프롤로그` acts as the final pre-play review. It shows a compact setup summary, character summary, NPC summary, and the first scene seed before JSON save/start.
 - A confirmed step becomes the source for later prompts.
 - The app should expose progress clearly through circled-number navigation and per-step status.
@@ -556,7 +679,7 @@ flowchart TD
   C --> D["Effect Planner<br/>success, partial, fail, cost"]
   D --> E["ScenePlanner<br/>next scene seed"]
   E --> F["PromptCompiler<br/>small MasterProse input"]
-  F --> G["MasterProse<br/>26B first"]
+  F --> G["MasterProse<br/>26B QAT"]
   G --> H["CriticVerifier"]
   H --> I["Render narrative and choices"]
   I --> J["StateApplier"]
@@ -604,7 +727,7 @@ Routing:
 
 | Surface | Owner | Model route |
 | --- | --- | --- |
-| Main play prose | `MasterProse` | 26B first, 12B later for `rp_prose` profile |
+| Main play prose | `MasterProse` | 26B QAT default engine |
 | Status rendering | App | deterministic |
 | Status Q&A | `StatusAssistant` | E4B is sufficient |
 | State changes | `StateApplier` | app only |
@@ -739,34 +862,36 @@ The model returns a step draft only. The app stores it as draft until the user c
 
 The app may accept `visibleText`, `choices`, and `shortSummary` directly. All candidates require validation.
 
-## Runtime Model Profiles
+## Runtime Model Profile
 
-Local deployment should treat large-model choice as a service profile, not a cheap per-turn switch.
+Local deployment should treat model choice as a stable service profile, not a cheap per-turn switch.
 
-| Profile | Loaded models | Use case |
-| --- | --- | --- |
-| `fast_stable` | E4B + 26B | Initial implementation. E4B for status/short text, 26B for setup and master prose. |
-| `rp_prose` | E4B + 12B | Later profile for stronger RP prose, reveal scenes, and endings. |
+Runtime default:
 
-Initial default:
+| Model | Role |
+| --- | --- |
+| 26B QAT | Default engine for setup drafts, setup revisions, master prose, reveal scenes, endings, and after-session prose when a large model is needed. |
+| E4B | Assistant engine for status Q&A, compact drafts, short transitions, and brief fallback prose. |
+
+Discarded runtime candidate:
 
 ```text
-fast_stable = E4B + 26B
+12B and 12B QAT are not runtime engine targets.
 ```
 
 Model routing:
 
 | Task | Preferred | Fallback | Notes |
 | --- | --- | --- | --- |
-| Setup step draft | 26B | E4B compact draft | 1부 wizard |
-| Setup revision | 26B | E4B for small edits | Must update draft only |
+| Setup step draft | 26B QAT | E4B compact draft | 1부 wizard |
+| Setup revision | 26B QAT | E4B for small edits | Must update draft only |
 | Status Q&A | E4B | App deterministic response | Use allowed state slice |
-| Short transition | E4B | active large model | Low-stakes turns |
-| Normal master prose | 26B | E4B brief prose | Initial default |
-| Mystery clue scene | 26B | E4B short draft | Truth must stay locked |
-| Detective reveal | 26B first | 12B in later profile | Reuse Bench 3 criteria |
-| Ending prose | 26B | E4B brief epilogue | App appends deterministic result |
-| After session summary | App + E4B/26B | App only | Must ground in logs |
+| Short transition | E4B | 26B QAT | Low-stakes turns |
+| Normal master prose | 26B QAT | E4B brief prose | Default runtime engine |
+| Mystery clue scene | 26B QAT | E4B short draft | Truth must stay locked |
+| Detective reveal | 26B QAT | E4B brief staging | Reuse Bench 3 criteria |
+| Ending prose | 26B QAT | E4B brief epilogue | App appends deterministic result |
+| After session summary | App + E4B/26B QAT | App only | Must ground in logs |
 
 ## Tone And Difficulty
 
@@ -805,7 +930,7 @@ Genre determines what play means. Setting determines how that play feels alive.
 | 탐사 | 숨겨진 장소와 비밀 해금 | locationMap, siteTruth, discoveries, hazards, access | locked areas, resource/time pressure | Good second |
 | 추리 | 단서, 모순, 범인/수법 추론 | truthLock, clues, knownBy, suspicion, records | false leads, source risk, evidence decay | Later |
 | 정치 | 세력 사이 신용/명분/거래 축적 | factions, leverage, publicNarrative, reputation, riskExposure | faction distrust, debt/favor chains | Later |
-| 전쟁 | 전선/보급/사기/명령 판단 | fronts, forces, supply, morale, commanders | attrition, fog of war, logistics | Later |
+| 전쟁 | 전선/보급/사기/명령 판단 | fronts, forces, supply, morale, commanders, alliedNpcNetwork, enemyNpcNetwork | attrition, fog of war, logistics, allied friction | Later |
 
 Genre promise cards:
 
@@ -986,7 +1111,7 @@ Phase 1:
 
 Phase 2:
 
-- Implement setup step draft API route with 26B.
+- Implement setup step draft API route with 26B QAT.
 - Add setup revision route.
 - Compile confirmed setup into `SessionState`.
 - Add validators for setup required fields and stale dependencies.
@@ -994,12 +1119,11 @@ Phase 2:
 Phase 3:
 
 - Implement normal turn pipeline with deterministic roll/effects.
-- Add E4B/26B routing.
+- Add 26B QAT/E4B routing.
 - Add status Q&A with allowed state slice.
 
 Phase 4:
 
-- Add optional 12B `rp_prose` profile.
 - Add reveal/ending validators and human preference reports.
 - Add session export/import, replayable logs, and after-session review.
 
@@ -1009,17 +1133,18 @@ Current local benchmark read:
 
 ```text
 E4B: short transitions, status Q&A, fast compact drafts
-26B: stable fast baseline for setup and master prose
-12B: preferred RP prose target for plot, atmosphere, and climactic scenes
+26B QAT: default engine for setup, master prose, reveal scenes, endings, and after-session prose
+12B/12B QAT: discarded for runtime use after plotted-scene benchmark review
 ```
 
-12B should not be treated as an agentic worker. Its best role is master prose generation under deterministic app control.
+12B should not be treated as an agentic worker or runtime prose profile for this project.
 
 Operational target:
 
 ```text
-initial = E4B + 26B
-later rp_prose = E4B + 12B
+default = 26B QAT + E4B
+primary = 26B QAT
+assistant = E4B
 ```
 
-The first milestone should prove that setup wizard flow, state separation, turn pipeline, validation, and UI interaction work correctly. After that, the same pipeline can be rerun under the `rp_prose` profile to recover stronger 12B writing style.
+The first milestone should prove that setup wizard flow, state separation, turn pipeline, validation, and UI interaction work correctly under the same `26B QAT + E4B` runtime target.

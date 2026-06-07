@@ -51,7 +51,14 @@ Reason:
   - `StateApplier`
   - `StatusView`
 - [ ] [2부] Replace temporary `resolveAction()` with the deterministic turn pipeline.
+- [ ] [2부] Keep turn resolution logs split between objective `sceneDC` and PC `conditionModifier`.
+  - LLM interprets intent/action only
+  - app calculates DC, ability/status modifiers, roll result, and state delta
 - [ ] [2부] Apply ability modifiers, DC, difficulty result bands, fatigue, and morale rules in `RuleEngine`.
+- [ ] [2부] Implement status role boundaries in `RuleEngine` and `StateApplier`.
+  - morale affects difficulty/modifiers but never directly triggers game over
+  - fatigue stage `한계` causes `hp -5` at turn end only in `difficultyMode == "어려움"`
+  - `hp <= 0` immediately triggers game over and routes to Ending
 - [ ] [2부] Store turn logs, timeline entries, known facts, recent change, and world changes in canonical JSON.
 - [ ] [2부] Keep status rendering deterministic and limited to PC-known state.
 
@@ -63,12 +70,13 @@ Reason:
 - [ ] [1부] Add visible revision-request guidance beyond placeholder text.
   - show short examples for tone, difficulty, relationships, and scene pressure
   - keep revisions scoped to the current step
-- [ ] [1부] Add player-facing difficulty explanation in `⑤ 세션 규칙`.
+- [x] [1부] Add player-facing difficulty explanation in `⑤ 세션 규칙`.
   - explain success frequency, failure cost, and intent-confirmation behavior
   - keep tone and difficulty as separate choices
 - [ ] [1부/2부] Add 생활/모험 genre profile contracts.
   - progress object
   - pressure object
+  - at least one non-villain `마찰 NPC` in the initial NPC network
   - failure meanings
   - validator expectations
 - [ ] [1부/2부/3부] Add UI verification targets for desktop, iPad 11-inch, and iPhone 13 mini.
@@ -76,10 +84,13 @@ Reason:
 ## P3 - Model Routes And Benchmarks
 
 - [ ] [1부/2부/3부] Add model route scaffolding without letting model output mutate state directly.
-  - 26B setup draft route
-  - 26B master prose route
+  - 26B QAT setup draft route
+  - 26B QAT master prose route
+  - 26B QAT reveal/ending/after-session prose route where a large model is needed
   - E4B status assistant route
+  - E4B compact draft, short transition, and brief fallback route
   - optional critic verifier route
+- [ ] [1부/2부/3부] Remove 12B and 12B QAT from runtime model-profile planning.
 - [ ] [1부/2부] Implement Bench 1/2/3 harnesses with direct local `/v1/chat/completions`.
 - [ ] [1부/2부] Preserve raw benchmark outputs before scoring or rewriting.
 
@@ -87,5 +98,10 @@ Reason:
 
 - [ ] Add 탐사 support with `siteTruth`, `locationMap`, `discoveries`, `hazards`, and `access`.
 - [ ] Add 추리 support with `truthLock`, culprit, method, motive, timeline, core evidence, red herrings, and revelation conditions.
+- [ ] Add 추리/수사 NPC friction rules where friction NPCs can become suspects or antagonistic witnesses only under truth-lock constraints.
 - [ ] Add 정치 support with faction map, leverage, public narrative, reputation, and risk exposure.
+- [ ] Add 정치 NPC friction rules where friction NPCs can become active adversaries through faction state.
 - [ ] Add 전쟁 support only after the smaller deterministic loop is stable.
+  - include allied NPCs and enemy NPCs as separate network surfaces
+  - require at least one allied `마찰 NPC`
+  - keep allied friction grounded in command conflict, supply priority, morale pressure, field judgment, or competing mission priorities

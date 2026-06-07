@@ -464,7 +464,7 @@ textarea {
 }
 
 .status-table div {
-  grid-template-columns: 1fr 0.45fr 0.55fr 1.8fr;
+  grid-template-columns: 0.8fr 0.45fr 0.55fr 0.95fr 1.8fr;
 }
 
 .table-head {
@@ -499,12 +499,58 @@ textarea {
   color: var(--ink);
 }
 
+.difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.difficulty-option {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.difficulty-option.is-selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(31, 111, 104, 0.12);
+}
+
+.difficulty-option input {
+  inline-size: 16px;
+  block-size: 16px;
+  margin: 0;
+  accent-color: var(--teal);
+}
+
+.difficulty-option span {
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.difficulty-option small {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
 .system-note {
   margin: 14px 0 0;
   border-left: 4px solid var(--gold);
   padding: 10px 12px;
   background: rgba(180, 138, 53, 0.12);
   color: #6d531e;
+}
+
+.genre-guide {
+  margin-top: 0;
+  margin-bottom: 12px;
 }
 
 .revision-box {
@@ -793,6 +839,7 @@ dd {
   .revision-actions,
   .step-actions,
   .draft-list,
+  .difficulty-options,
   .npc-table div,
   .ability-table div,
   .status-table div,

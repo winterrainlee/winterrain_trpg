@@ -36,7 +36,7 @@ const pcProfiles = [
     ],
     npcs: [
       ["도겸", "빵집 사장", "든든한 어른 / 걱정", "투박하지만 다정한 반말", "12"],
-      ["나리", "축제 준비 담당", "친구 / 일정 압박", "빠르고 또렷한 해요체", "8"],
+      ["나리", "축제 준비 담당", "마찰 / 일정 압박", "빠르고 또렷한 해요체", "-6"],
       ["윤호", "항구 관리인", "정보통 / 장난", "느긋한 반말 섞인 말투", "4"],
     ],
     prologueMeta: {
@@ -86,7 +86,7 @@ const pcProfiles = [
     npcs: [
       ["소라", "초등학생 독서회원", "작은 조력자 / 호기심", "빠른 반말", "10"],
       ["나리", "축제 준비 담당", "일정 공유자 / 압박", "빠르고 또렷한 해요체", "6"],
-      ["태준", "헌책방 주인", "오래된 기억 / 농담", "느린 존댓말", "3"],
+      ["태준", "헌책방 주인", "마찰 / 자료 보류", "느린 존댓말", "-6"],
     ],
     prologueMeta: {
       sceneTitle: "비어 있는 게시판",
@@ -124,7 +124,7 @@ const pcProfiles = [
     status: [
       ["건강", "74", "가벼운 넘어짐에는 익숙함"],
       ["피로", "8", "아직 몸이 가볍고 반응이 빠름"],
-      ["사기", "66", "마을 전체를 한 바퀴 돌 기세"],
+      ["사기", "66", "서두르고 싶지만 아직 무리하지 않으려 함"],
     ],
     playerState: { hp: 74, fatigue: 8, morale: 66 },
     goals: [
@@ -135,7 +135,7 @@ const pcProfiles = [
     npcs: [
       ["윤호", "항구 관리인", "길 정보 / 장난", "느긋한 반말", "8"],
       ["미라", "꽃집 주인", "배달 의뢰인 / 신뢰", "상냥하지만 빠른 존댓말", "9"],
-      ["재현", "동네 친구", "경쟁심 / 도움 가능", "짧고 씩씩한 반말", "-3"],
+      ["재현", "동네 친구", "마찰 / 경쟁심", "짧고 씩씩한 반말", "-6"],
     ],
     prologueMeta: {
       sceneTitle: "끊긴 배달 표식",
@@ -184,7 +184,7 @@ const pcProfiles = [
     npcs: [
       ["도겸", "빵집 사장", "재료 공급자 / 신뢰", "투박하지만 다정한 반말", "10"],
       ["하루", "빵집 견습", "배달 협력자 / 걱정", "밝은 해요체", "7"],
-      ["은채", "공방 주인", "장식 담당 / 일정 충돌", "느긋한 존댓말", "-2"],
+      ["은채", "공방 주인", "마찰 / 일정 충돌", "느긋한 존댓말", "-7"],
     ],
     prologueMeta: {
       sceneTitle: "쌓이지 않은 컵",
@@ -232,7 +232,7 @@ const pcProfiles = [
     ],
     npcs: [
       ["광수", "등대지기", "할아버지 / 신뢰", "느리고 단단한 반말", "14"],
-      ["윤호", "항구 관리인", "어른 친구 / 농담", "느긋한 반말", "5"],
+      ["윤호", "항구 관리인", "마찰 / 규정 우선", "느긋한 반말", "-5"],
       ["소라", "초등학생 독서회원", "동생 같은 이웃 / 호기심", "빠른 반말", "4"],
     ],
     prologueMeta: {
@@ -481,6 +481,13 @@ const defaultSessionRules = {
       range: [0, 100],
       default: 70,
       deathAt: 0,
+      bands: [
+        { label: "위험", range: [0, 20], modifier: -2, appliesTo: "allChecks", note: "생존이 우선이다. 0이면 자동 사망하고 Ending 모듈로 이동한다." },
+        { label: "중상", range: [21, 40], modifier: -1, appliesTo: "physicalChecks", note: "통증과 부상으로 이동, 저항, 힘쓰기가 불리하다." },
+        { label: "불편", range: [41, 60], modifier: 0, appliesTo: "fictionOnly", note: "활동은 가능하지만 무리하면 피로와 추가 부상 위험이 커진다." },
+        { label: "양호", range: [61, 80], modifier: 0, appliesTo: "allChecks", note: "일상/모험 장면을 안정적으로 수행할 수 있다." },
+        { label: "건재", range: [81, 100], modifier: 1, appliesTo: "physicalChecks", note: "몸 상태가 좋아 이동, 버티기, 힘쓰기에 여유가 있다." },
+      ],
       rule: "0이 되면 자동 사망하고 Ending 모듈로 이동한다.",
     },
     fatigue: {
@@ -488,10 +495,11 @@ const defaultSessionRules = {
       range: [0, 20],
       startingRange: [8, 12],
       bands: [
-        { range: [0, 5], modifier: 1, appliesTo: "allChecks", note: "휴식이 충분해 전 판정 +1" },
-        { range: [6, 14], modifier: 0, appliesTo: "allChecks", note: "보정 없음" },
-        { range: [15, 18], modifier: -1, appliesTo: "allChecks", note: "피로 누적으로 전 판정 -1" },
-        { range: [19, 20], modifier: -1, appliesTo: "allChecks", turnEndHpLoss: 5, note: "전 판정 -1, 턴 종료 시 건강 -5" },
+        { label: "상쾌", range: [0, 3], modifier: 1, appliesTo: "allChecks", note: "휴식이 충분해 전 판정에 여유가 있다." },
+        { label: "보통", range: [4, 8], modifier: 0, appliesTo: "allChecks", note: "누적 부담이 낮아 별도 보정이 없다." },
+        { label: "피곤", range: [9, 13], modifier: 0, appliesTo: "fictionOnly", note: "아직 움직일 수 있지만 장면 비용으로 피로가 쌓이기 쉽다." },
+        { label: "탈진 직전", range: [14, 17], modifier: -1, appliesTo: "allChecks", note: "집중과 판단이 흐려져 전 판정이 불리하다." },
+        { label: "한계", range: [18, 20], modifier: -2, appliesTo: "allChecks", hardModeTurnEndHpLoss: 5, note: "전 판정이 크게 불리하고 어려움 난이도에서는 턴 종료 시 건강 -5가 발생한다." },
       ],
       recovery: { rest: -3, camp: -6, medicine: -4, food: -1 },
     },
@@ -501,9 +509,11 @@ const defaultSessionRules = {
       default: 60,
       startingRange: [50, 70],
       bands: [
-        { range: [80, 100], modifier: 1, appliesTo: "allChecks", note: "기세가 올라 전 판정 +1" },
-        { range: [21, 79], modifier: 0, appliesTo: "allChecks", note: "보정 없음" },
-        { range: [0, 20], modifier: -1, appliesTo: "allChecks", note: "위축되어 전 판정 -1" },
+        { label: "무너짐", range: [0, 20], modifier: -2, appliesTo: "socialAndRiskChecks", note: "포기, 공포, 충동적 선택의 압력이 강하다." },
+        { label: "위축", range: [21, 40], modifier: -1, appliesTo: "socialAndRiskChecks", note: "설득, 협상, 위험 감수 판단이 불리해진다." },
+        { label: "보통", range: [41, 60], modifier: 0, appliesTo: "allChecks", note: "불안과 의욕이 균형을 이룬다." },
+        { label: "의욕", range: [61, 80], modifier: 0, appliesTo: "fictionOnly", note: "움직일 마음은 있지만 무모한 고양 상태는 아니다." },
+        { label: "고양", range: [81, 100], modifier: 1, appliesTo: "socialAndGoalChecks", note: "목표 추진, 설득, 격려 장면에 여유가 생긴다." },
       ],
       gain: { success: 5, goal: 10, npcPositive: 5, rest: 3, inspiration: 10 },
       loss: { failure: -5, npcNegative: -15, badEvent: -10, fear: -20 },
@@ -521,6 +531,55 @@ const defaultSessionRules = {
   },
 };
 
+const difficultyProfiles = {
+  쉬움: {
+    label: "쉬움",
+    summary: "의도를 자주 확인하고, 실패해도 작은 성취와 다음 기회를 남깁니다.",
+    checkText: "DC 10~22를 사용하되, 부분 성공 범위가 넓고 회복 가능한 비용을 우선합니다.",
+    toneText: "세계가 바쁘고 문제가 생겨도 플레이는 작은 성취와 다음 기회를 자주 얻습니다.",
+    statusText: "상태는 압박을 만들지만 플레이를 막지 않습니다. 피로 한계여도 건강 자동 감소는 없습니다.",
+  },
+  보통: {
+    label: "보통",
+    summary: "의도는 존중하되, 성공과 비용이 균형 있게 갈립니다.",
+    checkText: "DC 10~22를 사용하고, 성공/부분 성공/실패의 비용을 표준 폭으로 적용합니다.",
+    toneText: "실패하면 피로, 사기, 관계, 시간 중 하나에 분명한 부담이 생깁니다.",
+    statusText: "상태는 판정 보정과 비용에 영향을 줍니다. 건강 감소는 위험 행동이나 명확한 결과 비용으로만 발생합니다.",
+  },
+  어려움: {
+    label: "어려움",
+    summary: "마스터가 더 빠르게 해석하고, 실패 비용과 누적 부담이 선명합니다.",
+    checkText: "DC 10~22를 사용하되, 부분 성공 범위가 좁고 실패 비용이 크게 적용됩니다.",
+    toneText: "시간 압박과 실패 비용이 선명하지만, 회복 경로와 작은 성취는 남깁니다.",
+    statusText: "피로가 한계 단계면 턴 종료 시 건강 -5가 발생합니다. 건강 0은 게임 오버입니다.",
+  },
+};
+
+function difficultyRows(mode) {
+  const profile = difficultyProfiles[mode] || difficultyProfiles.보통;
+  return [
+    ["플레이 난이도", profile.label],
+    ["판정 기준", profile.checkText],
+    ["톤과 난이도", profile.toneText],
+    ["상태 압박", profile.statusText],
+  ];
+}
+
+function applyDifficultyToDraft(draft, mode) {
+  const profile = difficultyProfiles[mode] || difficultyProfiles.보통;
+  draft.difficultyMode = profile.label;
+  draft.difficulty = difficultyRows(profile.label);
+}
+
+const genreGuideText =
+  "장르는 플레이 규칙의 방향을 정합니다. 기본 예시는 생활/모험, 탐사, 추리·수사, 정치, 전쟁이며, seed에 로맨스, 호러, 학원물, 해저 도시, 중세 수도원처럼 원하는 장르나 배경을 추가로 요청할 수 있습니다.";
+
+const defaultWorldContextText =
+  "파도 소리가 창가에 나직이 머무는 곳, 여름의 열기가 기분 좋게 달궈진 작은 바닷가 마을 솔비에 오신 것을 환영합니다. 이곳의 아침은 짭조름한 바다 내음과 함께 골목마다 활기차게 울려 퍼지는 이웃들의 인사로 시작됩니다.\n\n" +
+  "내일은 마을의 가장 큰 행사인 여름 축제가 열리는 날입니다. 마을 전체가 들뜬 마음으로 축제 준비에 분주하지만, 오늘따라 공기 중에는 묘한 긴장감이 감돕니다. 축제의 꽃이 될 소품이 어디론가 사라졌다는 다급한 목소리가 시장 어귀에서 들려오고, 지나가던 이웃은 당신의 손을 맞잡으며 꼭 좀 도와달라는 간곡한 부탁을 건넵니다.\n\n" +
+  "거창한 운명을 결정지을 싸움은 없지만, 당신에게는 오늘 하루라는 소중한 시간이 주어져 있습니다. 누군가의 잃어버린 물건을 찾아주고, 엇갈린 약속을 바로잡으며, 마을의 평온한 축제를 지켜내는 것. 그것이 당신이 마주할 작지만 빛나는 과제들입니다.\n\n" +
+  "서두르지 않아도 괜찮습니다. 때로는 길을 헤매기도 하고, 예상치 못한 실수로 당황할 수도 있겠지요. 하지만 따뜻한 햇살 아래 이웃들과 나누는 웃음과, 작은 문제를 하나씩 해결하며 얻는 성취감이 당신의 발걸음을 가볍게 만들어줄 것입니다. 자, 이제 솔비마을의 활기찬 거리로 걸어 들어가 보세요. 당신의 다정한 하루가 시작됩니다.";
+
 const setupSteps = [
   {
     id: "frame",
@@ -530,6 +589,7 @@ const setupSteps = [
     placeholder: "장르, 시대, 참조 세계, 분위기, 핵심 갈등을 조정할 수 있습니다.",
     draft: {
       kind: "fields",
+      genreGuide: genreGuideText,
       fields: [
         ["장르", "생활/모험"],
         ["시대/기술", "현대 소도시"],
@@ -547,10 +607,7 @@ const setupSteps = [
     placeholder: "권력 구조, 금기, 사회 분위기, 현재 긴장을 수정할 수 있습니다.",
     draft: {
       kind: "paragraph",
-      text:
-        "솔비마을은 바다와 언덕 사이에 붙은 작은 동네로, 여름 축제를 앞두고 가게, 도서관, 항구, 등대가 모두 조금씩 바빠져 있다. " +
-        "최근 축제 준비물이 제자리에 도착하지 않고, 서로의 부탁이 엇갈리며 작은 문제가 연쇄적으로 번지고 있다. " +
-        "세계는 위험보다 관계와 시간 압박이 중요하며, 플레이어의 작은 도움과 신뢰 형성은 오래 남는다.",
+      text: defaultWorldContextText,
     },
   },
   {
@@ -584,11 +641,8 @@ const setupSteps = [
       longTermGoal: pcProfiles[0].goals[0][1],
       title: "생활/모험",
       bullets: ["작은 문제는 해결 가능한 형태로 제시된다", "실패해도 회복 경로와 다음 기회가 남는다", "NPC 관계 변화가 플레이의 핵심 보상이다", "시간과 피로는 압박을 만들지만 플레이를 막지 않는다", "작은 성취는 세션에 남는다"],
-      difficulty: [
-        ["플레이 난이도", "쉬움"],
-        ["판정 기준", "DC 10~22를 사용하되, 쉬운 난이도에서는 부분 성공과 회복 가능한 비용을 넉넉히 적용한다"],
-        ["톤과 난이도", "세계는 분주하고 문제가 생겨도 플레이는 자주 작은 성취를 얻을 수 있다"],
-      ],
+      difficultyMode: "쉬움",
+      difficulty: difficultyRows("쉬움"),
       gameOver: [
         ["자동 사망", "건강이 0이 되면 PC는 자동 사망하며 세션 종료 조건이 된다"],
         ["목표 달성", "장기 목표가 달성되면 세션 엔딩으로 이동한다"],
@@ -624,6 +678,25 @@ function buildInitialSetupState() {
     confirmed: false,
     stale: false,
   }));
+}
+
+function buildWorldContextText({ seed, genre, era, place, tone, coreConflict, hasMystery, hasPolitical, hasScarcity }) {
+  if (genre === "생활/모험" && place.includes("솔비마을") && !hasMystery && !hasPolitical && !hasScarcity) {
+    return defaultWorldContextText;
+  }
+
+  const sourceSeed = seed || "플레이어가 아직 세계 seed를 입력하지 않았다.";
+  const powerPressure = hasPolitical
+    ? "공개 회의장에서는 모두가 원칙을 말하지만, 골목과 응접실에서는 오래된 빚과 체면, 조용한 약속이 더 큰 힘을 발휘합니다. 누구의 편을 들었는지보다 누구의 말을 끝까지 들어주었는지가 다음 문을 열 수도 있습니다."
+    : "이곳의 질서는 큰 법보다 오래 알고 지낸 얼굴, 가게마다 쌓인 부탁, 오늘 하루를 망치고 싶지 않다는 조심스러운 합의로 유지됩니다.";
+  const truthPressure = hasMystery
+    ? "어딘가에는 분명히 감춰진 진실이 있습니다. 하지만 그 진실은 갑작스러운 폭로가 아니라, 당신이 직접 본 장소와 들은 말, 손끝에 닿은 기록 사이에서 천천히 모습을 드러냅니다."
+    : "문제의 핵심은 거대한 음모보다 오늘 안에 풀어야 할 작은 엇갈림에 가깝습니다. 사라진 물건, 밀린 준비, 어긋난 동선, 말하지 못한 서운함이 당신의 발걸음을 다음 장소로 이끕니다.";
+  const resourcePressure = hasScarcity
+    ? "쓸 수 있는 것은 넉넉하지 않습니다. 식량, 전력, 산소, 시간처럼 손에 잡히는 제약이 선택의 무게를 만들고, 누군가를 돕는 순간 다른 곳의 여유가 조금 줄어듭니다."
+    : "압박은 주로 시간, 피로, 관계에서 찾아옵니다. 조금 무리하면 몸과 마음이 지치고, 누군가의 부탁을 미루면 웃으며 넘기던 관계도 잠깐 흔들릴 수 있습니다.";
+
+  return `${sourceSeed} 그 문장을 따라가면 당신이 도착하는 곳은 ${era}의 ${place}입니다. 이곳의 하루는 "${coreConflict}"라는 작은 긴장으로 이미 조금 기울어져 있습니다. 문을 열고 들어서면 가장 먼저 느껴지는 것은 ${tone}입니다. 낯선 장소라 해도 완전히 차갑지는 않고, 익숙한 장소라 해도 모든 일이 마음대로 풀리지는 않습니다.\n\n${powerPressure} ${truthPressure} ${resourcePressure} 그래서 이 세계에서 중요한 것은 단번에 모든 것을 해결하는 힘보다, 누구의 말을 먼저 들어줄지, 어떤 길을 돌아갈지, 피곤한 몸으로도 한 번 더 확인할지 같은 작고 구체적인 선택입니다.\n\n당신의 행동은 세계 전체를 한순간에 뒤집지는 않을지도 모릅니다. 대신 한 사람의 표정이 풀리고, 잃어버린 물건 하나가 제자리로 돌아가고, 닫혀 있던 문이 조금 열릴 수 있습니다. 실패해도 이야기는 끝나지 않습니다. 조금 늦어지고, 조금 지치고, 다시 설명해야 할 뿐입니다. 그 사이에서 이 세계는 당신이 남긴 작은 흔적을 기억하기 시작합니다.`;
 }
 
 function buildWorldDraftFromSeed(seed) {
@@ -662,6 +735,7 @@ function buildWorldDraftFromSeed(seed) {
   return {
     frame: {
       kind: "fields",
+      genreGuide: genreGuideText,
       fields: [
         ["장르", genre],
         ["시대/기술", hasNearFuture ? "근미래" : hasMedieval ? "중세" : "현대 소도시"],
@@ -672,10 +746,17 @@ function buildWorldDraftFromSeed(seed) {
     },
     context: {
       kind: "paragraph",
-      text:
-        `${text || "아직 seed가 비어 있다."} 이 seed를 바탕으로 세계는 첫 장면 전부터 압력을 품고 있다. ` +
-        `${hasMystery ? "사건의 진실은 플레이 전에 잠겨야 하며, 단서는 플레이어가 공정하게 발견할 수 있어야 한다. " : "생활/모험에서는 작은 목표, 관계 변화, 회복 가능한 비용을 중심으로 장면을 이어간다. "}` +
-        `${tone} 세계 설정은 플레이를 제한하기보다 기대를 만들고, 이후 단계의 PC 후보와 프롤로그는 이 골격을 기준으로 제안된다.`,
+      text: buildWorldContextText({
+        seed: text,
+        genre,
+        era: hasNearFuture ? "근미래" : hasMedieval ? "중세" : "현대 소도시",
+        place,
+        tone,
+        coreConflict,
+        hasMystery,
+        hasPolitical,
+        hasScarcity,
+      }),
     },
     difficulty,
   };
@@ -696,7 +777,7 @@ const state = {
     reference: "바닷가 작은 마을 솔비마을",
     promise: "생활/모험: 작은 목표, 회복 가능한 실패, 관계 변화",
   },
-  npcs: ["도겸: 빵집 사장, 든든한 어른", "나리: 축제 준비 담당, 친구", "윤호: 항구 관리인, 정보통"],
+  npcs: ["도겸: 빵집 사장, 든든한 어른", "나리: 축제 준비 담당, 마찰 / 일정 압박", "윤호: 항구 관리인, 정보통"],
   prologueSeed: initialPrologueDraft.summary,
   prologueMeta: {
     sceneTitle: initialPrologueDraft.sceneTitle,
@@ -760,11 +841,48 @@ function statusRangeText(label) {
   return range ? `${range[0]}~${range[1]}` : "-";
 }
 
+function statusRuleForLabel(label) {
+  const statusRules = defaultSessionRules.status;
+  return {
+    건강: statusRules.hp,
+    피로: statusRules.fatigue,
+    사기: statusRules.morale,
+  }[label];
+}
+
+function statusRuleForKey(key) {
+  return defaultSessionRules.status[key];
+}
+
+function clampStatusValue(key, value) {
+  const rule = statusRuleForKey(key);
+  const numericValue = Number(value);
+  if (!rule || !Number.isFinite(numericValue)) return value;
+  return Math.min(rule.range[1], Math.max(rule.range[0], numericValue));
+}
+
+function statusStageFor(label, value) {
+  const rule = statusRuleForLabel(label);
+  const numericValue = Number(value);
+  if (!rule || !Number.isFinite(numericValue)) return null;
+  return rule.bands?.find((band) => numericValue >= band.range[0] && numericValue <= band.range[1]) || null;
+}
+
+function statusStageText(label, value) {
+  const stage = statusStageFor(label, value);
+  return stage ? `${stage.label} ${stage.range[0]}~${stage.range[1]}` : "-";
+}
+
+function statusBandSummary(label) {
+  const rule = statusRuleForLabel(label);
+  return rule?.bands?.map((band) => `${band.label} ${band.range[0]}~${band.range[1]}`).join(" / ") || "-";
+}
+
 function renderDraft(draft, revision) {
   if (draft.kind === "fields") {
     return `${draftSection(
       "설정 항목",
-      `<dl class="draft-list">${draft.fields
+      `${draft.genreGuide ? `<p class="system-note genre-guide">${draft.genreGuide}</p>` : ""}<dl class="draft-list">${draft.fields
         .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
         .join("")}</dl>`,
     )}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
@@ -775,6 +893,7 @@ function renderDraft(draft, revision) {
   }
 
   if (draft.kind === "promise") {
+    const selectedDifficulty = draft.difficultyMode || Object.fromEntries(draft.difficulty || [])["플레이 난이도"] || "보통";
     return `
       <section class="draft-section">
         <h4>장기 목표</h4>
@@ -787,6 +906,19 @@ function renderDraft(draft, revision) {
       </section>
       <section class="draft-section">
         <h4>난이도</h4>
+        <div class="difficulty-options" role="radiogroup" aria-label="플레이 난이도">
+          ${Object.values(difficultyProfiles)
+            .map(
+              (profile) => `
+                <label class="difficulty-option ${profile.label === selectedDifficulty ? "is-selected" : ""}">
+                  <input type="radio" name="difficultyMode" value="${profile.label}" ${profile.label === selectedDifficulty ? "checked" : ""} />
+                  <span>${profile.label}</span>
+                  <small>${profile.summary}</small>
+                </label>
+              `,
+            )
+            .join("")}
+        </div>
         <dl class="draft-list">${draft.difficulty.map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join("")}</dl>
       </section>
       <section class="draft-section">
@@ -841,15 +973,15 @@ function renderDraft(draft, revision) {
       <section class="draft-section">
         <h4>초기 상태</h4>
         <div class="status-table">
-          <div class="table-head"><span>상태</span><span>수치</span><span>범위</span><span>현재 의미</span></div>
+          <div class="table-head"><span>상태</span><span>수치</span><span>범위</span><span>단계</span><span>현재 의미</span></div>
           ${draft.status
-            .map(([label, value, meaning]) => `<div><span>${label}</span><span>${value}</span><span>${statusRangeText(label)}</span><span>${meaning}</span></div>`)
+            .map(([label, value, meaning]) => `<div><span>${label}</span><span>${value}</span><span>${statusRangeText(label)}</span><span>${statusStageText(label, value)}</span><span>${meaning}</span></div>`)
             .join("")}
         </div>
         <div class="status-guide">
-          <p class="status-note"><strong>건강 0~100</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다.</p>
-          <p class="status-note"><strong>피로 0~20</strong>은 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
-          <p class="status-note"><strong>사기 0~100</strong>은 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
+          <p class="status-note"><strong>건강 0~100</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다. 단계: ${statusBandSummary("건강")}</p>
+          <p class="status-note"><strong>피로 0~20</strong>은 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다. 단계: ${statusBandSummary("피로")}</p>
+          <p class="status-note"><strong>사기 0~100</strong>은 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다. 단계: ${statusBandSummary("사기")}</p>
         </div>
       </section>
       <section class="draft-section">
@@ -859,6 +991,9 @@ function renderDraft(draft, revision) {
           ${draft.npcs
             .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
           .join("")}</div>
+        <div class="status-guide">
+          <p class="status-note"><strong>관계치 -20~20</strong>은 PC와 NPC의 초기 신뢰/거리감을 나타냅니다. 양수는 우호와 협력 가능성, 음수는 경계나 부담을 뜻합니다.</p>
+        </div>
       </section>
       ${revision ? `<p class="revision-note">${revision}</p>` : ""}
     `;
@@ -894,7 +1029,7 @@ function renderDraft(draft, revision) {
     )}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
-  return `${draftSection("세계 맥락", `<p class="draft-context">${draft.text}</p>`)}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  return `<section class="draft-section world-context-section"><p class="draft-context">${draft.text}</p></section>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
 }
 
 function compactNpcs(npcs) {
@@ -969,6 +1104,9 @@ function renderSetup() {
   document.querySelector("#stepTitle").textContent = currentStep.label;
   document.querySelector("#stepStatus").textContent = statusLabel(currentState.stale ? "stale" : currentState.confirmed ? "confirmed" : currentState.status);
   document.querySelector("#stepDraft").innerHTML = renderDraft(currentState.draft, currentState.revision);
+  document.querySelectorAll("input[name='difficultyMode']").forEach((input) => {
+    input.addEventListener("change", () => updateDifficultyMode(input.value));
+  });
   document.querySelector("#revisionRequest").placeholder = currentStep.placeholder;
   document.querySelector("#revisionRequest").value = "";
 
@@ -990,6 +1128,27 @@ function saveCurrentStep() {
   renderSetup();
 }
 
+function markLaterStepsStale(fromIndex) {
+  for (let index = fromIndex + 1; index < setupState.steps.length; index += 1) {
+    if (setupState.steps[index].confirmed || setupState.steps[index].status === "saved") {
+      setupState.steps[index].stale = true;
+      setupState.steps[index].revision = "앞 단계가 수정되어 재확인이 필요합니다. 내용을 검토한 뒤 다시 확정하세요.";
+    }
+  }
+}
+
+function updateDifficultyMode(mode) {
+  const current = setupState.steps[setupState.current];
+  if (!current?.draft || current.draft.kind !== "promise") return;
+  applyDifficultyToDraft(current.draft, mode);
+  current.status = "drafted";
+  current.confirmed = false;
+  current.stale = false;
+  current.revision = `난이도를 ${current.draft.difficultyMode}(으)로 변경했습니다.`;
+  markLaterStepsStale(setupState.current);
+  renderSetup();
+}
+
 function applyWorldSeed() {
   const seed = document.querySelector("#worldSeed").value;
   const draft = buildWorldDraftFromSeed(seed);
@@ -999,11 +1158,7 @@ function applyWorldSeed() {
 
   setupSteps[frameStepIndex].draft = draft.frame;
   setupSteps[contextStepIndex].draft = draft.context;
-  setupSteps[promiseStepIndex].draft.difficulty = [
-    ["플레이 난이도", draft.difficulty],
-    ["판정 기준", `DC 10~22를 사용하되, ${draft.difficulty} 난이도에 맞는 대성공/성공/부분 성공/실패/대실패 기준을 적용한다`],
-    ["톤과 난이도", draft.difficulty === "어려움" ? "시간 압박과 실패 비용이 선명하지만, 회복 경로와 작은 성취는 남긴다" : "세계가 바쁘고 문제가 생겨도 플레이는 작은 성취와 다음 기회를 자주 얻을 수 있다"],
-  ];
+  applyDifficultyToDraft(setupSteps[promiseStepIndex].draft, draft.difficulty);
 
   setupState.current = frameStepIndex;
   setupState.steps = buildInitialSetupState();
@@ -1137,12 +1292,7 @@ function reviseCurrentStep() {
   current.status = "drafted";
   current.confirmed = false;
   current.stale = false;
-  for (let index = setupState.current + 1; index < setupState.steps.length; index += 1) {
-    if (setupState.steps[index].confirmed || setupState.steps[index].status === "saved") {
-      setupState.steps[index].stale = true;
-      setupState.steps[index].revision = "앞 단계가 수정되어 재확인이 필요합니다. 내용을 검토한 뒤 다시 확정하세요.";
-    }
-  }
+  markLaterStepsStale(setupState.current);
   renderSetup();
 }
 
@@ -1208,7 +1358,7 @@ function compileWorldJson() {
   const character = getDraftById("character");
   const prologue = getDraftById("prologue");
   const now = new Date().toISOString();
-  const difficulty = Object.fromEntries(promise.difficulty)["플레이 난이도"];
+  const difficulty = promise.difficultyMode || Object.fromEntries(promise.difficulty)["플레이 난이도"];
 
   const prologueStart = {
     shortTermGoal: prologue.shortTermGoal,
@@ -1454,9 +1604,9 @@ function loadWorldIntoSession(result) {
   state.player.role = player.role || state.player.role;
   state.player.goal = goals.longTerm || state.player.goal;
   state.player.shortGoal = goals.shortTerm || state.player.shortGoal;
-  state.player.hp = status.hp ?? state.player.hp;
-  state.player.fatigue = status.fatigue ?? state.player.fatigue;
-  state.player.morale = status.morale ?? state.player.morale;
+  state.player.hp = clampStatusValue("hp", status.hp ?? state.player.hp);
+  state.player.fatigue = clampStatusValue("fatigue", status.fatigue ?? state.player.fatigue);
+  state.player.morale = clampStatusValue("morale", status.morale ?? state.player.morale);
   state.npcs = (world.npcs || []).map((npc) => `${npc.name}: ${npc.role}, ${npc.relationTags || npc.currentStatus || ""}`);
   state.knownFacts = compactKnownFacts(world.session?.knownFacts);
   state.recentChange = world.session?.recentChange || "세계를 로드했다";
@@ -1607,8 +1757,8 @@ function resolveAction(action) {
   const success = roll >= 8;
   const partial = !success && roll >= 6;
 
-  state.player.fatigue = Math.min(99, state.player.fatigue + (success ? 1 : 3));
-  state.player.morale = Math.max(0, state.player.morale + (success ? 1 : partial ? 0 : -2));
+  state.player.fatigue = clampStatusValue("fatigue", state.player.fatigue + (success ? 1 : 3));
+  state.player.morale = clampStatusValue("morale", state.player.morale + (success ? 1 : partial ? 0 : -2));
 
   const resultLabel = success ? "성공" : partial ? "부분 성공" : "실패";
   const resultText = success
@@ -1644,7 +1794,7 @@ function answerStatusQuestion(question) {
   if (normalized.includes("목표")) return `장기 목표는 "${state.player.goal}", 현재 단기 목표는 "${state.player.shortGoal}"입니다.`;
   if (normalized.includes("정보") || normalized.includes("실마리") || normalized.includes("단서")) return `현재 알고 있는 정보는 ${renderKnownFacts(state.knownFacts)}입니다.`;
   if (normalized.includes("상태") || normalized.includes("피로") || normalized.includes("사기") || normalized.includes("HP")) {
-    return `HP ${state.player.hp}, 피로 ${state.player.fatigue}, 사기 ${state.player.morale}입니다.`;
+    return `HP ${state.player.hp}(${statusStageText("건강", state.player.hp)}), 피로 ${state.player.fatigue}(${statusStageText("피로", state.player.fatigue)}), 사기 ${state.player.morale}(${statusStageText("사기", state.player.morale)})입니다.`;
   }
   if (normalized.includes("NPC") || normalized.includes("인물")) return `초기 주요 NPC는 ${state.npcs.join(", ")}입니다.`;
   if (normalized.includes("뭐") || normalized.includes("무엇") || normalized.includes("행동")) {
