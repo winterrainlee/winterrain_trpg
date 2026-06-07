@@ -23,6 +23,8 @@ The core architecture is: deterministic app code owns state, rolls, validation, 
 - Match existing style and terminology, especially the Korean design vocabulary.
 - Remove only unused code created by your own change.
 - Define a short verification target for non-trivial work, then run the relevant check.
+- Keep visible 1부 setup prose player-facing; put master-facing contracts and rule notes in design docs or deterministic state, not in the player's introduction text.
+- Keep defaults coherent across seed text, setup drafts, and compiled rules.
 
 ## UI Targets
 
@@ -53,4 +55,5 @@ The core architecture is: deterministic app code owns state, rolls, validation, 
 
 - If there is no test harness yet, verify with focused script output, schema validation, or a small fixture run.
 - For documentation-only edits, verify links, filenames, and that the guidance matches the current `design/` documents.
+- For GitHub Pages UI changes, bump asset query versions in `index.html` when `app.js` or `styles.css` changes, then verify the deployed URL after push.
 - Report any check that could not be run.

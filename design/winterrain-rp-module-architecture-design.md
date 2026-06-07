@@ -464,22 +464,23 @@ Status influence in 2부 turn resolution:
 
 ```text
 자유 행동 입력
-→ LLM: 의도 + 행동 + 대상 + 기대 결과 해석
+→ LLM/App: 의도 + 행동 + 대상 + 접근 방식 + 위험도 해석
 → App: sceneDC 산정
-   - 행동 자체의 어려움
-   - NPC 성향
-   - 플롯/시간/장소 맥락
-→ App: conditionModifier 산정
+   - baseDC: 행동 자체의 어려움
+   - npcRelationDC: 대상 NPC와의 관계치
+   - npcTagDC: NPC 성향/역할 태그
+   - scenePressureDC: 플롯/시간/장소 압력
+→ App: statusModifier 산정
    - 건강: 신체, 이동, 버티기, 힘쓰기 계열
    - 피로: 누적 부담. 특히 장기 행동과 전반 판정에 영향
    - 사기: 설득, 협상, 위험 감수, 목표 추진에 영향
-→ App: d20 + abilityMod + conditionModifier vs sceneDC
+→ App: d20 + abilityMod + statusModifier vs sceneDC
 → App: result band 확정
 → App: state delta 확정
 → MasterProse: scene context + action intent + result band + NPC reaction seed + state delta
 ```
 
-DC and player condition must remain separate in logs. `sceneDC` represents the objective scene difficulty; `conditionModifier` represents the PC's current ability to perform under that condition.
+DC and player condition must remain separate in logs. `sceneDC = baseDC + npcRelationDC + npcTagDC + scenePressureDC` represents the objective scene difficulty. `rollTotal = d20 + abilityMod + statusModifier` represents the PC's current ability to perform under that condition. NPC relationship and NPC tags affect `sceneDC`, not `abilityMod` or `statusModifier`.
 
 Status role boundaries:
 
@@ -698,6 +699,122 @@ Rules:
 - `세계 로드` must replace the current play state from JSON rather than asking the model to reconstruct it.
 - `세션 종료` unlocks 3부 and moves the player to after-session review. Starting or loading a session locks 3부 again.
 
+### Action Interpretation Contract
+
+Player input is stored as raw text, then interpreted into a small action contract before deterministic resolution.
+
+```json
+{
+  "rawInput": "",
+  "intent": "",
+  "action": "",
+  "target": "",
+  "approach": "",
+  "risk": "low | medium | high"
+}
+```
+
+Field meanings:
+
+- `intent`: what the player wants to change or learn.
+- `action`: what the PC actually attempts.
+- `target`: the main NPC, place, object, route, or problem being acted on.
+- `approach`: tone or method, such as polite, forceful, cautious, stealthy, direct, or improvised.
+- `risk`: likely exposure, cost, danger, or social pressure if the attempt goes poorly.
+
+The parser may be model-assisted, but the app validates and normalizes the result before using it. The parsed action can affect ability selection and base DC, while NPC relationship and NPC tags affect `sceneDC`.
+
+### ScenePlanner Contract
+
+`ScenePlanner` receives the resolved turn and prepares the next scene seed. It does not write player-facing prose and does not mutate canonical state.
+
+Input:
+
+```json
+{
+  "currentScene": {
+    "title": "",
+    "date": "",
+    "time": "",
+    "place": "",
+    "situation": "",
+    "activePressure": "",
+    "knownFacts": []
+  },
+  "playerAction": {
+    "rawInput": "",
+    "intent": "",
+    "action": "",
+    "target": "",
+    "approach": "",
+    "risk": "low | medium | high"
+  },
+  "resolution": {
+    "ability": "",
+    "sceneDC": 0,
+    "dcReasons": [],
+    "rollTotal": 0,
+    "resultBand": "",
+    "successLabel": ""
+  },
+  "stateDelta": {
+    "hp": 0,
+    "fatigue": 0,
+    "morale": 0,
+    "relationshipChanges": [],
+    "knownFactsAdded": [],
+    "goalProgress": 0
+  },
+  "npcReaction": {
+    "npcId": "",
+    "stanceBefore": "",
+    "reactionSeed": "",
+    "stanceAfter": ""
+  },
+  "constraints": {
+    "genre": "",
+    "promiseCard": [],
+    "forbiddenBeats": [],
+    "mustNotResolve": []
+  }
+}
+```
+
+Output:
+
+```json
+{
+  "nextScene": {
+    "title": "",
+    "date": "",
+    "time": "",
+    "place": "",
+    "situationSeed": "",
+    "activePressure": "",
+    "entryBeat": ""
+  },
+  "continuity": {
+    "carriedFacts": [],
+    "visibleConsequences": [],
+    "npcPositions": [],
+    "openThreads": []
+  },
+  "playerFacing": {
+    "requiredBeats": [],
+    "suggestedChoices": ["", "", ""],
+    "freeActionEncouraged": true,
+    "shortSummary": ""
+  },
+  "stateCandidates": {
+    "knownFactsToConfirm": [],
+    "worldChangesToValidate": [],
+    "npcChangesToValidate": []
+  }
+}
+```
+
+`suggestedChoices` must contain exactly three example actions, each no longer than 20 Korean characters. They are not the only legal moves; free input remains the primary play path. `requiredBeats`, `openThreads`, and `activePressure` are the main bridge from deterministic resolution to `MasterProse`.
+
 ## Status Panel
 
 Status is a play aid, not a second master.
@@ -738,6 +855,9 @@ Current status rendering contract:
 - `recentChange`: latest visible action/result, save/load marker, or session-end marker.
 - Do not store short-term goals, prologue readiness, roll math, or general system events as known facts.
 - If no PC-known facts exist, render an empty-state message instead of inventing information.
+- A resolved turn may produce `knownFactsAdded`, but only from facts the PC actually saw, heard, inferred from direct evidence, or had confirmed in-fiction.
+- `knownFactsAdded` must not include hidden truth, unsupported deduction, system/DC reasons, or full turn-log narration.
+- `StateApplier` validates `knownFactsAdded`, appends accepted facts to `session.knownFacts`, and stores the same accepted list in `turnLog.knownFactsAdded`.
 
 ## 3부 애프터 세션
 
@@ -836,13 +956,18 @@ The model returns a step draft only. The app stores it as draft until the user c
   },
   "turn": {
     "number": 0,
-    "location": "",
-    "previousChoice": "",
-    "roll": {"ability": "", "formula": "", "success": true, "summary": ""},
-    "sceneSeed": "",
-    "effectsPreview": {},
+    "scenePlannerOutput": {},
+    "resolution": {},
+    "stateDelta": {},
     "requiredBeats": [],
-    "forbiddenBeats": []
+    "forbiddenBeats": [],
+    "lengthGuide": {"targetSentences": "6-10", "maxChars": 800},
+    "choiceGuide": {
+      "count": 3,
+      "maxCharsEach": 20,
+      "purpose": "example_actions_only",
+      "freeActionPrimary": true
+    }
   }
 }
 ```
@@ -861,6 +986,13 @@ The model returns a step draft only. The app stores it as draft until the user c
 ```
 
 The app may accept `visibleText`, `choices`, and `shortSummary` directly. All candidates require validation.
+
+Output constraints:
+
+- `visibleText` should be 6-10 sentences and no more than 800 Korean characters.
+- `choices` must contain exactly three example actions, each no longer than 20 Korean characters.
+- Choices must not be presented as the only legal actions. The UI keeps free input as the primary path.
+- `visibleText` must not include hidden truth, roll math, system reasons, forced player decisions, or claims that canonical state has already changed outside the validated `stateDelta`.
 
 ## Runtime Model Profile
 
@@ -1040,7 +1172,7 @@ Minimum validators:
 - `promiseCard`: genre promises and forbidden beats
 - `toneDifficultyContract`: bleak tone does not imply harsh play unless chosen
 - `lengthProfile`: per turn type
-- `choiceCount`: 2~4 choices unless freeform-only
+- `choiceCount`: exactly 3 example choices, each no longer than 20 Korean characters; free input remains primary
 
 Validation results should be visible in dev/debug UI, not normal play UI.
 

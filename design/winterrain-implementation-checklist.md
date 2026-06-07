@@ -51,15 +51,26 @@ Reason:
   - `StateApplier`
   - `StatusView`
 - [ ] [2부] Replace temporary `resolveAction()` with the deterministic turn pipeline.
-- [ ] [2부] Keep turn resolution logs split between objective `sceneDC` and PC `conditionModifier`.
-  - LLM interprets intent/action only
-  - app calculates DC, ability/status modifiers, roll result, and state delta
+- [ ] [2부] Keep turn resolution logs split between objective `sceneDC` and PC `statusModifier`.
+  - LLM/App interprets intent, action, target, approach, and risk
+  - app calculates `sceneDC = baseDC + npcRelationDC + npcTagDC + scenePressureDC`
+  - app calculates `rollTotal = d20 + abilityMod + statusModifier`
+  - NPC relationship affects DC, not PC ability/status modifiers
 - [ ] [2부] Apply ability modifiers, DC, difficulty result bands, fatigue, and morale rules in `RuleEngine`.
 - [ ] [2부] Implement status role boundaries in `RuleEngine` and `StateApplier`.
   - morale affects difficulty/modifiers but never directly triggers game over
   - fatigue stage `한계` causes `hp -5` at turn end only in `difficultyMode == "어려움"`
   - `hp <= 0` immediately triggers game over and routes to Ending
+- [ ] [2부] Add `ScenePlanner` input/output contract before `MasterProse`.
+  - input includes current scene, action interpretation, resolution, state delta, NPC reaction, and constraints
+  - output includes next scene seed, continuity, player-facing beats, and state candidates
+- [ ] [2부] Constrain `MasterProse` output length and choices.
+  - scene text should be 6-10 sentences and no more than 800 Korean characters
+  - choices are exactly three example actions, each no longer than 20 Korean characters
+  - free input remains the primary play path
 - [ ] [2부] Store turn logs, timeline entries, known facts, recent change, and world changes in canonical JSON.
+  - validate `knownFactsAdded` before appending to `session.knownFacts`
+  - store accepted per-turn facts in `turnLog.knownFactsAdded`
 - [ ] [2부] Keep status rendering deterministic and limited to PC-known state.
 
 ## P2 - 1부 UX And Genre Profile Polish
