@@ -343,19 +343,22 @@ textarea {
 
 .step-draft {
   min-height: 260px;
+  display: grid;
+  gap: 14px;
+}
+
+.draft-section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   padding: 16px;
 }
 
-.draft-section {
-  display: grid;
-  gap: 10px;
-}
-
 .draft-section + .draft-section {
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .draft-section h4,
@@ -364,12 +367,14 @@ textarea {
 }
 
 .draft-section h4 {
-  font-size: 0.92rem;
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.25;
 }
 
 .draft-section h5 {
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.94rem;
 }
 
 .draft-list {
@@ -382,11 +387,6 @@ textarea {
 .draft-list div {
   border-top: 1px solid var(--line);
   padding-top: 10px;
-}
-
-.review-section {
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 18px;
 }
 
 .review-list div:last-child {
@@ -461,6 +461,10 @@ textarea {
 .ability-table div,
 .status-table div {
   grid-template-columns: 1.2fr 0.5fr 1.8fr;
+}
+
+.status-table div {
+  grid-template-columns: 1fr 0.45fr 0.55fr 1.8fr;
 }
 
 .table-head {
@@ -926,11 +930,18 @@ dd {
 
   .step-draft {
     min-height: 0;
-    padding: 12px;
   }
 
   .draft-section + .draft-section {
-    margin-top: 16px;
+    margin-top: 0;
+  }
+
+  .draft-section {
+    padding: 14px;
+  }
+
+  .draft-section h4 {
+    font-size: 1.02rem;
   }
 
   .status-guide {

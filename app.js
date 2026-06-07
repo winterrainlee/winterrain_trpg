@@ -740,15 +740,38 @@ function statusLabel(status) {
   }[status];
 }
 
+function draftSection(title, content, className = "") {
+  return `
+    <section class="draft-section ${className}">
+      <h4>${title}</h4>
+      ${content}
+    </section>
+  `;
+}
+
+function statusRangeText(label) {
+  const statusRules = defaultSessionRules.status;
+  const ranges = {
+    건강: statusRules.hp.range,
+    피로: statusRules.fatigue.range,
+    사기: statusRules.morale.range,
+  };
+  const range = ranges[label];
+  return range ? `${range[0]}~${range[1]}` : "-";
+}
+
 function renderDraft(draft, revision) {
   if (draft.kind === "fields") {
-    return `<dl class="draft-list">${draft.fields
-      .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
-      .join("")}</dl>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+    return `${draftSection(
+      "설정 항목",
+      `<dl class="draft-list">${draft.fields
+        .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
+        .join("")}</dl>`,
+    )}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
   if (draft.kind === "bullets") {
-    return `<h4>${draft.title}</h4><ul class="draft-bullets">${draft.bullets.map((item) => `<li>${item}</li>`).join("")}</ul>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+    return `${draftSection(draft.title, `<ul class="draft-bullets">${draft.bullets.map((item) => `<li>${item}</li>`).join("")}</ul>`)}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
   if (draft.kind === "promise") {
@@ -775,9 +798,12 @@ function renderDraft(draft, revision) {
   }
 
   if (draft.kind === "candidates") {
-    return `<div class="candidate-list">${draft.candidates
-      .map((candidate, index) => `<button type="button" data-candidate-index="${index}" class="${index === draft.selectedIndex ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
-      .join("")}</div>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+    return `${draftSection(
+      "PC 후보",
+      `<div class="candidate-list">${draft.candidates
+        .map((candidate, index) => `<button type="button" data-candidate-index="${index}" class="${index === draft.selectedIndex ? "is-selected" : ""}">${index + 1}) ${candidate}</button>`)
+        .join("")}</div>`,
+    )}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
   if (draft.kind === "character") {
@@ -815,13 +841,15 @@ function renderDraft(draft, revision) {
       <section class="draft-section">
         <h4>초기 상태</h4>
         <div class="status-table">
-          <div class="table-head"><span>상태</span><span>수치</span><span>현재 의미</span></div>
-          ${draft.status.map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}
+          <div class="table-head"><span>상태</span><span>수치</span><span>범위</span><span>현재 의미</span></div>
+          ${draft.status
+            .map(([label, value, meaning]) => `<div><span>${label}</span><span>${value}</span><span>${statusRangeText(label)}</span><span>${meaning}</span></div>`)
+            .join("")}
         </div>
         <div class="status-guide">
-          <p class="status-note"><strong>건강</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다.</p>
-          <p class="status-note"><strong>피로</strong>는 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
-          <p class="status-note"><strong>사기</strong>는 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
+          <p class="status-note"><strong>건강 0~100</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다.</p>
+          <p class="status-note"><strong>피로 0~20</strong>은 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다.</p>
+          <p class="status-note"><strong>사기 0~100</strong>은 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다.</p>
         </div>
       </section>
       <section class="draft-section">
@@ -858,12 +886,15 @@ function renderDraft(draft, revision) {
   }
 
   if (draft.kind === "table") {
-    return `<div class="npc-table">${draft.rows
-      .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
-      .join("")}</div>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+    return `${draftSection(
+      "표",
+      `<div class="npc-table">${draft.rows
+        .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
+        .join("")}</div>`,
+    )}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
   }
 
-  return `<p class="draft-context">${draft.text}</p>${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
+  return `${draftSection("세계 맥락", `<p class="draft-context">${draft.text}</p>`)}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
 }
 
 function compactNpcs(npcs) {
