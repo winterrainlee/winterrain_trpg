@@ -126,7 +126,34 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - validator expectations
 - [ ] [1부/2부/3부] Add UI verification targets for desktop, iPad 11-inch, and iPhone 13 mini.
 
-## P3 - Model Routes And Benchmarks
+## P3 - 3부 After Session Review
+
+- [ ] [3부] Add deterministic AfterSession summary builder.
+  - session summary
+  - best choice
+  - worst or highest-cost choice
+  - decisive branch point
+  - master's favorite scene
+  - the roll that changed momentum most
+  - next-session seeds
+- [ ] [3부] Add safe master behind-note contract.
+  - master's hoped-for ending
+  - unopened branches
+  - NPC inner thoughts
+  - scene the master wished had landed differently
+  - reveal only closed or player-safe information
+- [ ] [3부] Ground AfterSession evidence in canonical artifacts.
+  - `turnLog`
+  - `timeline`
+  - `session.knownFacts`
+  - accepted `knownFactsAdded`
+  - roll results and result bands
+  - validated state changes
+  - NPC relationship/status changes
+  - promise-card and goal progress
+- [ ] [3부] Prevent AfterSession prose from inventing hidden truth, unseen choices, future outcomes, or a true ending that overrides player action.
+
+## P4 - Model Routes And Benchmarks
 
 - [ ] [1부/2부/3부] Add model route scaffolding without letting model output mutate state directly.
   - 26B QAT setup draft route

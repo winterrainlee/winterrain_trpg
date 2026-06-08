@@ -926,15 +926,50 @@ After session should summarize:
 - promise-card fit
 - next-session seeds
 
+After-session review should feel like a table talk after the game, not a generic report. It should help the player understand what their choices meant, what the session could have become, and what remains alive for the next session.
+
+Recommended review sections:
+
+1. `세션 요약`: short grounded recap of the session arc.
+2. `베스트 선택`: the player choice that created the strongest positive turn, relationship beat, discovery, or recovery.
+3. `워스트 선택 / 가장 비용이 컸던 선택`: the choice with the largest cost, without shaming the player.
+4. `결정적 분기점`: the moment where the session path most clearly changed.
+5. `마스터가 꼽은 명장면`: a favorite scene chosen for drama, emotion, cleverness, or genre fit.
+6. `주사위가 열일한 턴`: the roll whose result most strongly changed momentum.
+7. `마스터 비하인드 노트`: closed or safe behind-the-screen notes.
+8. `다음 세션 씨앗`: one to three continuable hooks grounded in unresolved threads.
+
+`마스터 비하인드 노트` may include:
+
+- 마스터가 내심 바랐던 엔딩
+- 열리지 않은 갈림길
+- NPC의 속마음
+- 마스터가 아쉬워한 장면
+
+Behind notes must remain safe. They may reveal unused paths, missed emotional beats, or NPC feelings that are no longer secret. They must not reveal hidden truth, future-session facts, locked mystery answers, or unresolved faction secrets unless the session ending already made them player-known.
+
+AfterSession output is grounded in app-owned artifacts:
+
+- `turnLog`
+- `timeline`
+- `session.knownFacts`
+- accepted `knownFactsAdded`
+- roll results and result bands
+- validated state changes
+- NPC relationship/status changes
+- promise-card and goal progress
+
+The model may draft the reflective prose, but the app selects or constrains the evidence. The model must not invent unseen choices, hidden motives, future outcomes, or a "true ending" that overrides what the player actually did.
+
 ```mermaid
 flowchart TD
   A0["2부 active"] --> A1{"Ending trigger<br/>or 세션 종료"}
   A1 -->|No| A0
   A1 -->|Yes| A["Session log"]
   A --> B["Deterministic summary builder"]
-  B --> C["PromiseCard review"]
-  B --> D["World/NPC changes"]
-  B --> E["Open threads"]
+  B --> C["Choice and roll highlights"]
+  B --> D["Safe behind notes"]
+  B --> E["Open threads and next seeds"]
   C --> F["AfterSession prose<br/>optional 26B/E4B"]
   D --> F
   E --> F
