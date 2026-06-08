@@ -592,23 +592,26 @@ const defaultSessionRules = {
 const difficultyProfiles = {
   쉬움: {
     label: "쉬움",
-    summary: "의도를 자주 확인하고, 실패해도 작은 성취와 다음 기회를 남깁니다.",
+    summary: "친절한 마스터가 의도를 자주 확인하고 보호합니다.",
     checkText: "DC 10~22를 사용하되, 부분 성공 범위가 넓고 회복 가능한 비용을 우선합니다.",
-    toneText: "세계가 바쁘고 문제가 생겨도 플레이는 작은 성취와 다음 기회를 자주 얻습니다.",
+    declarationText: "입력이 애매하면 먼저 되묻고, 위험하게 해석될 수 있으면 판정 전에 확인합니다.",
+    toneText: "실패해도 이야기가 막히지 않고, 작은 성취와 다음 기회를 자주 남깁니다.",
     statusText: "상태는 압박을 만들지만 플레이를 막지 않습니다. 피로 한계여도 건강 자동 감소는 없습니다.",
   },
   보통: {
     label: "보통",
-    summary: "의도는 존중하되, 성공과 비용이 균형 있게 갈립니다.",
+    summary: "명확한 선언은 처리하고, 애매한 부분만 확인합니다.",
     checkText: "DC 10~22를 사용하고, 성공/부분 성공/실패의 비용을 표준 폭으로 적용합니다.",
-    toneText: "실패하면 피로, 사기, 관계, 시간 중 하나에 분명한 부담이 생깁니다.",
+    declarationText: "행동은 그대로 존중하되, 위험하거나 불명확한 선언은 필요한 경우에만 확인합니다.",
+    toneText: "성공과 실패가 모두 장면의 방향을 바꾸며, 비용은 다음 턴에 남습니다.",
     statusText: "상태는 판정 보정과 비용에 영향을 줍니다. 건강 감소는 위험 행동이나 명확한 결과 비용으로만 발생합니다.",
   },
   어려움: {
     label: "어려움",
-    summary: "마스터가 더 빠르게 해석하고, 실패 비용과 누적 부담이 선명합니다.",
+    summary: "선언 중심 모드. 플레이어의 말이 전술이 됩니다.",
     checkText: "DC 10~22를 사용하되, 부분 성공 범위가 좁고 실패 비용이 크게 적용됩니다.",
-    toneText: "시간 압박과 실패 비용이 선명하지만, 회복 경로와 작은 성취는 남깁니다.",
+    declarationText: "합리적 해석이면 바로 판정합니다. 구체적인 선언은 보상받고, 모호한 선언은 좁게 해석될 수 있습니다.",
+    toneText: "시간 압박과 실패 비용이 선명하지만, 공정한 해석과 회복 경로는 유지합니다.",
     statusText: "피로가 한계 단계면 턴 종료 시 건강 -5가 발생합니다. 건강 0은 게임 오버입니다.",
   },
 };
@@ -618,6 +621,7 @@ function difficultyRows(mode) {
   return [
     ["플레이 난이도", profile.label],
     ["판정 기준", profile.checkText],
+    ["선언 해석", profile.declarationText],
     ["톤과 난이도", profile.toneText],
     ["상태 압박", profile.statusText],
   ];
@@ -846,6 +850,8 @@ const state = {
   knownFacts: [],
   recentChange: "세션 준비 중",
   log: [],
+  currentScene: null,
+  currentRollText: "d20 대기",
   savedWorld: null,
   runtime: null,
   afterUnlocked: false,
@@ -1040,7 +1046,7 @@ function renderDraft(draft, revision) {
             ? `<p class="system-note">능력치 경고: ${draft.abilityBalance.warnings.join(" / ")}</p>`
             : ""
         }
-        <p class="system-note">매턴 판정 시 1D20 주사위 값에 보정치를 더해 DC 10~22와 비교합니다. 난이도에 따라 같은 수치라도 성공, 부분 성공, 실패의 결과 폭이 달라집니다.</p>
+        <p class="system-note">매턴 판정 시 1D20 주사위 값에 보정치를 더해 DC 10~22와 비교합니다. 난이도는 결과 폭뿐 아니라, 선언이 애매할 때 마스터가 얼마나 되묻고 얼마나 행동 계약으로 읽는지도 바꿉니다.</p>
       </section>
       <section class="draft-section">
         <h4>초기 상태</h4>
@@ -1059,7 +1065,7 @@ function renderDraft(draft, revision) {
       <section class="draft-section">
         <h4>NPC</h4>
         <div class="npc-table with-speech">
-          <div class="table-head"><span>이름</span><span>역할</span><span>관계·태그</span><span>말투</span><span>관계치</span></div>
+          <div class="table-head"><span>이름</span><span>역할</span><span>관계·태그</span><span>NPC 말투(PC에게)</span><span>관계치</span></div>
           ${draft.npcs
             .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
           .join("")}</div>
@@ -1135,7 +1141,7 @@ function renderPrologueReview(draft) {
           <div><dt>이름</dt><dd>${character.name}</dd></div>
           <div><dt>성별/나이</dt><dd>${character.gender} / ${character.age}</dd></div>
           <div><dt>역할</dt><dd>${character.role}</dd></div>
-          <div><dt>말투</dt><dd>${fieldValue(character.fields, "말투")}</dd></div>
+          <div><dt>PC 말투</dt><dd>${fieldValue(character.fields, "말투")}</dd></div>
           <div><dt>가치관</dt><dd>${fieldValue(character.fields, "가치관")}</dd></div>
           <div><dt>강점/결함</dt><dd>${fieldValue(character.fields, "강점")} / ${fieldValue(character.fields, "결함")}</dd></div>
           <div><dt>초기 상태</dt><dd>${character.status.map(([label, value]) => `${label} ${value}`).join(" / ")}</dd></div>
@@ -1451,15 +1457,14 @@ function compileWorldJson() {
   const abilityScores = character.abilityScores || Object.fromEntries(character.abilities.map(([label, score]) => [label.split(" ")[0], Number(score)]));
   const abilityMods = character.mods || Object.fromEntries(character.abilities.map(([label, , mod]) => [label.split(" ")[0], Number(mod)]));
   const abilityLinks = abilityLinksForCharacter(character);
-  const runtime = {
-    phase: "setup_ready",
-    turn: 1,
-    currentDate: prologueStart.date,
-    currentTime: prologueStart.time,
-    currentPlace: prologueStart.place,
-    currentSceneTitle: prologueStart.sceneTitle,
-    lastPlayedAt: null,
-  };
+  const compiledRun = SessionCompiler.initialRun({
+    id,
+    now,
+    prologue: prologueStart,
+    initialKnownFacts,
+    npcCount: character.npcs.length,
+  });
+  const runtime = compiledRun.runtime;
 
   return {
     schemaVersion: 1,
@@ -1481,6 +1486,14 @@ function compileWorldJson() {
       worldSeed: document.querySelector("#worldSeed").value,
       confirmedStepIds: setupState.steps.filter((step) => step.confirmed && !step.stale).map((step) => step.id),
       staleStepIds: setupState.steps.filter((step) => step.stale).map((step) => step.id),
+    },
+    setup: {
+      mode: "embedded",
+      note: "P1a keeps setup and run data in one JSON while preserving a future world/run split boundary.",
+      confirmedStepIds: setupState.steps.filter((step) => step.confirmed && !step.stale).map((step) => step.id),
+      staleStepIds: setupState.steps.filter((step) => step.stale).map((step) => step.id),
+      worldSeed: document.querySelector("#worldSeed").value,
+      prologue: prologueStart,
     },
     world: {
       genre: fieldValue(worldFrame.fields, "장르"),
@@ -1538,6 +1551,7 @@ function compileWorldJson() {
       name,
       role,
       relationTags,
+      speechToPc: speech,
       speech,
       relationshipScore: Number(relationshipScore),
       initialRelationshipScore: Number(relationshipScore),
@@ -1561,11 +1575,10 @@ function compileWorldJson() {
     prologueSeed: prologueStart.summary,
     prologue: prologueStart,
     runtime,
-    session: {
-      knownFacts: initialKnownFacts,
-      recentChange: "세션 준비 중",
-      log: [],
-    },
+    session: compiledRun.session,
+    run: compiledRun.run,
+    timeline: compiledRun.timeline,
+    summary: compiledRun.summary,
   };
 }
 
@@ -1591,6 +1604,36 @@ function compactKnownFacts(facts) {
 function renderKnownFacts(facts) {
   const recentFacts = compactKnownFacts(facts);
   return recentFacts.length ? recentFacts.join(" / ") : "PC가 확인한 정보 없음";
+}
+
+function latestScene(world, prologue) {
+  return SessionStore.latestScene(world, prologue);
+}
+
+function renderScene(scene, rollText = "d20 대기") {
+  state.currentScene = scene;
+  state.currentRollText = rollText;
+  document.querySelector("#sceneText").textContent = scene.visibleText || "";
+  document.querySelector("#rollStrip").textContent = rollText;
+}
+
+function syncSavedWorldFromState({ phase = "playing", scene = state.currentScene, rollText = state.currentRollText } = {}) {
+  return SessionStore.syncWorldFromState({
+    savedWorld: state.savedWorld?.world,
+    appState: state,
+    phase,
+    scene,
+    rollText,
+  });
+}
+
+async function persistSavedWorld(phase = "playing") {
+  const savedWorld = syncSavedWorldFromState({ phase });
+  if (!savedWorld || !state.savedWorld?.fileName) return null;
+
+  const result = await SessionStore.persistWorld({ fileName: state.savedWorld.fileName, world: savedWorld });
+  state.savedWorld = { ...state.savedWorld, ...result, world: savedWorld };
+  return result;
 }
 
 function factFromAction(action, resultLabel, index) {
@@ -1638,7 +1681,7 @@ function renderPlayHeader(savedWorld, runtime) {
   `;
 }
 
-function beginSession() {
+async function beginSession({ persist = false } = {}) {
   const savedWorld = state.savedWorld?.world;
   state.knownFacts = compactKnownFacts(savedWorld?.session.knownFacts || [state.prologueSeed]);
   const prologue = savedWorld?.prologue || { ...state.prologueMeta, summary: state.prologueSeed };
@@ -1649,19 +1692,31 @@ function beginSession() {
     currentPlace: prologue.place,
     currentSceneTitle: prologue.sceneTitle,
   };
-  state.runtime = { ...runtime };
+  state.runtime = { ...runtime, phase: runtime.phase || "playing" };
   state.recentChange = savedWorld?.session?.recentChange || "프롤로그가 시작되었다";
   state.log = savedWorld?.session?.log || [];
-  state.afterUnlocked = false;
+  state.afterUnlocked = state.runtime.phase === "ended";
+  const scene = latestScene(savedWorld, prologue);
+  const rollText = savedWorld?.run?.currentRollText || "d20 대기";
 
   renderPlayHeader(savedWorld, state.runtime);
-  document.querySelector("#sceneText").textContent = `${prologue.summary} 이제 플레이어는 자유롭게 행동을 선언할 수 있다.`;
-  document.querySelector("#rollStrip").textContent = "d20 대기";
+  renderScene(scene, rollText);
 
   renderState();
   renderTabLocks();
   renderAfter();
   showTab("play");
+
+  if (persist) {
+    try {
+      await persistSavedWorld(state.runtime.phase || "playing");
+    } catch (error) {
+      state.recentChange = `세션 저장 실패: ${error.message}`;
+      renderState();
+    }
+  } else {
+    syncSavedWorldFromState({ phase: state.runtime.phase || "playing", scene, rollText });
+  }
 }
 
 function setMobileStatusOpen(open) {
@@ -1733,7 +1788,7 @@ async function confirmWorldSave() {
     state.savedWorld = { ...result, world };
     status.textContent = `${result.path}에 저장했습니다.`;
     closeWorldSaveDialog();
-    beginSession();
+    await beginSession();
   } catch (error) {
     status.classList.add("is-error");
     status.textContent = `저장 서버에 연결할 수 없습니다. 로컬에서는 node server.js로 실행해 주세요. (${error.message})`;
@@ -1742,30 +1797,43 @@ async function confirmWorldSave() {
   }
 }
 
-function startSession() {
+async function startSession() {
   if (!state.savedWorld) {
     openWorldSaveDialog();
     return;
   }
 
-  beginSession();
+  await beginSession({ persist: true });
 }
 
-function savePlaySession() {
+async function savePlaySession() {
   if (!state.savedWorld) {
     openWorldSaveDialog();
     return;
   }
 
-  state.recentChange = "현재 세션 상태를 저장 대상으로 표시했다";
+  try {
+    state.recentChange = "현재 세션 상태를 저장했다";
+    await persistSavedWorld(state.runtime?.phase || "playing");
+  } catch (error) {
+    state.recentChange = `세션 저장 실패: ${error.message}`;
+  }
   renderState();
 }
 
-function endSession() {
+async function endSession() {
   if (!state.runtime) return;
 
   state.afterUnlocked = true;
   state.recentChange = "이번 세션이 종료되었다";
+  state.runtime = { ...state.runtime, phase: "ended" };
+  if (state.savedWorld) {
+    try {
+      await persistSavedWorld("ended");
+    } catch (error) {
+      state.recentChange = `세션 종료 저장 실패: ${error.message}`;
+    }
+  }
   renderState();
   renderTabLocks();
   renderAfter();
@@ -1830,7 +1898,9 @@ async function openWorldLoad() {
   }
 }
 
-function resolveAction(action) {
+async function resolveAction(action) {
+  if (!state.runtime) return;
+
   const roll = Math.floor(Math.random() * 20) + 1;
   const success = roll >= 8;
   const partial = !success && roll >= 6;
@@ -1846,21 +1916,74 @@ function resolveAction(action) {
       : "길은 막히지 않았지만 비용이 생긴다. 피로가 늘고 일정은 조금 더 까다로워진다.";
   const nextTurn = (state.runtime?.turn || 1) + 1;
   const nextSceneTitle = success ? "작은 성취가 이어지는 순간" : partial ? "부탁이 겹치는 길목" : "비용이 생긴 다음 장면";
-
-  state.recentChange = `${action}: ${resultLabel}`;
-  state.knownFacts = compactKnownFacts([...state.knownFacts, factFromAction(action, resultLabel, state.log.length)]);
-  state.log.push({ action, roll, resultLabel });
-  state.runtime = {
-    ...(state.runtime || {}),
-    turn: nextTurn,
-    currentSceneTitle: nextSceneTitle,
-  };
-
-  document.querySelector("#rollStrip").textContent = `d20 ${roll} / ${resultLabel}`;
-  renderPlayHeader(state.savedWorld?.world, state.runtime);
-  document.querySelector("#sceneText").textContent =
+  const fact = factFromAction(action, resultLabel, state.log.length);
+  const sceneText =
     `${action}. 주사위는 ${roll}을 가리켰다. ${resultText} ` +
     `이제 다음 상황은 방금 생긴 비용과 작은 성취를 함께 안고 이어진다.`;
+  const scene = {
+    title: nextSceneTitle,
+    visibleText: sceneText,
+    choices: ["주변을 확인한다", "NPC에게 묻는다", "직접 살펴본다"],
+    summary: `${action}: ${resultLabel}`,
+  };
+  const logEntry = { action, roll, resultLabel };
+  const turnEntry = {
+    turn: nextTurn,
+    type: "action",
+    rawInput: action,
+    action: {
+      rawInput: action,
+      intent: action,
+      action,
+      target: "",
+      approach: "",
+      risk: "medium",
+    },
+    resolution: {
+      roll,
+      resultLabel,
+    },
+    scene,
+    knownFactsAdded: [fact],
+    createdAt: new Date().toISOString(),
+  };
+
+  state.recentChange = `${action}: ${resultLabel}`;
+  state.knownFacts = compactKnownFacts([...state.knownFacts, fact]);
+  state.log.push(logEntry);
+  state.runtime = {
+    ...(state.runtime || {}),
+    phase: "playing",
+    turn: nextTurn,
+    currentSceneTitle: nextSceneTitle,
+    currentSceneId: `turn-${String(nextTurn).padStart(4, "0")}`,
+  };
+
+  renderPlayHeader(state.savedWorld?.world, state.runtime);
+  renderScene(scene, `d20 ${roll} / ${resultLabel}`);
+
+  if (state.savedWorld?.world) {
+    const world = state.savedWorld.world;
+    world.session = {
+      ...(world.session || {}),
+      turnLog: [...(world.session?.turnLog || []), turnEntry],
+    };
+    world.timeline = [
+      ...(world.timeline || []),
+      {
+        turn: nextTurn,
+        type: "action",
+        title: nextSceneTitle,
+        summary: state.recentChange,
+        createdAt: turnEntry.createdAt,
+      },
+    ];
+    try {
+      await persistSavedWorld("playing");
+    } catch (error) {
+      state.recentChange = `자동 저장 실패: ${error.message}`;
+    }
+  }
 
   renderState();
   renderAfter();

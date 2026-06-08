@@ -52,6 +52,10 @@ function uniquePath(fileName) {
   return candidate;
 }
 
+function worldPath(fileName) {
+  return path.join(worldsDir, safeFileName(fileName));
+}
+
 async function saveWorld(request, response) {
   try {
     const payload = JSON.parse(await readBody(request));
@@ -62,6 +66,29 @@ async function saveWorld(request, response) {
     fs.writeFileSync(targetPath, `${JSON.stringify(payload.world, null, 2)}\n`, { flag: "wx" });
 
     sendJson(response, 201, {
+      ok: true,
+      fileName: path.basename(targetPath),
+      path: path.relative(rootDir, targetPath),
+    });
+  } catch (error) {
+    sendJson(response, 400, { ok: false, error: error.message });
+  }
+}
+
+async function updateWorld(requestUrl, request, response) {
+  try {
+    const rawFileName = decodeURIComponent(requestUrl.pathname.replace("/api/worlds/", ""));
+    const targetPath = worldPath(rawFileName);
+
+    if (!targetPath.startsWith(worldsDir) || !fs.existsSync(targetPath)) {
+      sendJson(response, 404, { ok: false, error: "World file not found" });
+      return;
+    }
+
+    const payload = JSON.parse(await readBody(request));
+    fs.writeFileSync(targetPath, `${JSON.stringify(payload.world, null, 2)}\n`);
+
+    sendJson(response, 200, {
       ok: true,
       fileName: path.basename(targetPath),
       path: path.relative(rootDir, targetPath),
@@ -113,7 +140,7 @@ function loadWorld(requestUrl, response) {
   try {
     const rawFileName = decodeURIComponent(requestUrl.pathname.replace("/api/worlds/", ""));
     const fileName = safeFileName(rawFileName);
-    const targetPath = path.join(worldsDir, fileName);
+    const targetPath = worldPath(fileName);
 
     if (!targetPath.startsWith(worldsDir) || !fs.existsSync(targetPath)) {
       sendJson(response, 404, { ok: false, error: "World file not found" });
@@ -161,6 +188,14 @@ const server = http.createServer((request, response) => {
   if (request.method === "POST" && request.url === "/api/worlds") {
     saveWorld(request, response);
     return;
+  }
+
+  if (request.method === "PUT") {
+    const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+    if (requestUrl.pathname.startsWith("/api/worlds/")) {
+      updateWorld(requestUrl, request, response);
+      return;
+    }
   }
 
   if (request.method === "GET") {

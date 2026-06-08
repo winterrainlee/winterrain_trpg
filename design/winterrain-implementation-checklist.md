@@ -40,27 +40,61 @@ Reason:
   - allow player revision before confirmation
   - store the confirmed value in `player.goals.shortTerm`
 
-## P1 - 2부 Canonical State And Deterministic Engine
+## P1 - 2부 Play-Through To Ending
 
-- [ ] [1부->2부] Make saved `SessionState` the canonical play state after prologue start.
-- [ ] [2부] Add real play-session save/update behavior instead of only marking the state as save target.
-- [ ] [1부/2부] Split deterministic modules out of `app.js`.
+Goal: replace the temporary 2부 loop with a deterministic play loop that can accept free actions, accumulate canonical state, and reach an Ending without trusting model claims.
+
+### P1a - Canonical Session Handoff And Persistence
+
+- [x] [1부->2부] Make saved `SessionState` the canonical play state after prologue start.
+- [x] [2부] Add real play-session save/update behavior instead of only marking the state as save target.
+- [x] [1부/2부] Split deterministic modules out of `app.js`.
   - `SessionCompiler`
   - `SessionStore`
+
+### P1b - Command Routing And Action Interpretation
+
+- [ ] [2부] Replace temporary `resolveAction()` with the deterministic turn pipeline.
+- [ ] [2부] Add `CommandRouter` before any roll or prose generation.
+  - route status questions to status handling
+  - route save/load/session-end commands deterministically
+  - route ambiguous inputs to clarification without rolling
+  - route normal free actions to `ActionParser`
+- [ ] [2부] Add `ActionParser` contract required for play-through to Ending.
+  - output `rawInput`, `route`, `intent`, `action`, `target`, `approach`, `risk`, `actionType`, `suggestedAbility`, `declarationQuality`, `riskControl`, `needsClarification`, `clarificationQuestion`, and `interpretationReason`
+  - start with deterministic rules plus E4B fallback
+  - apply `difficultyMode` to clarification policy before any roll
+  - keep agency-critical confirmations in all difficulty modes
+  - treat hard-mode vague actions narrowly rather than maliciously
+  - store `interpretationReason` in turn logs, and show only short summaries in normal UI when needed
+  - treat any future small function-calling model as an `ActionParser` candidate only
+  - validate and normalize parser output before `RuleEngine`
+- [ ] [1부/2부] Split routing and parser modules out of `app.js`.
+  - `CommandRouter`
+  - `ActionParser`
+
+### P1c - Deterministic Resolution And Ending Gates
+
+- [ ] [1부/2부] Split deterministic resolution modules out of `app.js`.
   - `RuleEngine`
   - `StateApplier`
-  - `StatusView`
-- [ ] [2부] Replace temporary `resolveAction()` with the deterministic turn pipeline.
 - [ ] [2부] Keep turn resolution logs split between objective `sceneDC` and PC `statusModifier`.
   - LLM/App interprets intent, action, target, approach, and risk
   - app calculates `sceneDC = baseDC + npcRelationDC + npcTagDC + scenePressureDC`
   - app calculates `rollTotal = d20 + abilityMod + statusModifier`
   - NPC relationship affects DC, not PC ability/status modifiers
 - [ ] [2부] Apply ability modifiers, DC, difficulty result bands, fatigue, and morale rules in `RuleEngine`.
+  - use `declarationQuality` and `riskControl` to adjust risk, failure cost, ability fit, or information yield
+  - keep final DC, `sceneDC` reasons, `rollTotal`, and result bands owned by `RuleEngine`, not `ActionParser`
 - [ ] [2부] Implement status role boundaries in `RuleEngine` and `StateApplier`.
   - morale affects difficulty/modifiers but never directly triggers game over
   - fatigue stage `한계` causes `hp -5` at turn end only in `difficultyMode == "어려움"`
   - `hp <= 0` immediately triggers game over and routes to Ending
+
+### P1d - Scene Output, Logs, And Status Surface
+
+- [ ] [1부/2부] Split status rendering out of `app.js`.
+  - `StatusView`
 - [ ] [2부] Add `ScenePlanner` input/output contract before `MasterProse`.
   - input includes current scene, action interpretation, resolution, state delta, NPC reaction, and constraints
   - output includes next scene seed, continuity, player-facing beats, and state candidates

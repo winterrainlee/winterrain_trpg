@@ -74,6 +74,8 @@ flowchart LR
 | `SetupStateStore` | App | No | seed, step draft, confirmed step, revision history 저장 |
 | `SessionCompiler` | App | No | confirmed setup만 `SessionState`로 변환 |
 | `SessionStore` | App | No | 세션 JSON, 턴 로그, world changes 저장 |
+| `CommandRouter` | App | No | 상태 질문, 저장/로드, 세션 종료, 일반 행동, 애매한 입력 분기 |
+| `ActionParser` | App + optional LLM | Optional | 자유 입력을 작은 행동 계약으로 해석 |
 | `RuleEngine` | App | No | 판정, DC, 피로/사기, 목표 진행, 엔딩 조건 |
 | `ScenePlanner` | App + optional LLM | Optional | 다음 장면 seed, required/forbidden beats 생성 |
 | `MasterProse` | 26B QAT | Yes | 플레이어용 장면 산문 생성 |
@@ -324,7 +326,7 @@ Rules:
       "name": "",
       "role": "",
       "relationTags": "",
-      "speech": "",
+      "speechToPc": "",
       "initialRelationshipScore": 0,
       "relationshipScore": 0,
       "currentStatus": "",
@@ -505,6 +507,13 @@ Status role boundaries:
 
 `④ 캐릭터 상세` must create an initial NPC network that can support play pressure without forcing a villain. The default term is `마찰 NPC`, not enemy NPC.
 
+Speech fields:
+
+- `player.speech` means how the PC normally speaks when the player-facing prose includes PC dialogue or paraphrased PC expression.
+- `npc.speechToPc` means how that NPC speaks to the PC.
+- NPC speech style is not how the PC speaks to that NPC. The PC's address style is inferred from `player.speech`, relationship context, and the player's declared action.
+- Legacy exports may contain `npc.speech`; treat it as an alias of `npc.speechToPc` during load.
+
 Core rules:
 
 - The initial NPC network should include at least three major NPCs.
@@ -584,7 +593,7 @@ right control panel:
 | `① 세계 골격` | seed를 장르, 시대, 참조 세계, 톤, 핵심 갈등으로 정리 | `worldFrame` draft |
 | `② 세계 맥락` | ① 세계 골격을 보충하는 플레이어용 세계 소개문을 600자 내외로 구체화 | `worldContext` draft |
 | `③ PC 후보` | 세계에 맞는 PC 후보 5명 제안 | temporary candidates |
-| `④ 캐릭터 상세` | 선택한 PC의 배경, 가치관, 말투, 능력치, 보정치, 건강/피로/사기, 핵심 NPC를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status`, `npcs` |
+| `④ 캐릭터 상세` | 선택한 PC의 배경, 가치관, PC 말투, 능력치, 보정치, 건강/피로/사기, 핵심 NPC와 NPC별 대PC 말투를 확정 | `player.background`, `player.speech`, `player.abilities`, `player.status`, `npcs` |
 | `⑤ 세션 규칙` | 장기 목표, 장르 약속, 난이도, 게임 오버 조건을 프롤로그 직전 확정 | `player.goals.longTerm`, `promiseCard`, `difficulty`, `gameOver` |
 | `⑥ 프롤로그` | 이전 단계의 설정 요약을 최종 확인하고, 단기 목표와 첫 장면의 제목, 날짜, 시각, 장소, 상황 압력을 준비 | `setupReview`, `player.goals.shortTerm`, `prologue` |
 
@@ -688,7 +697,10 @@ flowchart TD
   B -->|END or session end button| ER["End session<br/>unlock 3부"]
   ER --> AS["AfterSession"]
 
-  B -->|normal action| C["RuleEngine<br/>infer check, DC, roll"]
+  B -->|ambiguous input| CL["Clarify intent<br/>no roll"]
+
+  B -->|normal action| AP["ActionParser<br/>intent, action, target, risk"]
+  AP --> C["RuleEngine<br/>infer check, DC, roll"]
   C --> D["Effect Planner<br/>success, partial, fail, cost"]
   D --> E["ScenePlanner<br/>next scene seed"]
   E --> F["PromptCompiler<br/>small MasterProse input"]
@@ -704,6 +716,8 @@ Rules:
 
 - Roll and effects are decided before prose generation.
 - Prose sees `roll_result`, but cannot override it.
+- General free input must pass through `ActionParser` before `RuleEngine`.
+- Ambiguous input asks for clarification instead of guessing an action and rolling.
 - `MasterProse` returns visible text, choices, and short summary.
 - World/NPC change candidates are suggestions only and must be validated.
 - The app writes canonical state and timeline.
@@ -713,28 +727,53 @@ Rules:
 
 ### Action Interpretation Contract
 
-Player input is stored as raw text, then interpreted into a small action contract before deterministic resolution.
+Player input is stored as raw text, then interpreted into a small action contract before deterministic resolution. This is required for 2부 to reach meaningful endings: goal progress, relationship change, fatigue/morale cost, known facts, and ending gates all depend on a stable interpretation of what the player tried to do.
 
 ```json
 {
   "rawInput": "",
+  "route": "normal_action | status_question | save_load | end_session | clarify",
   "intent": "",
   "action": "",
   "target": "",
   "approach": "",
-  "risk": "low | medium | high"
+  "risk": "low | medium | high",
+  "actionType": "investigate | talk | move | help | craft | rest | confront | other",
+  "suggestedAbility": "STR | DEX | CON | INT | WIS | CHA | none",
+  "declarationQuality": "weak | normal | strong",
+  "riskControl": "none | implied | explicit",
+  "needsClarification": false,
+  "clarificationQuestion": "",
+  "interpretationReason": ""
 }
 ```
 
 Field meanings:
 
+- `route`: whether the input should continue to normal resolution or be handled by another deterministic path.
 - `intent`: what the player wants to change or learn.
 - `action`: what the PC actually attempts.
 - `target`: the main NPC, place, object, route, or problem being acted on.
 - `approach`: tone or method, such as polite, forceful, cautious, stealthy, direct, or improvised.
 - `risk`: likely exposure, cost, danger, or social pressure if the attempt goes poorly.
+- `actionType`: broad action family used by `RuleEngine`, `EffectPlanner`, and ending gates.
+- `suggestedAbility`: parser hint only; `RuleEngine` may override it.
+- `declarationQuality`: how precise the declaration is as a tactical action.
+- `riskControl`: whether the player explicitly described order, caution, distance, or other risk-control behavior.
+- `needsClarification`: true when the player intent is too vague, contradictory, or would force the app to invent the PC's choice.
+- `interpretationReason`: short explanation of why the parser read the input this way. Store it in logs; show it in normal UI only when needed.
 
-The parser may be model-assisted, but the app validates and normalizes the result before using it. The parsed action can affect ability selection and base DC, while NPC relationship and NPC tags affect `sceneDC`.
+The first implementation can use deterministic rules plus an E4B fallback. A future small function-calling model can be evaluated for this role, but it must be treated as an `ActionParser` candidate, not as a master prose model.
+
+The parser may be model-assisted, but the app validates and normalizes the result before using it. The parsed action can affect ability selection, effect planning, and ending gates. `RuleEngine` owns final DC, `sceneDC` reasons, `rollTotal`, and result bands.
+
+The parser must not:
+
+- roll dice, choose final DC, or decide success.
+- mutate canonical state or claim that state has changed.
+- reveal hidden truth, infer unearned facts, or decide the player's conclusion.
+- silently convert ambiguous input into a risky action.
+- invent agency-critical intent such as betrayal, confession, attack intent, surrender, romantic commitment, self-harm, murder, final deduction, or irreversible sacrifice.
 
 ### ScenePlanner Contract
 
@@ -947,7 +986,7 @@ The model returns a step draft only. The app stores it as draft until the user c
   "rules": {
     "pov": "single_pc_limited_third_person",
     "npcKnowledge": "direct_knowledge_only",
-    "speech": "use_confirmed_speech_styles",
+    "speech": "use player.speech for PC expression and npc.speechToPc for NPC dialogue toward the PC",
     "noStateMutationClaims": true,
     "stopBeforeResolutionUnlessEnding": true
   },
@@ -1029,6 +1068,8 @@ Model routing:
 | --- | --- | --- | --- |
 | Setup step draft | 26B QAT | E4B compact draft | 1부 wizard |
 | Setup revision | 26B QAT | E4B for small edits | Must update draft only |
+| Command routing | App deterministic | E4B classification | Route before any roll |
+| Action parsing | App deterministic + E4B | App clarification request | Required before `RuleEngine` |
 | Status Q&A | E4B | App deterministic response | Use allowed state slice |
 | Short transition | E4B | 26B QAT | Low-stakes turns |
 | Normal master prose | 26B QAT | E4B brief prose | Default runtime engine |
@@ -1063,6 +1104,177 @@ Runtime rule when `worldTone` is dark but `playDifficulty` is easy:
 - make costs indirect and manageable
 - preserve at least one small concrete gain per major arc
 - avoid total negation unless the player opted into `tragic_pressure`
+
+### Difficulty And Declaration Contract
+
+Play difficulty does not only change success rate. It also changes how strongly the app treats the player's words as a binding action declaration.
+
+Core principle:
+
+```text
+쉬움: 마스터가 의도를 보호한다.
+보통: 마스터가 애매한 부분만 확인한다.
+어려움: 플레이어의 선언을 행동 계약으로 읽는다.
+```
+
+A difficult session should not feel unfair. It should feel precise. The player should feel that every word matters, while the app remains responsible for fair interpretation.
+
+Difficulty controls four linked axes:
+
+| Axis | 쉬움 | 보통 | 어려움 |
+| --- | --- | --- | --- |
+| Result bands | 부분 성공 폭이 넓다 | 표준 판정 | 부분 성공 폭이 좁다 |
+| Failure cost | 실패 비용이 낮다 | 비용이 장면에 남는다 | 실패 비용과 누적 압력이 크다 |
+| Status pressure | 건강/피로/사기 압력이 완만하다 | 상태가 표준적으로 작동한다 | 상태 악화가 판정과 다음 턴에 강하게 남는다 |
+| Intent confirmation | 마스터가 자주 확인한다 | 애매할 때만 확인한다 | 합리적 해석이면 바로 판정한다 |
+
+Difficulty must never mean that the model may override the player. It changes how strictly the app interprets the declared action, not whether the app may steal agency.
+
+Declaration precision is part of play skill in harder modes. A strong declaration usually includes target, action, approach, order, risk control, and intended outcome.
+
+```text
+약한 선언:
+문을 살펴본다.
+
+강한 선언:
+문고리는 건드리지 않고, 바닥과 문틈부터 살핀다. 안쪽에서 소리나 빛이 새는지도 확인한다.
+```
+
+The second declaration should be rewarded because it communicates caution, order, and risk control. In hard mode, this may lower risk, improve ability matching, reduce failure cost, or make partial success more informative.
+
+Vague declarations are legal, but hard mode may interpret them narrowly according to current scene pressure.
+
+```text
+플레이어 입력:
+경비병한테 어떻게 좀 해본다.
+
+쉬움:
+설득, 속임수, 우회 중 무엇을 하려는지 물어본다.
+
+보통:
+상황상 말로 설득하려는 행동으로 보인다고 확인한 뒤 진행한다.
+
+어려움:
+현재 장면 맥락에 따라 즉시 설득 시도로 해석하고 판정한다.
+```
+
+`ActionParser.needsClarification` depends on `difficultyMode`:
+
+| Case | 쉬움 | 보통 | 어려움 |
+| --- | --- | --- | --- |
+| 대상이 불분명함 | 확인한다 | 필요하면 확인한다 | 장면상 가장 가까운 대상으로 해석한다 |
+| 접근 방식이 불분명함 | 선택지를 제시한다 | 기본 접근으로 해석하고 확인할 수 있다 | 장면 압력에 맞춰 해석한다 |
+| 위험한 접촉 여부가 불분명함 | 확인한다 | 확인한다 | 명시된 행동이 접촉을 포함하면 바로 처리한다 |
+| PC의 도덕적 선택이 걸림 | 반드시 확인한다 | 반드시 확인한다 | 반드시 확인한다 |
+| 돌이킬 수 없는 행동 | 반드시 확인한다 | 반드시 확인한다 | 반드시 확인한다 |
+| 추리 결론 선언 | 플레이어에게 묻는다 | 플레이어에게 묻는다 | 플레이어가 직접 선언해야 한다 |
+
+Hard mode may reduce confirmation questions, but it must not remove agency-critical confirmations.
+
+The app may interpret these fields more strictly in hard mode:
+
+```text
+target
+approach
+risk
+actionType
+suggestedAbility
+declarationQuality
+riskControl
+failure cost
+status pressure
+```
+
+The app must not invent or override these without explicit player declaration:
+
+```text
+core intent
+moral choice
+betrayal
+confession
+attack intent
+surrender
+romantic commitment
+self-harm
+murder
+final deduction
+irreversible sacrifice
+```
+
+Hard mode means:
+
+```text
+The player is responsible for precise tactical wording.
+The app is responsible for fair interpretation.
+```
+
+It does not mean:
+
+```text
+The app may trick the player.
+The model may choose the PC's true intention.
+The master may punish wording maliciously.
+```
+
+Recommended parser policy:
+
+```json
+{
+  "easy": {
+    "clarifyOnAmbiguity": "often",
+    "ambiguityTolerance": "low",
+    "confirmRiskyInterpretation": true,
+    "protectAmbiguousIntent": true
+  },
+  "normal": {
+    "clarifyOnAmbiguity": "when_needed",
+    "ambiguityTolerance": "medium",
+    "confirmIrreversibleAction": true,
+    "useSceneDefaultForMinorAmbiguity": true
+  },
+  "hard": {
+    "clarifyOnAmbiguity": "rarely",
+    "ambiguityTolerance": "high",
+    "confirmOnlyAgencyCriticalActions": true,
+    "treatDeclarationAsContract": true,
+    "rewardSpecificRiskControl": true,
+    "treatVagueActionAsNarrow": true
+  }
+}
+```
+
+In hard mode, parser output should preserve the reason for interpretation.
+
+```json
+{
+  "rawInput": "문고리를 돌려본다",
+  "intent": "문 너머로 진행 가능한지 확인한다",
+  "action": "문고리를 직접 돌린다",
+  "target": "닫힌 문",
+  "approach": "직접 접촉",
+  "risk": "medium",
+  "actionType": "investigate",
+  "suggestedAbility": "WIS",
+  "declarationQuality": "normal",
+  "riskControl": "none",
+  "needsClarification": false,
+  "interpretationReason": "플레이어가 문고리를 돌린다고 명시했으므로 접촉 행동으로 처리한다."
+}
+```
+
+The app may show a brief interpretation summary in normal play UI only when needed:
+
+```text
+해석: 문고리를 직접 돌려 확인합니다.
+```
+
+Good hard-mode play should make the player feel:
+
+```text
+내가 장면을 잘 읽었다.
+내가 말을 정확히 골랐다.
+그 선언이 공정하게 결과로 돌아왔다.
+```
 
 ## Genre Profiles
 
