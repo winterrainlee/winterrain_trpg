@@ -144,6 +144,8 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - reveal only closed or player-safe information
 - [ ] [3부] Ground AfterSession evidence in canonical artifacts.
   - `turnLog`
+  - `turnLog.afterSessionSignals`
+  - `turnLog.highlightCandidates`
   - `timeline`
   - `session.knownFacts`
   - accepted `knownFactsAdded`
@@ -151,6 +153,18 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - validated state changes
   - NPC relationship/status changes
   - promise-card and goal progress
+- [ ] [2부/3부] Add per-turn AfterSession highlight metadata.
+  - `choiceImpact`
+  - `declarationPrecision`
+  - `riskControl`
+  - `rollSwing`
+  - `relationshipImpact`
+  - `goalImpact`
+  - `costSeverity`
+  - `sceneDrama`
+  - `genreFit`
+  - `highlightCandidates`
+- [ ] [3부] Rank highlight candidates deterministically before asking a model to write reflective prose.
 - [ ] [3부] Prevent AfterSession prose from inventing hidden truth, unseen choices, future outcomes, or a true ending that overrides player action.
 
 ## P4 - Model Routes And Benchmarks
@@ -164,10 +178,18 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - optional critic verifier route
 - [ ] [1부/2부/3부] Remove 12B and 12B QAT from runtime model-profile planning.
 - [ ] [1부/2부] Implement Bench 1/2/3 harnesses with direct local `/v1/chat/completions`.
+- [ ] [3부] Add `after-session-highlight-grounding` benchmark.
+  - turn logs + state changes + roll results -> grounded best/worst/turning-point/highlight review
+  - must not invent unseen choices, hidden motives, or future truths
 - [ ] [1부/2부] Preserve raw benchmark outputs before scoring or rewriting.
 
 ## Later Genre Work
 
+- [ ] Add future campaign continuation support while keeping the first implementation single-session first.
+  - 1부 `setupMode: newWorld | continueWorld`
+  - carryover references to previous world/session run/after-session seed
+  - player confirmation for kept PC, kept NPCs, known facts, open threads, relationship changes, and next-session seed
+  - compile a fresh `SessionState` rather than silently copying the old session
 - [ ] Add 탐사 support with `siteTruth`, `locationMap`, `discoveries`, `hazards`, and `access`.
 - [ ] Add 추리 support with `truthLock`, culprit, method, motive, timeline, core evidence, red herrings, and revelation conditions.
 - [ ] Add 추리/수사 NPC friction rules where friction NPCs can become suspects or antagonistic witnesses only under truth-lock constraints.

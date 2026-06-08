@@ -564,6 +564,34 @@ Compatibility note:
 
 1부 is a session-zero style wizard. The player should feel that the session is being shaped with an AI master, not that a static setup form is being filled.
 
+Initial implementation is single-session first. 1부 starts from a fresh seed, compiles one playable `SessionState`, and hands that state to 2부.
+
+Future campaign continuation should remain possible by design. In that mode, 1부 becomes `다음 세션 준비`: it can reference a previous world/session run/after-session seed, then ask the player which elements carry forward before compiling a new `SessionState`.
+
+Future setup mode shape:
+
+```json
+{
+  "setupMode": "newWorld | continueWorld",
+  "carryover": {
+    "sourceWorldId": "",
+    "sourceRunId": "",
+    "sourceAfterSessionId": "",
+    "keptPc": true,
+    "keptNpcs": [],
+    "knownFactsCarried": [],
+    "openThreadsCarried": [],
+    "relationshipChangesCarried": [],
+    "nextSessionSeed": "",
+    "archivedFacts": []
+  }
+}
+```
+
+Carryover is reference material until confirmed. The app must not silently copy the entire previous session into the next one. The player should confirm kept PC, kept NPCs, carried known facts, unresolved threads, relationship changes, and the next-session seed. `SessionCompiler` then creates a fresh `SessionState` for the next run.
+
+The first implementation may keep `setupMode = "newWorld"` only, as long as saved data keeps enough IDs, NPC state, known facts, open threads, and after-session seeds to make `continueWorld` possible later.
+
 Current shell layout:
 
 ```text
@@ -779,6 +807,33 @@ The parser must not:
 
 `ScenePlanner` receives the resolved turn and prepares the next scene seed. It does not write player-facing prose and does not mutate canonical state.
 
+Resolved turn logs should include AfterSession selection signals so 3부 can choose highlights from app-owned evidence instead of asking the model to invent them.
+
+```json
+{
+  "afterSessionSignals": {
+    "choiceImpact": 0,
+    "declarationPrecision": 0,
+    "riskControl": 0,
+    "rollSwing": 0,
+    "relationshipImpact": 0,
+    "goalImpact": 0,
+    "costSeverity": 0,
+    "sceneDrama": 0,
+    "genreFit": 0
+  },
+  "highlightCandidates": [
+    "best_choice",
+    "costly_choice",
+    "dice_carried",
+    "turning_point",
+    "master_favorite_scene"
+  ]
+}
+```
+
+Signal values are app-assigned scores, not prose claims. They can be coarse integers such as `0-3` in the first implementation. `highlightCandidates` is a shortlist of categories for which the turn is eligible; AfterSession may rank these candidates, then let the model write grounded commentary from the selected evidence.
+
 Input:
 
 ```json
@@ -939,6 +994,8 @@ Recommended review sections:
 7. `마스터 비하인드 노트`: closed or safe behind-the-screen notes.
 8. `다음 세션 씨앗`: one to three continuable hooks grounded in unresolved threads.
 
+For the first implementation, next-session seeds are review/export material only. Later, they become input to 1부 `continueWorld` setup, where the player decides what carries forward into a new `SessionState`.
+
 `마스터 비하인드 노트` may include:
 
 - 마스터가 내심 바랐던 엔딩
@@ -951,6 +1008,8 @@ Behind notes must remain safe. They may reveal unused paths, missed emotional be
 AfterSession output is grounded in app-owned artifacts:
 
 - `turnLog`
+- `turnLog.afterSessionSignals`
+- `turnLog.highlightCandidates`
 - `timeline`
 - `session.knownFacts`
 - accepted `knownFactsAdded`
@@ -960,6 +1019,8 @@ AfterSession output is grounded in app-owned artifacts:
 - promise-card and goal progress
 
 The model may draft the reflective prose, but the app selects or constrains the evidence. The model must not invent unseen choices, hidden motives, future outcomes, or a "true ending" that overrides what the player actually did.
+
+AfterSession highlight selection must be app-led. The deterministic summary builder ranks `highlightCandidates` using `afterSessionSignals`, state changes, roll results, and relationship/goal deltas. The model may explain why a selected turn mattered, but it should not choose highlights from vibes alone.
 
 ```mermaid
 flowchart TD
@@ -1488,6 +1549,10 @@ Avoid exposing raw JSON in normal play. Add export under advanced menu later.
 
 6. `ending-with-promise-card`
    - ending reveals culprit/motive/method/evidence when mystery promises require it.
+
+7. `after-session-highlight-grounding`
+   - turn logs + state changes + roll results -> grounded best/worst/turning-point/highlight review.
+   - Must not invent unseen choices, hidden motives, or future truths.
 
 ## Adoption Plan
 
