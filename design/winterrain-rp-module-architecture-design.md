@@ -807,7 +807,9 @@ The parser must not:
 
 `ScenePlanner` receives the resolved turn and prepares the next scene seed. It does not write player-facing prose and does not mutate canonical state.
 
-Resolved turn logs should include AfterSession selection signals so 3부 can choose highlights from app-owned evidence instead of asking the model to invent them.
+Resolved turn logs should include AfterSession signals so 3부 can later choose highlights from app-owned evidence instead of asking the model to invent them.
+
+These signals are not final highlight decisions. Some turns only become important after later consequences make their meaning visible. 2부 records immediate observations and provisional hints; 3부 retrospectively resolves highlights after reading the whole `turnLog`, `timeline`, and final state.
 
 ```json
 {
@@ -822,17 +824,22 @@ Resolved turn logs should include AfterSession selection signals so 3부 can cho
     "sceneDrama": 0,
     "genreFit": 0
   },
-  "highlightCandidates": [
-    "best_choice",
-    "costly_choice",
-    "dice_carried",
-    "turning_point",
-    "master_favorite_scene"
-  ]
+  "highlightHints": [
+    "precise_declaration",
+    "risk_control",
+    "large_roll_swing"
+  ],
+  "resolvedHighlights": []
 }
 ```
 
-Signal values are app-assigned scores, not prose claims. They can be coarse integers such as `0-3` in the first implementation. `highlightCandidates` is a shortlist of categories for which the turn is eligible; AfterSession may rank these candidates, then let the model write grounded commentary from the selected evidence.
+Signal values are app-assigned scores, not prose claims. They can be coarse integers such as `0-3` in the first implementation. `highlightHints` marks why a turn may be worth revisiting, while `resolvedHighlights` stays empty during 2부 and is filled by the 3부 summary builder.
+
+```text
+2부 records signals.
+3부 judges meaning from the full session context.
+The model writes reflective prose from resolved evidence.
+```
 
 Input:
 
@@ -1009,7 +1016,8 @@ AfterSession output is grounded in app-owned artifacts:
 
 - `turnLog`
 - `turnLog.afterSessionSignals`
-- `turnLog.highlightCandidates`
+- `turnLog.highlightHints`
+- `afterSession.resolvedHighlights`
 - `timeline`
 - `session.knownFacts`
 - accepted `knownFactsAdded`
@@ -1020,7 +1028,7 @@ AfterSession output is grounded in app-owned artifacts:
 
 The model may draft the reflective prose, but the app selects or constrains the evidence. The model must not invent unseen choices, hidden motives, future outcomes, or a "true ending" that overrides what the player actually did.
 
-AfterSession highlight selection must be app-led. The deterministic summary builder ranks `highlightCandidates` using `afterSessionSignals`, state changes, roll results, and relationship/goal deltas. The model may explain why a selected turn mattered, but it should not choose highlights from vibes alone.
+AfterSession highlight selection must be app-led and retrospective. The deterministic summary builder creates `resolvedHighlights` by rereading `highlightHints`, `afterSessionSignals`, state changes, roll results, relationship/goal deltas, and later consequences. The model may explain why a selected turn mattered, but it should not choose highlights from vibes alone.
 
 ```mermaid
 flowchart TD

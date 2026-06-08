@@ -145,7 +145,8 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
 - [ ] [3부] Ground AfterSession evidence in canonical artifacts.
   - `turnLog`
   - `turnLog.afterSessionSignals`
-  - `turnLog.highlightCandidates`
+  - `turnLog.highlightHints`
+  - `afterSession.resolvedHighlights`
   - `timeline`
   - `session.knownFacts`
   - accepted `knownFactsAdded`
@@ -163,8 +164,10 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - `costSeverity`
   - `sceneDrama`
   - `genreFit`
-  - `highlightCandidates`
-- [ ] [3부] Rank highlight candidates deterministically before asking a model to write reflective prose.
+  - `highlightHints`
+- [ ] [3부] Resolve highlights retrospectively before asking a model to write reflective prose.
+  - use full `turnLog`, `timeline`, final state, and later consequences
+  - write final selections into `afterSession.resolvedHighlights`
 - [ ] [3부] Prevent AfterSession prose from inventing hidden truth, unseen choices, future outcomes, or a true ending that overrides player action.
 
 ## P4 - Model Routes And Benchmarks
