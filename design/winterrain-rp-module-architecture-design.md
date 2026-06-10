@@ -40,6 +40,42 @@ Core product principle:
 
 The user does not merely enter a setting. In 1부, the user and AI master co-create the small session rulebook: genre, world frame, play promises, PC, goals, NPCs, and prologue seed. In 2부, the app runs the game loop. In 3부, the app turns the session log into meaning and next-session material.
 
+## UX Design Philosophy
+
+The webapp serves a single player who wants to sit down, build a small world, and play through a story. Every UI decision should protect the play rhythm: the feeling of reading a scene, deciding what to do, and watching the result unfold.
+
+### 1. Flow over information
+
+Show only what the player needs at this moment. Hide everything else behind progressive disclosure (`<details>`, contextual inputs, step-scoped UI). The seed input belongs in step ①, not in a persistent sidebar. Character detail tables collapse until the player opens them. If a UI element is not relevant to the current action, it should not compete for attention.
+
+### 2. Free input is the primary play path
+
+Choices are hints, not the game. The free action input is visually primary: larger, placed first, with an inviting placeholder. Choice buttons are secondary chips labeled "예시 행동" to frame them as suggestions. The player should never feel like they are picking from a menu.
+
+### 3. Numbers alone are not enough
+
+A number without context forces the player to remember rules. Band labels (`양호`, `피곤`, `의욕`) next to numeric values give instant meaning. The player reads "HP 72 양호" and knows the situation without consulting a table.
+
+### 4. Dangerous actions require friction
+
+Session end is irreversible. It gets a separate visual lane (danger style, lower opacity, confirm dialog) away from everyday actions like save and load. The cost of an accidental click is higher than the cost of an extra confirmation step.
+
+### 5. Wait time is play time
+
+When the system is working, the player should feel that the master is thinking, not that the app is frozen. Loading state replaces the narrative area with flavor text ("마스터가 장면을 구상 중입니다") and disables inputs. The scene block itself becomes the loading surface.
+
+### 6. Interpretation before commitment
+
+The player's words are interpreted before dice roll. An inline confirmation strip shows the interpretation and offers reject/confirm. Rejection costs nothing — the player returns to input. This prevents the frustration of "that's not what I meant" after an irreversible roll.
+
+### 7. The player's voice in the rules
+
+System genre promises define the world's contract. But the player can add up to 2 custom promises — personal session rules that the master must respect. These are stored separately (`customPromises`) so the system can distinguish player-authored rules from genre defaults.
+
+### 8. Responsive without compromise
+
+Tablet and mobile layouts must give access to the same information, not a degraded subset. The mobile status strip appears at ≤860px so tablet portrait users can check HP without scrolling. Horizontal scroll areas use gradient fade-outs to signal hidden content.
+
 ## Why This Is Not One Giant Prompt
 
 The old ChatGPT Project prompt set works as a monolithic play contract, but a local webapp needs stricter ownership boundaries.
@@ -209,7 +245,8 @@ Rules:
     "promiseCard": {
       "type": "",
       "toggles": {},
-      "promises": []
+      "promises": [],
+      "customPromises": []
     },
     "context": ""
   },
@@ -273,7 +310,11 @@ Rules:
           {"label": "탈진 직전", "range": [14, 17], "modifier": -1, "appliesTo": "allChecks"},
           {"label": "한계", "range": [18, 20], "modifier": -2, "appliesTo": "allChecks", "hardModeTurnEndHpLoss": 5}
         ],
-        "recovery": {}
+        "recovery": {
+          "restAction": {"fatigue": -4, "hp": 5, "condition": "actionType == rest"},
+          "shortBreak": {"fatigue": -2, "condition": "scene allows pause"},
+          "safeRestBonus": {"fatigue": -2, "hp": 5, "condition": "place is safe and uninterrupted"}
+        }
       },
       "morale": {
         "range": [0, 100],
@@ -286,8 +327,16 @@ Rules:
           {"label": "의욕", "range": [61, 80], "modifier": 0, "appliesTo": "fictionOnly"},
           {"label": "고양", "range": [81, 100], "modifier": 1, "appliesTo": "socialAndGoalChecks"}
         ],
-        "gain": {},
-        "loss": {}
+        "gain": {
+          "goalProgress": {"morale": 5, "condition": "shortGoal progress increased"},
+          "npcPositiveShift": {"morale": 3, "condition": "positive relationship change with major NPC"},
+          "restInSafePlace": {"morale": 3, "condition": "rest action in safe place"}
+        },
+        "loss": {
+          "failure": {"morale": -3, "condition": "result band is failure or criticalFailure"},
+          "npcNegativeShift": {"morale": -3, "condition": "negative relationship change with major NPC"},
+          "goalSetback": {"morale": -5, "condition": "shortGoal progress decreased"}
+        }
       }
     },
     "goals": {
@@ -474,6 +523,41 @@ Morale / `morale`:
 | 의욕 | 61-80 | 움직일 마음은 있지만 무모한 고양 상태는 아니다. fiction tone만 밝아진다. |
 | 고양 | 81-100 | 목표 추진, 설득, 격려 장면에 여유가 생긴다. 사회/목표 판정에 `+1`을 적용할 수 있다. |
 
+### Recovery And Morale Rules
+
+상태 소모만 있고 회복 수단이 없으면 플레이어에게 전략적 선택의 여지가 사라진다. 휴식은 플레이어가 의도적으로 선택할 수 있는 행동이며, `ActionParser`가 `actionType: rest`로 분류한 뒤 `RuleEngine`이 회복량을 적용한다.
+
+Fatigue recovery:
+
+| Trigger | Fatigue change | HP change | Condition |
+| --- | ---: | ---: | --- |
+| 휴식 행동 (`actionType == rest`) | -4 | +5 | 턴을 소비해 의식적으로 쉬는 경우 |
+| 짧은 휴식 | -2 | 0 | 장면이 자연스러운 쉼을 허용하는 경우 |
+| 안전한 장소 보너스 | -2 추가 | +5 추가 | 안전하고 방해받지 않는 장소에서 휴식 |
+
+Morale gain:
+
+| Trigger | Morale change | Condition |
+| --- | ---: | --- |
+| 단기 목표 진전 | +5 | 단기 목표 진행도가 증가한 턴 |
+| NPC 관계 개선 | +3 | 주요 NPC와 관계치가 양수 방향으로 변화한 턴 |
+| 안전한 장소 휴식 | +3 | 안전 장소에서 휴식 행동을 선택한 턴 |
+
+Morale loss:
+
+| Trigger | Morale change | Condition |
+| --- | ---: | --- |
+| 판정 실패 | -3 | 결과 band가 failure 또는 criticalFailure |
+| NPC 관계 악화 | -3 | 주요 NPC와 관계치가 음수 방향으로 변화한 턴 |
+| 목표 후퇴 | -5 | 단기 목표 진행도가 감소한 턴 |
+
+Rules:
+
+- 휴식은 턴을 소비하는 행동이다. 무판정이지만 장면 비용(시간 경과, NPC 반응, 상황 변화)이 발생할 수 있다.
+- 회복량은 `RuleEngine`이 결정하고 `StateApplier`가 반영한다. 모델은 회복을 선언할 수 없다.
+- `difficultyMode == "어려움"`에서는 안전한 장소 보너스의 조건이 더 엄격해질 수 있다.
+- 사기 변동은 턴 결산 시 자동으로 적용된다. 한 턴에 gain과 loss가 동시에 발생하면 합산한다.
+
 Status influence in 2부 turn resolution:
 
 ```text
@@ -596,8 +680,6 @@ Current shell layout:
 
 ```text
 left rail:
-  world seed
-  [세계 seed 적용]
   ① 세계 골격
   ② 세계 맥락
   ③ PC 후보
@@ -608,11 +690,14 @@ left rail:
 
 center stage:
   current step draft
+  (① 세계 골격 선택 시: 장르 안내 + seed 입력 + [세계 seed 적용]이 draft 상단에 표시)
 
 right control panel:
   request input + [수정 반영]
   right-aligned [임시 저장] [설정 확정]
 ```
+
+Seed input is contextual to step ①. It appears inside the step card when the frame step is selected, and is hidden on all other steps. The seed value is stored in `setupState.worldSeed` and persists across step navigation.
 
 ### Setup Steps
 
@@ -660,6 +745,7 @@ flowchart TD
 - `④ 캐릭터 상세` owns the player's deeper background, speech style, values, strengths/flaws, six abilities, modifiers, health/fatigue/morale, and the initial relationship network.
 - `⑤ 세션 규칙` locks the long-term goal, genre promises, play difficulty, and game-over conditions immediately before prologue.
 - `⑤ 세션 규칙` should expose play difficulty as radio choices: `쉬움`, `보통`, `어려움`. Changing the selected difficulty immediately changes the player-facing explanation for result bands, failure cost, intent-confirmation behavior, and status pressure.
+- `⑤ 세션 규칙` allows the player to add up to 2 custom promises (`customPromises`) under the genre promise section. These are player-defined session rules (e.g., "외국어는 원어와 한국어 번역을 함께 표시한다"). Custom promises are stored separately from system genre promises in `promiseCard.customPromises` and should be respected by MasterProse alongside the genre promise card.
 - `⑥ 프롤로그` acts as the final pre-play review. It shows a compact setup summary, character summary, NPC summary, and the first scene seed before JSON save/start.
 - A confirmed step becomes the source for later prompts.
 - The app should expose progress clearly through circled-number navigation and per-step status.
@@ -685,7 +771,9 @@ main play panel:
   scene title
   save / world load / session end actions
   date-time-place block
+  interpretation confirmation strip (when shown by difficulty policy)
   narrative
+  loading indicator with flavor text during model calls
   roll result
   choices
   free action input
@@ -728,11 +816,14 @@ flowchart TD
   B -->|ambiguous input| CL["Clarify intent<br/>no roll"]
 
   B -->|normal action| AP["ActionParser<br/>intent, action, target, risk"]
-  AP --> C["RuleEngine<br/>infer check, DC, roll"]
+  AP --> IC{"Interpretation check<br/>difficulty policy"}
+  IC -->|player rejects| A
+  IC -->|player confirms or auto| C["RuleEngine<br/>infer check, DC, roll"]
   C --> D["Effect Planner<br/>success, partial, fail, cost"]
   D --> E["ScenePlanner<br/>next scene seed"]
   E --> F["PromptCompiler<br/>small MasterProse input"]
-  F --> G["MasterProse<br/>26B QAT"]
+  F --> ML["Loading: 마스터가 장면을<br/>구상 중입니다..."]
+  ML --> G["MasterProse<br/>26B QAT"]
   G --> H["CriticVerifier"]
   H --> I["Render narrative and choices"]
   I --> J["StateApplier"]
@@ -746,6 +837,8 @@ Rules:
 - Prose sees `roll_result`, but cannot override it.
 - General free input must pass through `ActionParser` before `RuleEngine`.
 - Ambiguous input asks for clarification instead of guessing an action and rolling.
+- In `difficultyMode == "쉬움"` or `"보통"`, the interpretation check shows an inline confirmation strip (e.g., `해석: "행동"을(를) 시도합니다.` with `[진행]` / `[다시 입력]` buttons). Rejection returns to free input without consuming a turn. In `difficultyMode == "어려움"`, free input and choice buttons go directly to `resolveAction`.
+- Model calls (ScenePlanner, MasterProse) replace the narrative area content with a loading indicator ("마스터가 장면을 구상 중입니다") and disable all input controls. The loading state renders inside `#sceneText`, not as a separate element.
 - `MasterProse` returns visible text, choices, and short summary.
 - World/NPC change candidates are suggestions only and must be validated.
 - The app writes canonical state and timeline.
@@ -802,6 +895,37 @@ The parser must not:
 - reveal hidden truth, infer unearned facts, or decide the player's conclusion.
 - silently convert ambiguous input into a risky action.
 - invent agency-critical intent such as betrayal, confession, attack intent, surrender, romantic commitment, self-harm, murder, final deduction, or irreversible sacrifice.
+
+### Interpretation Rejection Path
+
+플레이어는 `ActionParser`의 해석 결과를 거부하고 다시 입력할 수 있어야 한다. 파서 오류가 곧 플레이 경험 파손으로 이어지지 않도록, 해석 확인과 거부 흐름이 턴 파이프라인에 포함되어야 한다.
+
+Flow:
+
+```text
+플레이어 자유 입력
+→ ActionParser 해석
+→ 해석 요약 표시: "해석: [action]을(를) 시도합니다."
+→ 플레이어 확인 또는 거부
+   → 확인: RuleEngine으로 진행
+   → 거부 ("아니, 그게 아니라"): 자유 입력으로 돌아감, 이전 해석은 폐기
+```
+
+Rules:
+
+- 해석 요약은 `interpretationReason`을 바탕으로 짧은 한 줄로 표시한다.
+- 거부 시 이전 해석은 로그에 남기지 않고 폐기한다. 턴이 소비되지 않는다.
+- 거부 후 플레이어는 같은 의도를 더 명확하게 다시 입력하거나, 완전히 다른 행동을 선택할 수 있다.
+- `difficultyMode`에 따른 해석 요약 표시 정책:
+
+| Difficulty | Interpretation display |
+| --- | --- |
+| 쉬움 | 항상 표시하고 확인을 기다린다 |
+| 보통 | 항상 표시하고 확인을 기다린다 |
+| 어려움 | 표시하지 않고 즉시 행동 계약으로 판정한다 |
+
+- 어려움은 플레이어 선언을 더 엄격한 행동 계약으로 읽는 모드이므로 해석 확인 스트립을 생략한다.
+- UI는 해석 요약 아래에 `[진행]`과 `[다시 입력]` 버튼을 제공한다.
 
 ### ScenePlanner Contract
 
@@ -961,6 +1085,8 @@ Routing:
 | Status rendering | App | deterministic |
 | Status Q&A | `StatusAssistant` | E4B is sufficient |
 | State changes | `StateApplier` | app only |
+
+UI renders numeric values alongside their current band label (e.g., `HP 72 양호`, `피로 9 피곤`, `사기 64 의욕`). Band labels update whenever state values change, using `statusStageFor(label, value)`. Both desktop meters and the mobile status strip display band labels.
 
 Current status rendering contract:
 
@@ -1230,7 +1356,7 @@ Difficulty controls four linked axes:
 | Result bands | 부분 성공 폭이 넓다 | 표준 판정 | 부분 성공 폭이 좁다 |
 | Failure cost | 실패 비용이 낮다 | 비용이 장면에 남는다 | 실패 비용과 누적 압력이 크다 |
 | Status pressure | 건강/피로/사기 압력이 완만하다 | 상태가 표준적으로 작동한다 | 상태 악화가 판정과 다음 턴에 강하게 남는다 |
-| Intent confirmation | 마스터가 자주 확인한다 | 애매할 때만 확인한다 | 합리적 해석이면 바로 판정한다 |
+| Intent confirmation | 항상 확인한다 | 항상 확인한다 | 합리적 해석이면 바로 판정한다 |
 
 Difficulty must never mean that the model may override the player. It changes how strictly the app interprets the declared action, not whether the app may steal agency.
 
@@ -1514,21 +1640,25 @@ Primary navigation:
 
 1부 current shell:
 
-- left rail with seed and circled-number steps
-- center stage step draft card
+- left rail with circled-number steps and reset button
+- center stage step draft card (seed input appears inside ① card only)
 - right control panel with request input, revise action, and right-aligned save/confirm actions
 - prologue start disabled until setup is confirmed
+- mobile: steps become horizontal scrollable chips with right-edge gradient fade hint
 
 2부 current shell:
 
 - scene title header with loaded world, PC name, and turn number
-- save, world load, and session end buttons
+- save and world load buttons (primary actions)
+- session end button (danger style, separated below primary actions, with confirm dialog)
 - separate date/time/place block
-- narrative area
+- mobile status strip (HP/fatigue/morale with band labels, visible at ≤860px)
+- narrative area (loading indicator renders inside this area during model calls)
+- interpretation confirmation strip (inline, with confirm/reject buttons)
 - roll result strip
-- choice buttons
-- free action input
-- status panel with deterministic state and allowed Q&A
+- free action input (primary, placed above choices with prominent placeholder)
+- choice chips (secondary hint, labeled "예시 행동", lightweight pill style)
+- status panel with HP/fatigue/morale + band labels, deterministic state, and allowed Q&A
 - known facts and recent change are rendered as separate state surfaces
 
 3부 current shell:

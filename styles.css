@@ -297,8 +297,19 @@ textarea {
   color: var(--muted);
 }
 
-.setup-seed-action {
+.seed-input-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.seed-input-section textarea {
   width: 100%;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.seed-input-section .primary-action {
   margin-top: 10px;
 }
 
@@ -398,6 +409,51 @@ textarea {
   padding-left: 20px;
 }
 
+.custom-promises {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.custom-promises h5 {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.custom-promises .draft-bullets {
+  margin-bottom: 8px;
+}
+
+.custom-promises li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.remove-promise {
+  all: unset;
+  cursor: pointer;
+  color: var(--rust);
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.remove-promise:hover {
+  opacity: 1;
+}
+
+.add-promise-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.add-promise-row input {
+  font-size: 0.88rem;
+}
+
 .draft-context {
   margin: 0;
   color: var(--muted);
@@ -475,7 +531,7 @@ textarea {
 }
 
 .status-table div {
-  grid-template-columns: 0.8fr 0.45fr 0.55fr 0.95fr 1.8fr;
+  grid-template-columns: 0.8fr 0.5fr 0.7fr 2fr;
 }
 
 .table-head {
@@ -508,6 +564,34 @@ textarea {
 
 .status-note strong {
   color: var(--ink);
+}
+
+.system-details {
+  margin-top: 10px;
+}
+
+.system-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.system-details summary:hover {
+  color: var(--teal);
+}
+
+.system-details[open] summary {
+  margin-bottom: 8px;
+}
+
+.system-details .status-guide {
+  margin-top: 0;
+}
+
+.system-details .system-note,
+.system-details .status-note {
+  margin-top: 8px;
 }
 
 .difficulty-options {
@@ -618,6 +702,22 @@ textarea {
   flex-wrap: wrap;
 }
 
+.play-actions-end {
+  grid-column: 2;
+  justify-self: end;
+}
+
+.play-actions-end .danger-action {
+  font-size: 0.78rem;
+  min-height: 32px;
+  padding: 0 10px;
+  opacity: 0.7;
+}
+
+.play-actions-end .danger-action:hover {
+  opacity: 1;
+}
+
 .roll-strip,
 .route-chip {
   min-height: 34px;
@@ -664,17 +764,82 @@ textarea {
   font-size: 1.02rem;
 }
 
-.choices {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.interpretation-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(180, 138, 53, 0.08);
+}
+
+.interpretation-text {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ink);
+  flex: 1;
+}
+
+.interpretation-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.interpretation-actions button {
+  min-height: 34px;
+  font-size: 0.82rem;
+  padding: 0 12px;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin: 14px 0;
+  min-height: 240px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.loading-dots::before {
+  content: "···";
+  display: inline-block;
+  letter-spacing: 3px;
+  animation: pulse-dots 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dots {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.choices-label {
+  width: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .choices button {
-  min-height: 56px;
-  padding: 8px 10px;
-  text-align: left;
+  min-height: auto;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  border-radius: 14px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
 }
 
 .choices button:hover,
@@ -688,6 +853,15 @@ textarea {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 84px;
   gap: 10px;
+}
+
+.action-row input {
+  font-size: 1.02rem;
+}
+
+.action-row input::placeholder {
+  color: var(--olive);
+  opacity: 0.7;
 }
 
 .action-row button,
@@ -724,6 +898,14 @@ dt {
   display: block;
   margin-top: 4px;
   font-size: 1.45rem;
+}
+
+.band-label {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .state-list {
@@ -893,7 +1075,46 @@ dd {
   }
 
   .choices {
-    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .mobile-status-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 12px;
+  }
+
+  .mobile-status-strip div,
+  .mobile-status-strip button {
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    padding: 7px 8px;
+  }
+
+  .mobile-status-strip span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+  }
+
+  .mobile-status-strip strong {
+    display: block;
+    margin-top: 1px;
+    font-size: 1.08rem;
+  }
+
+  .mobile-status-strip .band-label {
+    margin-top: 0;
+    font-size: 0.68rem;
+  }
+
+  .mobile-status-strip button {
+    padding: 0 12px;
   }
 }
 
@@ -956,6 +1177,8 @@ dd {
     overflow-x: auto;
     padding-bottom: 2px;
     scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 85%, transparent 100%);
   }
 
   .setup-steps li {
@@ -1055,40 +1278,6 @@ dd {
     font-size: 0.9rem;
   }
 
-  .mobile-status-strip {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-    gap: 8px;
-    align-items: stretch;
-    margin-bottom: 12px;
-  }
-
-  .mobile-status-strip div,
-  .mobile-status-strip button {
-    min-height: 48px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fff;
-    padding: 7px 8px;
-  }
-
-  .mobile-status-strip span {
-    display: block;
-    color: var(--muted);
-    font-size: 0.72rem;
-    font-weight: 850;
-  }
-
-  .mobile-status-strip strong {
-    display: block;
-    margin-top: 1px;
-    font-size: 1.08rem;
-  }
-
-  .mobile-status-strip button {
-    padding: 0 12px;
-  }
-
   .scene-text {
     min-height: 240px;
     padding: 14px;
@@ -1096,11 +1285,13 @@ dd {
   }
 
   .choices {
-    gap: 8px;
+    gap: 6px;
   }
 
   .choices button {
-    min-height: 48px;
+    min-height: auto;
+    font-size: 0.8rem;
+    padding: 4px 10px;
   }
 
   .action-row {

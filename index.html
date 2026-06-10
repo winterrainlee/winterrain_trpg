@@ -32,11 +32,6 @@
 
           <div class="setup-workbench">
             <aside class="setup-rail">
-              <label>
-                <span>세계 seed</span>
-                <textarea id="worldSeed">바닷가 작은 마을의 여름 축제 전날. 일상 속 작은 모험이고, 부탁과 준비물이 엇갈리지만 작은 성취가 자주 남았으면 좋겠다.</textarea>
-              </label>
-              <button id="applyWorldSeed" class="primary-action setup-seed-action" type="button">세계 seed 적용</button>
               <ol id="setupSteps" class="setup-steps" aria-label="Setup checkpoints">
                 <li></li>
               </ol>
@@ -88,8 +83,10 @@
                 <div class="play-actions">
                   <button id="savePlay" class="secondary-action" type="button">저장</button>
                   <button id="worldLoad" class="secondary-action" type="button">세계 로드</button>
-                  <button id="endSession" class="secondary-action" type="button">세션 종료</button>
                   <div id="rollStrip" class="roll-strip">d20 대기</div>
+                </div>
+                <div class="play-actions-end">
+                  <button id="endSession" class="danger-action" type="button">세션 종료</button>
                 </div>
               </div>
 
@@ -100,26 +97,34 @@
               </div>
 
               <div class="mobile-status-strip" aria-label="Mobile status summary">
-                <div><span>HP</span><strong id="mobileHp">72</strong></div>
-                <div><span>피로</span><strong id="mobileFatigue">9</strong></div>
-                <div><span>사기</span><strong id="mobileMorale">64</strong></div>
+                <div><span>HP</span><strong id="mobileHp">72</strong><small id="mobileHpBand" class="band-label">양호</small></div>
+                <div><span>피로</span><strong id="mobileFatigue">9</strong><small id="mobileFatigueBand" class="band-label">피곤</small></div>
+                <div><span>사기</span><strong id="mobileMorale">64</strong><small id="mobileMoraleBand" class="band-label">의욕</small></div>
                 <button id="toggleMobileStatus" class="secondary-action" type="button" aria-expanded="false">상태</button>
               </div>
 
               <div id="sceneText" class="scene-text">
                 1부에서 세션을 시작하면 첫 상황이 이곳에 나타납니다.
               </div>
+              <div id="interpretationStrip" class="interpretation-strip" hidden>
+                <p id="interpretationText" class="interpretation-text"></p>
+                <div class="interpretation-actions">
+                  <button id="interpretationConfirm" class="primary-action" type="button">진행</button>
+                  <button id="interpretationReject" class="secondary-action" type="button">다시 입력</button>
+                </div>
+              </div>
+
+              <form id="actionForm" class="action-row">
+                <input id="freeAction" placeholder="이 상황에서 무엇을 하시겠습니까?" />
+                <button type="submit">판정</button>
+              </form>
 
               <div class="choices" aria-label="Choices">
+                <p class="choices-label">예시 행동</p>
                 <button type="button" data-action="조용히 주변을 살핀다">주변을 살핀다</button>
                 <button type="button" data-action="가까운 NPC에게 묻는다">NPC에게 묻는다</button>
                 <button type="button" data-action="위험을 감수하고 직접 확인한다">직접 확인한다</button>
               </div>
-
-              <form id="actionForm" class="action-row">
-                <input id="freeAction" placeholder="직접 행동을 선언하세요" />
-                <button type="submit">판정</button>
-              </form>
             </article>
 
             <aside class="status-panel" aria-labelledby="status-title">
@@ -132,9 +137,9 @@
               </div>
 
               <div class="meters">
-                <div><span>HP</span><strong id="hp">72</strong></div>
-                <div><span>피로</span><strong id="fatigue">9</strong></div>
-                <div><span>사기</span><strong id="morale">64</strong></div>
+                <div><span>HP</span><strong id="hp">72</strong><small id="hpBand" class="band-label">양호</small></div>
+                <div><span>피로</span><strong id="fatigue">9</strong><small id="fatigueBand" class="band-label">피곤</small></div>
+                <div><span>사기</span><strong id="morale">64</strong><small id="moraleBand" class="band-label">의욕</small></div>
               </div>
 
               <dl class="state-list">

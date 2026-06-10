@@ -4,7 +4,7 @@ const path = require("path");
 
 const rootDir = __dirname;
 const worldsDir = path.join(rootDir, "data", "worlds");
-const port = Number(process.env.PORT || 4173);
+const port = Number(process.env.PORT || 4175);
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",

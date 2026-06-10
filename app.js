@@ -703,6 +703,7 @@ const setupSteps = [
       longTermGoal: pcProfiles[0].goals[0][1],
       title: "생활/모험",
       bullets: ["작은 문제는 해결 가능한 형태로 제시된다", "실패해도 회복 경로와 다음 기회가 남는다", "NPC 관계 변화가 플레이의 핵심 보상이다", "시간과 피로는 압박을 만들지만 플레이를 막지 않는다", "작은 성취는 세션에 남는다"],
+      customPromises: [],
       difficultyMode: "보통",
       difficulty: difficultyRows("보통"),
       gameOver: [
@@ -724,9 +725,12 @@ const setupSteps = [
 
 const initialPrologueDraft = setupSteps.find((step) => step.id === "prologue").draft;
 
+const defaultWorldSeed = "바닷가 작은 마을의 여름 축제 전날. 일상 속 작은 모험이고, 부탁과 준비물이 엇갈리지만 작은 성취가 자주 남았으면 좋겠다.";
+
 const setupState = {
   current: 0,
   selectedCandidateIndex: 0,
+  worldSeed: defaultWorldSeed,
   steps: buildInitialSetupState(),
 };
 
@@ -946,7 +950,7 @@ function renderDraft(draft, revision) {
   if (draft.kind === "fields") {
     return `${draftSection(
       "설정 항목",
-      `${draft.genreGuide ? `<p class="system-note genre-guide">${draft.genreGuide}</p>` : ""}<dl class="draft-list">${draft.fields
+      `<dl class="draft-list">${draft.fields
         .map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`)
         .join("")}</dl>`,
     )}${revision ? `<p class="revision-note">${revision}</p>` : ""}`;
@@ -967,6 +971,11 @@ function renderDraft(draft, revision) {
         <h4>장르 약속</h4>
         <h5>${draft.title}</h5>
         <ul class="draft-bullets">${draft.bullets.map((item) => `<li>${item}</li>`).join("")}</ul>
+        <div class="custom-promises">
+          <h5>플레이어 추가 약속</h5>
+          <ul class="draft-bullets">${(draft.customPromises || []).map((item, i) => `<li>${item} <button type="button" class="remove-promise" data-index="${i}" aria-label="삭제">×</button></li>`).join("")}</ul>
+          ${(draft.customPromises || []).length < 2 ? `<div class="add-promise-row"><input id="newPromise" placeholder="예: 외국어는 원어와 번역을 함께 표시한다" /><button id="addPromise" class="secondary-action" type="button">추가</button></div>` : `<p class="system-note">최대 2개까지 추가할 수 있습니다.</p>`}
+        </div>
       </section>
       <section class="draft-section">
         <h4>난이도</h4>
@@ -1040,27 +1049,36 @@ function renderDraft(draft, revision) {
               </div>`
             : ""
         }
-        <p class="balance-note">보정치 균형 검사 ${draft.abilityBalance.valid ? "통과" : "경고"}: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}</p>
-        ${
+        <p class="balance-note">보정치 균형 검사 ${draft.abilityBalance.valid ? "통과" : "경고"}: 양수 합 +${draft.abilityBalance.positiveSum} / 음수 합 ${draft.abilityBalance.negativeSum}${
           draft.abilityBalance.warnings?.length
-            ? `<p class="system-note">능력치 경고: ${draft.abilityBalance.warnings.join(" / ")}</p>`
+            ? ` — ${draft.abilityBalance.warnings.join(" / ")}`
             : ""
-        }
-        <p class="system-note">매턴 판정 시 1D20 주사위 값에 보정치를 더해 DC 10~22와 비교합니다. 난이도는 결과 폭뿐 아니라, 선언이 애매할 때 마스터가 얼마나 되묻고 얼마나 행동 계약으로 읽는지도 바꿉니다.</p>
+        }</p>
+        <details class="system-details">
+          <summary>판정 규칙 보기</summary>
+          <p class="system-note">매턴 판정 시 1D20 주사위 값에 보정치를 더해 DC 10~22와 비교합니다. 난이도는 결과 폭뿐 아니라, 선언이 애매할 때 마스터가 얼마나 되묻고 얼마나 행동 계약으로 읽는지도 바꿉니다.</p>
+        </details>
       </section>
       <section class="draft-section">
         <h4>초기 상태</h4>
         <div class="status-table">
-          <div class="table-head"><span>상태</span><span>수치</span><span>범위</span><span>단계</span><span>현재 의미</span></div>
+          <div class="table-head"><span>상태</span><span>수치</span><span>단계</span><span>현재 의미</span></div>
           ${draft.status
-            .map(([label, value, meaning]) => `<div><span>${label}</span><span>${value}</span><span>${statusRangeText(label)}</span><span>${statusStageText(label, value)}</span><span>${meaning}</span></div>`)
+            .map(([label, value, meaning]) => {
+              const stage = statusStageFor(label, value);
+              const stageName = stage ? stage.label : "-";
+              return `<div><span>${label}</span><span>${value}</span><span>${stageName}</span><span>${meaning}</span></div>`;
+            })
             .join("")}
         </div>
-        <div class="status-guide">
-          <p class="status-note"><strong>건강 0~100</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다. 단계: ${statusBandSummary("건강")}</p>
-          <p class="status-note"><strong>피로 0~20</strong>은 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다. 단계: ${statusBandSummary("피로")}</p>
-          <p class="status-note"><strong>사기 0~100</strong>은 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다. 단계: ${statusBandSummary("사기")}</p>
-        </div>
+        <details class="system-details">
+          <summary>상태 단계 규칙 보기</summary>
+          <div class="status-guide">
+            <p class="status-note"><strong>건강 0~100</strong>은 HP 개념입니다. 0이 되면 PC는 자동 사망하며 세션 종료 조건이 됩니다. 단계: ${statusBandSummary("건강")}</p>
+            <p class="status-note"><strong>피로 0~20</strong>은 누적 부담입니다. 높아질수록 집중, 이동, 설득 같은 판정이 불리해질 수 있습니다. 단계: ${statusBandSummary("피로")}</p>
+            <p class="status-note"><strong>사기 0~100</strong>은 마음의 버팀목입니다. 낮아질수록 공포, 포기, 충동적 선택의 압력이 커집니다. 단계: ${statusBandSummary("사기")}</p>
+          </div>
+        </details>
       </section>
       <section class="draft-section">
         <h4>NPC</h4>
@@ -1069,9 +1087,10 @@ function renderDraft(draft, revision) {
           ${draft.npcs
             .map((row) => `<div>${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`)
           .join("")}</div>
-        <div class="status-guide">
+        <details class="system-details">
+          <summary>관계치 규칙 보기</summary>
           <p class="status-note"><strong>관계치 -20~20</strong>은 PC와 NPC의 초기 신뢰/거리감을 나타냅니다. 양수는 우호와 협력 가능성, 음수는 경계나 부담을 뜻합니다.</p>
-        </div>
+        </details>
       </section>
       ${revision ? `<p class="revision-note">${revision}</p>` : ""}
     `;
@@ -1181,9 +1200,37 @@ function renderSetup() {
   document.querySelector("#stepKicker").textContent = `${currentStep.mark} ${currentStep.kicker}`;
   document.querySelector("#stepTitle").textContent = currentStep.label;
   document.querySelector("#stepStatus").textContent = statusLabel(currentState.stale ? "stale" : currentState.confirmed ? "confirmed" : currentState.status);
-  document.querySelector("#stepDraft").innerHTML = renderDraft(currentState.draft, currentState.revision);
+  const isFrameStep = currentStep.id === "frame";
+  const guideHtml = isFrameStep && currentState.draft?.genreGuide ? `<p class="system-note genre-guide">${currentState.draft.genreGuide}</p>` : "";
+  const seedSection = isFrameStep
+    ? `<div class="seed-input-section">${guideHtml}<label><span>세계 seed</span><textarea id="worldSeed">${setupState.worldSeed.replace(/</g, "&lt;")}</textarea></label><button id="applyWorldSeed" class="primary-action" type="button">세계 seed 적용</button></div>`
+    : "";
+  document.querySelector("#stepDraft").innerHTML = seedSection + renderDraft(currentState.draft, currentState.revision);
+  if (isFrameStep) {
+    document.querySelector("#worldSeed").addEventListener("input", (e) => { setupState.worldSeed = e.target.value; });
+    document.querySelector("#applyWorldSeed").addEventListener("click", applyWorldSeed);
+  }
   document.querySelectorAll("input[name='difficultyMode']").forEach((input) => {
     input.addEventListener("change", () => updateDifficultyMode(input.value));
+  });
+  const addPromiseBtn = document.querySelector("#addPromise");
+  if (addPromiseBtn) {
+    addPromiseBtn.addEventListener("click", () => {
+      const input = document.querySelector("#newPromise");
+      const text = input.value.trim();
+      if (!text) return;
+      currentState.draft.customPromises = [...(currentState.draft.customPromises || []), text];
+      renderSetup();
+    });
+    document.querySelector("#newPromise").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); addPromiseBtn.click(); }
+    });
+  }
+  document.querySelectorAll(".remove-promise").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentState.draft.customPromises.splice(Number(btn.dataset.index), 1);
+      renderSetup();
+    });
   });
   document.querySelector("#revisionRequest").placeholder = currentStep.placeholder;
   document.querySelector("#revisionRequest").value = "";
@@ -1228,7 +1275,7 @@ function updateDifficultyMode(mode) {
 }
 
 function applyWorldSeed() {
-  const seed = document.querySelector("#worldSeed").value;
+  const seed = setupState.worldSeed;
   const draft = buildWorldDraftFromSeed(seed);
   const frameStepIndex = setupSteps.findIndex((step) => step.id === "frame");
   const contextStepIndex = setupSteps.findIndex((step) => step.id === "context");
@@ -1483,7 +1530,7 @@ function compileWorldJson() {
       lastPlayedAt: null,
     },
     source: {
-      worldSeed: document.querySelector("#worldSeed").value,
+      worldSeed: setupState.worldSeed,
       confirmedStepIds: setupState.steps.filter((step) => step.confirmed && !step.stale).map((step) => step.id),
       staleStepIds: setupState.steps.filter((step) => step.stale).map((step) => step.id),
     },
@@ -1492,7 +1539,7 @@ function compileWorldJson() {
       note: "P1a keeps setup and run data in one JSON while preserving a future world/run split boundary.",
       confirmedStepIds: setupState.steps.filter((step) => step.confirmed && !step.stale).map((step) => step.id),
       staleStepIds: setupState.steps.filter((step) => step.stale).map((step) => step.id),
-      worldSeed: document.querySelector("#worldSeed").value,
+      worldSeed: setupState.worldSeed,
       prologue: prologueStart,
     },
     world: {
@@ -1506,6 +1553,7 @@ function compileWorldJson() {
         longTermGoal: promise.longTermGoal,
         title: promise.title,
         promises: promise.bullets,
+        customPromises: promise.customPromises || [],
         difficulty: Object.fromEntries(promise.difficulty),
         gameOver: Object.fromEntries(promise.gameOver),
       },
@@ -1589,6 +1637,17 @@ function renderState() {
   document.querySelector("#mobileHp").textContent = state.player.hp;
   document.querySelector("#mobileFatigue").textContent = state.player.fatigue;
   document.querySelector("#mobileMorale").textContent = state.player.morale;
+
+  const hpBand = statusStageFor("건강", state.player.hp)?.label ?? "";
+  const fatigueBand = statusStageFor("피로", state.player.fatigue)?.label ?? "";
+  const moraleBand = statusStageFor("사기", state.player.morale)?.label ?? "";
+  document.querySelector("#hpBand").textContent = hpBand;
+  document.querySelector("#fatigueBand").textContent = fatigueBand;
+  document.querySelector("#moraleBand").textContent = moraleBand;
+  document.querySelector("#mobileHpBand").textContent = hpBand;
+  document.querySelector("#mobileFatigueBand").textContent = fatigueBand;
+  document.querySelector("#mobileMoraleBand").textContent = moraleBand;
+
   document.querySelector("#statusGoal").textContent = state.player.goal;
   document.querySelector("#knownFacts").textContent = renderKnownFacts(state.knownFacts);
   document.querySelector("#recentChange").textContent = state.recentChange;
@@ -1823,6 +1882,7 @@ async function savePlaySession() {
 
 async function endSession() {
   if (!state.runtime) return;
+  if (!confirm("세션을 종료하면 3부 애프터로 이동합니다. 종료하시겠습니까?")) return;
 
   state.afterUnlocked = true;
   state.recentChange = "이번 세션이 종료되었다";
@@ -1898,8 +1958,60 @@ async function openWorldLoad() {
   }
 }
 
+function showInterpretation(action) {
+  const strip = document.querySelector("#interpretationStrip");
+  document.querySelector("#interpretationText").textContent = `해석: "${action}"을(를) 시도합니다.`;
+  strip.hidden = false;
+  strip._pendingAction = action;
+  document.querySelector("#freeAction").disabled = true;
+  document.querySelector("#actionForm button[type='submit']").disabled = true;
+  document.querySelectorAll(".choices button").forEach((b) => (b.disabled = true));
+}
+
+function hideInterpretation() {
+  const strip = document.querySelector("#interpretationStrip");
+  strip.hidden = true;
+  strip._pendingAction = null;
+  document.querySelector("#freeAction").disabled = false;
+  document.querySelector("#actionForm button[type='submit']").disabled = false;
+  document.querySelectorAll(".choices button").forEach((b) => (b.disabled = false));
+}
+
+function currentDifficultyMode() {
+  return state.savedWorld?.world?.rules?.checks?.difficultyMode || "보통";
+}
+
+function shouldConfirmInterpretation() {
+  return currentDifficultyMode() !== "어려움";
+}
+
+function submitPlayerAction(action) {
+  if (shouldConfirmInterpretation()) {
+    showInterpretation(action);
+    return;
+  }
+
+  resolveAction(action);
+}
+
+let _sceneTextBeforeLoading = "";
+
+function setPlayLoading(on, options = {}) {
+  const sceneText = document.querySelector("#sceneText");
+  if (on) {
+    _sceneTextBeforeLoading = sceneText.innerHTML;
+    sceneText.innerHTML = '<div class="loading-indicator"><span class="loading-dots"></span><span>마스터가 장면을 구상 중입니다</span></div>';
+  } else if (options.restoreScene !== false) {
+    sceneText.innerHTML = _sceneTextBeforeLoading;
+  }
+  document.querySelector("#freeAction").disabled = on;
+  document.querySelector("#actionForm button[type='submit']").disabled = on;
+  document.querySelectorAll(".choices button").forEach((b) => (b.disabled = on));
+}
+
 async function resolveAction(action) {
   if (!state.runtime) return;
+  setPlayLoading(true);
 
   const roll = Math.floor(Math.random() * 20) + 1;
   const success = roll >= 8;
@@ -1985,6 +2097,7 @@ async function resolveAction(action) {
     }
   }
 
+  setPlayLoading(false, { restoreScene: false });
   renderState();
   renderAfter();
 }
@@ -2032,7 +2145,6 @@ mobileStatusToggle.addEventListener("click", () => {
   setMobileStatusOpen(!statusPanel.classList.contains("is-mobile-open"));
 });
 
-document.querySelector("#applyWorldSeed").addEventListener("click", applyWorldSeed);
 document.querySelector("#saveStep").addEventListener("click", saveCurrentStep);
 document.querySelector("#reselectPc").addEventListener("click", reselectCandidate);
 document.querySelector("#resetSetup").addEventListener("click", resetSetup);
@@ -2048,7 +2160,7 @@ document.querySelector("#cancelWorldLoad").addEventListener("click", closeWorldL
 document.querySelector("#refreshAfter").addEventListener("click", renderAfter);
 
 document.querySelectorAll(".choices button").forEach((button) => {
-  button.addEventListener("click", () => resolveAction(button.dataset.action));
+  button.addEventListener("click", () => submitPlayerAction(button.dataset.action));
 });
 
 document.querySelector("#actionForm").addEventListener("submit", (event) => {
@@ -2056,8 +2168,19 @@ document.querySelector("#actionForm").addEventListener("submit", (event) => {
   const input = document.querySelector("#freeAction");
   const action = input.value.trim();
   if (!action) return;
-  resolveAction(action);
+  submitPlayerAction(action);
   input.value = "";
+});
+
+document.querySelector("#interpretationConfirm").addEventListener("click", () => {
+  const action = document.querySelector("#interpretationStrip")._pendingAction;
+  hideInterpretation();
+  if (action) resolveAction(action);
+});
+
+document.querySelector("#interpretationReject").addEventListener("click", () => {
+  hideInterpretation();
+  document.querySelector("#freeAction").focus();
 });
 
 document.querySelector("#statusForm").addEventListener("submit", (event) => {

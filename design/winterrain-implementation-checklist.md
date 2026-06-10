@@ -73,6 +73,17 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - `CommandRouter`
   - `ActionParser`
 
+### P1b-2 - Interpretation Rejection Path
+
+- [ ] [2부] Add interpretation confirmation UI after `ActionParser` output.
+  - show short interpretation summary based on `interpretationReason`
+  - display `[진행]` and `[다시 입력]` buttons
+  - on rejection, return to free input without consuming a turn or logging the discarded interpretation
+- [ ] [2부] Apply difficulty-based interpretation display policy.
+  - 쉬움: always show and wait for confirmation
+  - 보통: always show and wait for confirmation
+  - 어려움: do not show; immediately resolve the declaration as an action contract
+
 ### P1c - Deterministic Resolution And Ending Gates
 
 - [ ] [1부/2부] Split deterministic resolution modules out of `app.js`.
@@ -90,6 +101,15 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - morale affects difficulty/modifiers but never directly triggers game over
   - fatigue stage `한계` causes `hp -5` at turn end only in `difficultyMode == "어려움"`
   - `hp <= 0` immediately triggers game over and routes to Ending
+- [ ] [2부] Implement recovery and morale rules in `RuleEngine` and `StateApplier`.
+  - `actionType == rest` triggers fatigue recovery (-4) and HP recovery (+5)
+  - short break triggers fatigue recovery (-2) when scene allows pause
+  - safe place bonus adds extra recovery (-2 fatigue, +5 HP) when uninterrupted
+  - rest consumes a turn; scene cost (time, NPC reaction, situation change) may apply
+  - morale gain from goal progress (+5), positive NPC shift (+3), safe rest (+3)
+  - morale loss from failure/criticalFailure (-3), negative NPC shift (-3), goal setback (-5)
+  - morale changes are applied at turn settlement; simultaneous gain and loss are summed
+  - model may not declare recovery; only `RuleEngine` and `StateApplier` apply recovery values
 
 ### P1d - Scene Output, Logs, And Status Surface
 
@@ -106,6 +126,10 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
   - validate `knownFactsAdded` before appending to `session.knownFacts`
   - store accepted per-turn facts in `turnLog.knownFactsAdded`
 - [ ] [2부] Keep status rendering deterministic and limited to PC-known state.
+- [ ] [2부] Add loading indicator with flavor text during model calls.
+  - show animated indicator (e.g. hourglass) during ScenePlanner and MasterProse calls
+  - display flavor text such as "마스터가 장면을 구상 중입니다..."
+  - disable player input while model call is in progress
 
 ## P2 - 1부 UX And Genre Profile Polish
 
@@ -198,6 +222,11 @@ Goal: replace the temporary 2부 loop with a deterministic play loop that can ac
 - [ ] Add 추리/수사 NPC friction rules where friction NPCs can become suspects or antagonistic witnesses only under truth-lock constraints.
 - [ ] Add 정치 support with faction map, leverage, public narrative, reputation, and risk exposure.
 - [ ] Add 정치 NPC friction rules where friction NPCs can become active adversaries through faction state.
+- [ ] Add time pressure mechanics for genres that need them.
+  - in-fiction time passage as a game mechanic (deadlines, countdowns, event windows)
+  - time cost for rest and travel actions
+  - relevant for 추리 (investigation deadline), 정치 (political windows), and 고난이도 play
+  - not required for Phase 1 생활/모험 baseline
 - [ ] Add 전쟁 support only after the smaller deterministic loop is stable.
   - include allied NPCs and enemy NPCs as separate network surfaces
   - require at least one allied `마찰 NPC`

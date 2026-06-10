@@ -1,3 +1,4 @@
 prompt/
 .DS_Store
 data/worlds/*.json
+data/*.log

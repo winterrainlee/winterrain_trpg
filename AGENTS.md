@@ -51,6 +51,12 @@ The core architecture is: deterministic app code owns state, rolls, validation, 
 - Preserve raw model outputs before scoring or rewriting.
 - Use automated checks only as guardrails; creative quality still needs human reading.
 
+## Dev Server
+
+- Command: `node server.js`
+- Default port: `4175` (override with `PORT` env var)
+- Static file server with API routes under `/api/worlds`
+
 ## Verification
 
 - If there is no test harness yet, verify with focused script output, schema validation, or a small fixture run.
